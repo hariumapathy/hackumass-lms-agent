@@ -29,3 +29,4 @@ A sync worker copies course data into Supabase; the AI agent only reads that dat
 ## Team
 - [@hariumapathy](https://github.com/hariumapathy)
 - [@nealp](https://github.com/nealp)
+- [@Soumith-Madadi](https://github.com/Soumith-Madadi)

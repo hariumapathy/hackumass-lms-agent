@@ -23,4 +23,4 @@ Add your own below. Move answered ones into [decisions.md](decisions.md).
 - [ ] Does the **Python Agents SDK's approval (human-in-the-loop) support** cover `add_study_block`, or do we build our own confirm step?
 
 ## Teammate ideas
-_Neal — add yours here._
+_Neal, Soumith — add yours here._
