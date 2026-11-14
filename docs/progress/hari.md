@@ -1,6 +1,6 @@
 # Hari: progress
 
-**Branch:** `dev/hari` · **Role:** TBD · **Last updated:** 2026-11-14
+**Branch:** `dev/hari` · **Role:** B (agent and API) · **Last updated:** 2026-11-14
 
 _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines._
 
@@ -11,7 +11,8 @@ _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines
 -
 
 ## Next
-- Agree roles and the three contracts with the team (hours 0–2).
+- Review S00–S03 with the team and mark them `Ready`; own S02 (API + SSE contract).
+- Then Stage 1: S20 → S21 → S22 → S23.
 
 ## Blocked on / needs from others
 -

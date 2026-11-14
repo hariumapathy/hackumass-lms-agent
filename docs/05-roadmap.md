@@ -1,6 +1,6 @@
 # 05 — Roadmap
 
-> Draft for a team of 3. Who takes which role is still open ([06](06-open-questions.md)).
+> Team of 3: **Neal = A**, **Hari = B**, **Soumith = C**. Roles are defaults; finishing stage by stage matters more ([AGENTS.md](../AGENTS.md#team-branches-ownership)).
 
 ## Demo script first (write in hour 1, build backward)
 1. Sign in → connect Canvas (token) → log in to Gradescope/Echo360 via embedded live browser with a Duo push → "4 courses, 23 items, 12 lectures synced."

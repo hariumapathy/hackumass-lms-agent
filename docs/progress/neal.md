@@ -1,6 +1,6 @@
 # Neal: progress
 
-**Branch:** `dev/neal` · **Role:** TBD · **Last updated:** —
+**Branch:** `dev/neal` · **Role:** A (data and sync) · **Last updated:** —
 
 _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines._
 
@@ -11,7 +11,8 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 -
 
 ## Next
-- Agree roles and the three contracts with the team (hours 0–2).
+- Review S00–S03 with the team and mark them `Ready`; own S01 (schema) and S03 (seed data).
+- Then Stage 1: S10 → S11 → S12.
 
 ## Blocked on / needs from others
 -

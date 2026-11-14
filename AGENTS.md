@@ -34,13 +34,16 @@ Follow [docs/08-development-workflow.md](docs/08-development-workflow.md) for ev
 
 | Person | GitHub | Branch | Role | Progress file |
 |---|---|---|---|---|
-| Hari | @hariumapathy | `dev/hari` | TBD (A, B or C) | [docs/progress/hari.md](docs/progress/hari.md) |
-| Neal | @nealp | `dev/neal` | TBD | [docs/progress/neal.md](docs/progress/neal.md) |
-| Soumith | @Soumith-Madadi | `dev/soumith` | TBD | [docs/progress/soumith.md](docs/progress/soumith.md) |
+| Hari | @hariumapathy | `dev/hari` | **B**: agent and API | [docs/progress/hari.md](docs/progress/hari.md) |
+| Neal | @nealp | `dev/neal` | **A**: data and sync | [docs/progress/neal.md](docs/progress/neal.md) |
+| Soumith | @Soumith-Madadi | `dev/soumith` | **C**: frontend and product | [docs/progress/soumith.md](docs/progress/soumith.md) |
 
-Roles ([05](docs/05-roadmap.md#roles)): **A** data and sync (`supabase/`, `backend/app/connectors/`, `backend/app/sync/`) · **B** agent and API (`backend/app/api/`, `backend/app/agent/`) · **C** frontend and product (`apps/web/`). Shared backend code (`backend/app/core/`, `backend/app/db/`) is changed in small PRs with a heads-up. Update this table when roles are assigned.
+Roles ([05](docs/05-roadmap.md#roles)): **A** data and sync (`supabase/`, `backend/app/connectors/`, `backend/app/sync/`) · **B** agent and API (`backend/app/api/`, `backend/app/agent/`) · **C** frontend and product (`apps/web/`). Shared backend code (`backend/app/core/`, `backend/app/db/`) is changed in small PRs with a heads-up.
 
-**Stay in your role's folders.** If you must touch another role's folder, keep the change minimal and say so in your progress file and PR.
+**Roles are a default, not a wall.** What matters is finishing **stage by stage**, following the specs. If you're unblocked early, pick up another `Ready` spec **in the current stage** (never a later stage while the current one is unfinished):
+1. **Claim it first**: tell the team, add it under "In progress" in your progress file, and check nobody else's progress file already claims it.
+2. Work on your own branch; touching another role's folders is fine for a claimed spec, but say so in the PR.
+3. Prefer helping finish the current checkpoint (tests, fixes, reviews) over starting something new.
 
 ## Git workflow
 - Work on your personal branch (`dev/<name>`), or short-lived feature branches off it (`<name>/<feature>`).
@@ -77,6 +80,14 @@ To change one: write the proposal under "Contract change proposals" in your prog
 - Full layout and commands: [S00](docs/specs/S00-repo-scaffolding.md).
 - Exact versions get pinned during scaffolding; record them here when chosen.
 - Keep tool schemas simple (flat params, enums); validate with Pydantic. See [03](docs/03-architecture.md#agent-and-tools).
+
+## Roadblocks and design changes: report them, don't absorb them
+Your human and the rest of the team must always know when the plan meets reality.
+- **Roadblock** (blocked > 30 min, a platform behaves differently than the spec assumes, a test can't be written, a dependency isn't ready): **stop and tell your human right away**, with what you tried and 1–2 options. Record it under "Blocked on" in your progress file.
+- **Design or implementation change** (anything that differs from a spec or planning doc, even if it seems small: a new field, a different library, a changed endpoint, a dropped rule): **ask your human before doing it.** Once agreed, in the same PR: update the spec (and the planning doc if affected), add one line to [docs/decisions.md](docs/decisions.md), and note it under "Notes for other agents" in your progress file.
+- **Contract change** (schema, API/SSE, seed): as above **plus** the whole team agrees first (see Contracts).
+- **Spike results** (e.g. the Echo360 questions in S15, Gradescope selectors in S14): write them into the spec's results section as soon as you have them.
+- Never silently work around a spec. A quick question now is cheaper than a broken merge later.
 
 ## End of every session: update your progress file
 Edit **only** `docs/progress/<your-name>.md`. Keep it short and current: replace stale lines instead of appending forever.
