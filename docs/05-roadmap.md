@@ -11,9 +11,9 @@
 6. Subscribe to the `.ics` feed → deadlines appear in their calendar.
 
 ## MVP cut line
-**Must have:** Canvas (token) + Gradescope and Echo360 (cloud browser) · Today view · chat and study mode with verified citations · `.ics` feed · curated model picker · seeded backup account.
+**Must have:** Canvas (token) + Gradescope (cloud browser) · Today view · chat and study mode with verified citations · `.ics` feed · curated model picker · seeded backup account.
 
-**Stretch, in order (owner):** Piazza (A) → MCP server (B) → in-Canvas side panel / extension (C) → Campuswire → email → grade tracking.
+**Stretch, in order (owner):** Echo360 S15 (A) → Piazza S17 (A) → MCP server (B) → in-Canvas side panel / extension (C) → Campuswire → email → grade tracking.
 
 **Scope warning:** even with three people, do 3 integrations well rather than 6 badly.
 

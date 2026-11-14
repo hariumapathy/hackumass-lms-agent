@@ -32,7 +32,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 |---|---|---|---|---|
 | S13 | [Browser sessions and live login](S13-browser-sessions.md) | A | S10 | Draft |
 | S14 | [Gradescope connector](S14-gradescope-connector.md) | A | S13 | Draft |
-| S15 | [Echo360 connector](S15-echo360-connector.md) | A | S11, S13 | Draft |
+| S15 | [Echo360 connector](S15-echo360-connector.md) | A | S11, S13 | **Stretch** (moved out of MVP 2026-11-14) |
 | S24 | [Study sets](S24-study-sets.md) | B | S22, S23 | Draft |
 | S25 | [Study blocks, approvals and calendar feed](S25-approvals-and-calendar.md) | B | S22 | Draft |
 | S31 | [Onboarding and connect flow](S31-onboarding-and-connect.md) | C | S30, S13 | Draft |
