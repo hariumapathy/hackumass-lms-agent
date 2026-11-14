@@ -21,3 +21,19 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# python
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# supabase
+supabase/.temp/
+supabase/.branches/
+
+# app outputs
+backend/evals/reports/
+backend/tests/fixtures/_debug/
+apps/web/.next/
+apps/web/next-env.d.ts

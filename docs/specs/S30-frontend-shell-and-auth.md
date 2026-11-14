@@ -13,7 +13,7 @@ The app frame every screen lives in: routes, layout and navigation, Supabase sig
 
 ## Inputs
 - Supabase Auth (Google + email magic link).
-- Generated API types (`just types`, S02); MSW mocks for development without the backend.
+- Generated API types (`make types`, S02); MSW mocks for development without the backend.
 
 ## Outputs
 - Authenticated app with these routes:

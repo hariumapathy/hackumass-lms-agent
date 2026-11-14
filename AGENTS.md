@@ -78,7 +78,8 @@ To change one: write the proposal under "Contract change proposals" in your prog
 - **Frontend** (`apps/web/`): Next.js (App Router) + TypeScript, `pnpm`, Tailwind, shadcn/ui, ESLint.
 - **Data**: Supabase (Postgres + pgvector, Storage, Auth). Migrations as plain SQL in `supabase/migrations/`.
 - Full layout and commands: [S00](docs/specs/S00-repo-scaffolding.md).
-- Exact versions get pinned during scaffolding; record them here when chosen.
+- Pinned versions and why: [S00 implementation notes](docs/specs/S00-repo-scaffolding.md#implementation-notes-pinned-versions-2026-11-14). **Next.js 16**: read `apps/web/AGENTS.md` before frontend work. Node 20 is supported; don't upgrade test tooling past the Node-20-compatible versions without the team.
+- Commands: `make setup | db | db-reset | api | worker | web | test | lint | types`.
 - Keep tool schemas simple (flat params, enums); validate with Pydantic. See [03](docs/03-architecture.md#agent-and-tools).
 
 ## Roadblocks and design changes: report them, don't absorb them

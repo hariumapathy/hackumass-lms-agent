@@ -17,7 +17,7 @@ A realistic fake semester loaded into the DB on day one, so B can build tools an
 
 ## Outputs
 - `uv run app seed [--user-email demo@example.com] [--reset]`: creates (or reuses) a Supabase auth user and loads all fixtures for that user, including chunks with embeddings.
-- `just db-reset` runs migrations then `app seed` for the default dev user.
+- `make db-reset` runs migrations then `app seed` for the default dev user.
 
 ## Fixture contents (one semester, "Fall 2026")
 | Entity | Content |
@@ -49,7 +49,7 @@ Content must be **plausible academic text** (write it or generate it once and co
 | Fixture references unknown course | Loader fails listing the bad reference |
 
 ## Acceptance criteria
-- [ ] `just db-reset` loads everything in under 60 s with fake embeddings
+- [ ] `make db-reset` loads everything in under 60 s with fake embeddings
 - [ ] Today view (S32) and agent tools (S21) return non-empty, sensible data from seed
 - [ ] Seed covers every enum value used by the UI (statuses, item types, post kinds, connection statuses)
 

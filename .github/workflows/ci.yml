@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      EMBEDDINGS_PROVIDER: fake
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pyright
+      # Integration tests need a database; they run locally until CI gets `supabase start`.
+      - run: uv run pytest -m "not integration"
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npx -y pnpm@10.34.9 install --frozen-lockfile
+      - run: npx -y pnpm@10.34.9 lint
+      - run: npx -y pnpm@10.34.9 typecheck
+      - run: npx -y pnpm@10.34.9 test

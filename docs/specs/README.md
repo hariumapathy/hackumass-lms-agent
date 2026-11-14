@@ -8,7 +8,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 ## Stage 0: Foundations (hours 0–2, whole team)
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
-| S00 | [Repo scaffolding and tooling](S00-repo-scaffolding.md) | All | — | Draft |
+| S00 | [Repo scaffolding and tooling](S00-repo-scaffolding.md) | All | — | In progress (Hari) |
 | S01 | [Database schema](S01-database-schema.md) **(contract)** | A | S00 | Draft |
 | S02 | [API and streaming contract](S02-api-contract.md) **(contract)** | B | S00, S01 | Draft |
 | S03 | [Seed data](S03-seed-data.md) **(contract)** | A | S01 | Draft |
