@@ -40,4 +40,6 @@ Source: [hackumass.com](https://www.hackumass.com/), [Devpost](https://hackumass
 | [MLH] Best Domain Name (GoDaddy Registry) | sponsor opt-in | Cheap win if we register a domain |
 | [HACKUMASS] Best UI/UX, Best Pitch, Most Secure Hack | (only one HACKUMASS category allowed) | Shape the demo/pitch toward these anyway |
 
-**Decision needed (Hari):** which ONE `[HACKUMASS]` category, and which sponsor opt-ins.
+**Decided (2026-11-14):** our ONE `[HACKUMASS]` category is **Best UMass Hack**. Sponsor opt-ins: still to decide (candidates above). Grand prizes are automatic.
+
+**What "Best UMass Hack" means for the demo:** use UMass-real details everywhere: `umass.instructure.com`, NetID + Duo login, real UMass course codes (COMPSCI 311, MATH 235), Echo360 lectures, and the "official UMass LTI app" adoption path. Judges should feel it was built *for UMass students*.

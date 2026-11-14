@@ -26,6 +26,7 @@
 | 2026-11-14 | Roles: Neal A, Hari B, Soumith C; roles flexible within the current stage (claim a spec first); agents report roadblocks and ask before any design change | Finish stage by stage; no silent drift from specs |
 | 2026-11-14 | Scaffolding: `make` instead of `just`; pnpm and Supabase CLI run pinned via `npx`; Next 16; Node-20-compatible test tooling | Fewer installs on three laptops; Node 20 is what we have |
 | 2026-11-14 | Agents SDK tracing off (or to our own logger) | Default export would send students' course content to OpenAI |
+| 2026-11-14 | Devpost category: **[HACKUMASS] Best UMass Hack** (+ automatic grand prizes) | Built for UMass students and platforms; demo and pitch use UMass-real details and the UMass adoption path |
 | 2026-11-14 | Agent tools read only our database; only the sync worker touches platforms and credentials | Security (prompt injection can't act on the LMS), speed, model-agnostic |
 | 2026-11-14 | ~9 tools organized by action, not per platform | Sync already merged platforms; fewer tools = better tool choice, esp. smaller models |
 | 2026-11-14 | One MCP server over our combined data (stretch), not one per platform | Lets students use their data in Claude/ChatGPT without reintroducing live pulling |

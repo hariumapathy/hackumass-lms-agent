@@ -2,6 +2,8 @@
 
 Living document: **update it whenever a feature lands or changes** (AGENTS.md rule). At the end this is what we present from. Keep it honest: only claim what the demo actually does; mark planned items as "next".
 
+**Competing in: [HACKUMASS] Best UMass Hack** (+ automatic grand prizes). Frame every part of the story around UMass students, UMass platforms and UMass adoption.
+
 ## One-liner
 **One login, every class.** An AI study partner that already knows your Canvas, Gradescope and lecture recordings, so you stop hunting across five sites.
 
@@ -11,13 +13,13 @@ UMass students juggle Canvas, Gradescope, Piazza, Echo360 and email every week. 
 ## 3-minute demo script (live)
 | Time | Show | Say |
 |---|---|---|
-| 0:00 | Title slide | The problem: five platforms, scattered deadlines, manual studying |
+| 0:00 | Title slide | The problem **every UMass student knows**: Canvas, Gradescope, Piazza, Echo360, UMass email; scattered deadlines, manual studying |
 | 0:20 | Onboarding: paste Canvas token → "4 courses synced" | Setup takes a minute; we never store passwords |
 | 0:45 | **Today view**: due today/this week, a **"CHANGED: Midterm moved"** badge, source chips | Deterministic, from synced data; changes detected automatically |
 | 1:20 | Chat: **"Prep me for my CS 311 midterm"** → status steps stream → study plan + quiz + flashcards | Agent uses tools over our synced database |
 | 2:00 | Click a **citation chip** → opens the exact slide / lecture moment | Links come from synced data and are validated; the AI never writes URLs |
 | 2:20 | "Add these study sessions?" → **Add** → calendar feed | Writes need the student's click |
-| 2:40 | Architecture slide | Sync worker → Supabase → agent (any model) → Next.js; path to an official UMass LTI app |
+| 2:40 | Architecture slide | Sync worker → Supabase → agent (any model) → Next.js. **UMass adoption path:** an official LTI 1.3 app with a UMass IT Canvas key, data on UMass infrastructure, a campus-hosted model |
 | 2:55 | Close | "One login, every class." |
 
 **Backup:** if live sync or wifi fails, switch to the **seeded demo account** (S03). Rehearse both paths.
