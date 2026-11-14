@@ -10,6 +10,9 @@
 | [04-citations-and-freshness.md](04-citations-and-freshness.md) | How source links stay real and up to date (no hallucinated links) |
 | [05-roadmap.md](05-roadmap.md) | Demo script, MVP cut line, 36-hour plan for 2 people |
 | [06-open-questions.md](06-open-questions.md) | Decisions we still need to make + things to test early |
+| [07-sync-and-storage.md](07-sync-and-storage.md) | Why we sync instead of pulling live, the sync pipeline, where data/files/links are stored |
 | [decisions.md](decisions.md) | Running log of what we've decided and why |
 
-**How to contribute ideas:** edit the relevant doc and open a PR, or add to [06-open-questions.md](06-open-questions.md) / open a GitHub Issue. Keep the decision log updated when something gets settled.
+**Keeping these lean:** each topic lives in exactly one doc; other docs link to it instead of repeating it. When an idea changes, edit it in place rather than appending. Decisions get one line in the log.
+
+**How to contribute ideas:** edit the relevant doc and open a PR, or add to [06-open-questions.md](06-open-questions.md) / open a GitHub Issue.

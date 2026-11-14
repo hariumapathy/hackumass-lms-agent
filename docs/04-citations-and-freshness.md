@@ -31,11 +31,9 @@ Worst case becomes "cited the wrong slide," not "invented a link" — and the qu
 
 ## 3. Keeping links fresh between syncs
 
-**Every sync**
-- Records keep `last_synced_at`, `source_updated_at`, `content_hash`, `status` (active | changed | removed).
-- **Changed** (Canvas exposes `updated_at` on most objects): re-download, re-chunk, keep the old version, flag "changed since you last saw it." Same mechanism powers "midterm moved."
-- **Disappeared from source:** mark `removed` (tombstone), don't delete. Citations show "removed from Canvas on Nov 12" instead of a dead link.
-- **Cadence by cost:** assignments/announcements/posts every 15–30 min; files only when `updated_at` changes; Echo360 new-recording check ~daily.
+**Every sync** (pipeline and cadence in [07](07-sync-and-storage.md))
+- **Changed** source → new version kept alongside the old; citations to it show "changed since you last saw it."
+- **Removed** source → row marked `removed`, not deleted; citations show "removed from Canvas on Nov 12" instead of a dead link.
 
 **Before high-stakes questions**
 - "Prep me for the midterm" triggers a quick targeted re-sync of that course first; UI shows "Synced just now."

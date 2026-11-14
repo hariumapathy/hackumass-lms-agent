@@ -33,7 +33,7 @@
 | Sync / scraping | Playwright scripts (tier 2), fetch (tier 1) | Deterministic, not LLM-driven |
 | Doc parsing | pdf-parse / markitdown / unstructured | Slides → chunks |
 | Connectors as tools | Each source exposed as an MCP server | Standard interface; works with any harness; good architecture story |
-| Hosting | Vercel (web) + Supabase; sync worker on a small container host | Minimal devops |
+| Hosting | Vercel (web) + Supabase + one sync worker (Railway / Render / Fly.io) | Minimal devops; see [07](07-sync-and-storage.md#where-it-runs) |
 
 **Language:** leaning TypeScript everywhere. Tier-2 browser scraping removes the need for the unofficial Python libraries. If one teammate is much stronger in Python, the agent could sit behind FastAPI instead.
 
@@ -47,18 +47,10 @@
 | Claude-only / OpenAI-only agent SDKs | ❌ Conflicts with model choice |
 | LibreChat / Open WebUI | Fallback only: already support MCP + model choice, could host our connectors if custom chat runs late |
 
-## Data model sketch
-- `courses` — id, platform ids, name, term
-- `items` — assignments/exams/quizzes; due_at, status, course_id, **sources[]** (merged)
-- `materials` — files/slides/pages; platform ids, source_url, version
-- `recordings` — Echo360 lectures; date, transcript availability
-- `chunks` — text, embedding, material/recording/post id, page or timestamp
-- `posts` / `announcements` — Piazza, Canvas, email
-- `changes` — what changed, when, old → new (powers "changed" badges)
-- Every source-backed row: `source_url`, `platform_ids`, `last_synced_at`, `source_updated_at`, `content_hash`, `status` (active | changed | removed)
+Sync pipeline, data model and storage layout: see [07-sync-and-storage.md](07-sync-and-storage.md).
 
 ## Security and privacy
 - **Prompt injection:** Piazza posts and emails are written by other people and fed to an agent with tools. All write actions (calendar, sending anything) require an explicit user click; ingested content is wrapped and labeled as untrusted data in prompts.
 - **One fixed embedding model**, independent of the chat model, so switching chat models doesn't require re-embedding.
-- **Data minimization:** encryption at rest (incl. session cookies), one-click "delete my data", local/campus-hosted model option for sensitive materials.
+- **Data responsibility:** encryption at rest (incl. tokens and session cookies); "Delete my data" removes every row, file and secret; "Disconnect" stops sync and deletes that credential; keep old versions only for the current semester; local/campus-hosted model option for sensitive materials.
 - **Copyright:** lecture slides are course property — personal study use only, no sharing features.

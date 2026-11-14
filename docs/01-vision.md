@@ -24,7 +24,7 @@ Tracking deadlines, finding slides, and gathering exam prep is manual. General L
 - Plausibly adoptable by UMass / a university (security + FERPA story)
 
 ## Two core design principles
-1. **Sync first, agent second.** A sync layer pulls everything into one normalized store (Courses, Assignments/Items, Events, Materials, Announcements, Posts, Recordings). The agent queries *our* database, not live platforms. Faster, cheaper, model-agnostic, demo-reliable.
+1. **Sync first, agent second.** A sync layer pulls everything into one normalized store (Courses, Assignments/Items, Events, Materials, Announcements, Posts, Recordings). The agent queries *our* database, not live platforms. Faster, cheaper, model-agnostic, demo-reliable. Details: [07](07-sync-and-storage.md).
 2. **The dashboard is deterministic; the LLM adds on top.** "What's due this week" is a database query, not an LLM guess. The LLM prioritizes, summarizes, extracts deadlines from syllabi/emails, and helps study. This avoids the worst failure: the AI inventing a deadline.
 
 ## Use cases (demo priority order)
