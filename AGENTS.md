@@ -6,8 +6,27 @@ This file is for **any coding agent** working in this repo (Claude Code, Codex, 
 HackUMass 2026 (36 hours, team of 3). An AI study agent for UMass students: a **sync worker** copies each student's Canvas, Gradescope and Echo360 data into Supabase; a **Python agent** (OpenAI Agents SDK) answers questions, builds study plans/quizzes/flashcards with verified citations, and shows a Today view of deadlines; a **Next.js** frontend is the UI.
 
 ## Current status
-**Phase: planning done, feature specs drafted (status `Draft`), scaffolding not started.** No application code exists yet. Do not assume a file, package or endpoint exists; check first.
-Live progress is tracked in [`docs/progress/`](docs/progress/README.md). Read it at the start of every session.
+**Don't trust this line for details; read the newest entry in [docs/devlog.md](docs/devlog.md).** Summary: Stage 0 in progress (S00 scaffolding built, S02 API contract being built). Do not assume a file, package or endpoint exists; check first.
+
+## ⚡ Relay sessions: START and HANDOFF (mandatory)
+We build as a **relay**: one laptop/agent works until its usage limit runs out, then the next laptop continues (Hari → Neal → Soumith → Hari ...), mixing **Claude Code and Codex**. An agent can be cut off at any moment, so **the repo must always be ready for the next agent**.
+
+**START of every session** (human says "start session", or runs [docs/handoff/start-prompt.md](docs/handoff/start-prompt.md), or `/start` in Claude Code):
+1. `git fetch origin` → check out **your own branch** (`dev/<name>`) → `git merge origin/main` (resolve conflicts before anything else).
+2. Read, in order: this file → the **newest 3 entries** of [docs/devlog.md](docs/devlog.md) → [docs/progress/README.md](docs/progress/README.md) and **all three** person files → [docs/specs/README.md](docs/specs/README.md) → every spec in the current stage → [docs/decisions.md](docs/decisions.md) (latest lines).
+3. `make setup && make test`. If tests fail on a fresh `main`, fixing that is the first task.
+4. Tell your human, in 5 lines max: current stage, what's done, what's in progress (and by whom), what you'll do next, any blockers. Then continue the **"Next"** list from the newest devlog entry unless your human says otherwise.
+
+**DURING the session: log as you go** (you may be cut off without warning):
+- After **each spec or meaningful piece** (or at least every ~45 min): tests + lint pass → commit → `git push` → append/update your devlog entry → update your progress file and the spec's status.
+- Never leave important work only on the local disk. Small commits pushed often beat one big commit.
+
+**HANDOFF at the end** (human says "handoff" / "wrap up", or runs [docs/handoff/handoff-prompt.md](docs/handoff/handoff-prompt.md), or `/handoff` in Claude Code; also do it yourself if you sense the session is ending):
+1. `make test && make lint`. If something is broken and can't be fixed in a few minutes, commit it on your branch with a clear **"WIP / broken: why"** note instead of merging.
+2. Write the devlog entry (template in [docs/devlog.md](docs/devlog.md)): what was done (spec IDs, commits), decisions/design changes, roadblocks, **exact next steps** in order, gotchas.
+3. Update your progress file, spec statuses, and the [spec index](docs/specs/README.md).
+4. Commit, push, open (or update) a PR into `main`, and **merge it if tests and lint pass**, so the next laptop starts from an up-to-date `main`. (Relay rule: green self-merges are allowed at handoff; red work stays on the branch.)
+5. Tell your human: "Handoff complete. Next laptop: run the start prompt." plus the top 3 next steps.
 
 ## How we build: spec first, tests first
 Follow [docs/08-development-workflow.md](docs/08-development-workflow.md) for every feature:
@@ -21,6 +40,7 @@ Follow [docs/08-development-workflow.md](docs/08-development-workflow.md) for ev
 ## Read before working
 | Doc | Why |
 |---|---|
+| [docs/devlog.md](docs/devlog.md) | **Session-by-session log: newest entry = current state + next steps** |
 | [docs/08-development-workflow.md](docs/08-development-workflow.md) | Lifecycle, stages, testing strategy, Definition of Done |
 | [docs/specs/](docs/specs/README.md) | Every feature's spec: inputs, outputs, interfaces, diagrams, test plan |
 | [docs/03-architecture.md](docs/03-architecture.md) | Diagram, agent + tools, stack, repo layout, security rules |
@@ -50,7 +70,7 @@ Roles ([05](docs/05-roadmap.md#roles)): **A** data and sync (`supabase/`, `backe
 - **Bring in `main` often** (at least every few hours): `git fetch origin && git merge origin/main`. Prefer merge over rebase on branches others may have pulled.
 - **Open a PR into `main`** whenever a piece works end to end, and at minimum before each checkpoint (H10, H18, H24). Small PRs merge easily; big ones conflict.
 - Never push directly to `main`. Never force-push a branch someone else uses.
-- Agents: only commit, push or open PRs when your human asks.
+- Agents: committing and pushing **your own branch** after each verified piece is expected (relay mode, see above). Merging into `main` happens at handoff, only when tests and lint pass. Never force-push.
 - Merge conflicts in `docs/progress/` should never happen: each person edits only their own file.
 
 ## Contracts (change only with whole-team agreement)
