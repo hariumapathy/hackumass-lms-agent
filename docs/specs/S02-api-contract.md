@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): backend stubs, CONTRACT.md and generated TS types done on `dev/hari`; awaiting C's review; MSW moved to S30 |
 | **Stage** | 0 |
 | **Role** | B (writes), reviewed by C |
 | **Depends on** | S00, S01 |
@@ -125,11 +125,28 @@ Ordering guarantees: `run_started` first; `citations` after the last `text`; exa
 3. Pagination is not needed for MVP (lists are small); lists are capped at 200 items.
 
 ## Acceptance criteria
-- [ ] All endpoints exist as stubs with typed models; OpenAPI renders at `/docs`
-- [ ] `make types` generates TS types; web builds with them
-- [ ] `CONTRACT.md` documents SSE events exactly as above
-- [ ] MSW handlers cover every endpoint and a scripted SSE chat stream
+- [x] All endpoints exist as stubs with typed models; OpenAPI renders at `/docs`
+- [x] `make types` generates TS types; web builds with them
+- [x] `CONTRACT.md` documents SSE events exactly as above
+- [ ] MSW handlers cover every endpoint and a scripted SSE chat stream (**moved to S30**, see notes)
 - [ ] Approved by C
+
+## Implementation notes (2026-11-14, Hari, `dev/hari`)
+- **Backend:**
+  - Models: `backend/app/api/schemas.py` (REST types, SSE `*Event` models, `EVENT_MODELS`).
+  - Framing: `backend/app/api/sse.py` (`sse_event`, `parse_sse`).
+  - Errors: `backend/app/core/errors.py` (envelope, `AppError`, `not_found`).
+  - Route stubs: `backend/app/api/routes/` (`account`, `connections`, `dashboard`, `chat`, `study`, `calendar`).
+  - Mock data: `backend/app/api/mock_data.py`, a realistic semester relative to "now", same courses as S03.
+- **Auth is a stub until S20:** `current_user` only checks that a bearer token is present and returns a fixed demo user. S20 replaces it with Supabase JWT verification (same signature).
+- **Stubs serve mock data, not seed data**, because S03 doesn't exist yet. Each endpoint switches to the real DB as its owning spec lands.
+- **Types the table referenced but didn't define, now added:** `MaterialSummary`, `ConversationSummary`, `ConversationDetail`, `StudyBlocksResponse`, `CalendarFeed`, `ModelsResponse`, `SourceStatus` list wrapper `SyncStatusResponse`. `CanvasConnectRequest` has optional `expires_at` (per S11). Error envelope may include `details` on 422.
+- **Stub-only extra:** `POST /chat?delay_ms=` (0–2000) slows the scripted stream for UI work; S22 ignores it.
+- **Type generation:** `make types` = `uv run app openapi` → `apps/web/src/lib/api/openapi.json` → `openapi-typescript` → `apps/web/src/lib/api/schema.d.ts`. Both files are committed. Re-run after any API change.
+- **SSE contract:** `backend/app/api/CONTRACT.md`.
+- **Moved to S30 (Soumith):** MSW handlers and the frontend SSE parser (S02-T05, T06). S30 already owns the SSE client (S30-T04), and `openapi.json` plus `CONTRACT.md` are enough to build them.
+- **Small additions:** `tzdata` backend dependency (Windows has no IANA timezone database); new env var `PUBLIC_API_URL` (calendar feed links).
+- **Tests:** `backend/tests/unit/test_s02_contract.py` covers S02-T01–T04 plus a smoke test of every stub. All pass.
 
 ## Test plan
 | ID | Test | Type |
@@ -138,8 +155,8 @@ Ordering guarantees: `run_started` first; `citations` after the last `text`; exa
 | S02-T02 | Error responses match the error envelope for 401/404/422 | integration |
 | S02-T03 | SSE serializer emits `event:` + `data:` lines and valid JSON for each event type | unit |
 | S02-T04 | SSE stream always ends with exactly one `done` or `error` | runtime |
-| S02-T05 | Frontend SSE parser handles events split across network chunks | component |
-| S02-T06 | MSW chat mock replays a full scripted stream and the parser reconstructs it | component |
+| S02-T05 | Frontend SSE parser handles events split across network chunks (**done in S30**) | component |
+| S02-T06 | MSW chat mock replays a full scripted stream and the parser reconstructs it (**done in S30**) | component |
 
 ## Out of scope
 Pagination, websockets, public API for third parties (MCP server is stretch).

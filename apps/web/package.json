@@ -27,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "jsdom": "^26.1.0",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
     "vite": "7.3.8",

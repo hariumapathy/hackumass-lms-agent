@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr | None = None
     embeddings_provider: Literal["openai", "fake"] = "openai"
     web_origin: str = "http://localhost:3000"
+    public_api_url: str = "http://localhost:8000"  # used to build calendar feed URLs (S25)
     browser_provider: Literal["local", "hosted"] = "local"
     canvas_base_url: str = "https://umass.instructure.com"
 

@@ -40,4 +40,5 @@ lint:
 	cd apps/web && $(PNPM) lint && $(PNPM) typecheck
 
 types:
-	@echo "API type generation arrives with S02 (openapi-typescript)."
+	cd backend && uv run app openapi > ../apps/web/src/lib/api/openapi.json
+	cd apps/web && npx openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts
