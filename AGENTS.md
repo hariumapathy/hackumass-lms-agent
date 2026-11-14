@@ -13,13 +13,20 @@ We build as a **relay**: one laptop/agent works until its usage limit runs out, 
 
 **START of every session** (human says "start session", or runs [docs/handoff/start-prompt.md](docs/handoff/start-prompt.md), or `/start` in Claude Code):
 1. `git fetch origin` → check out **your own branch** (`dev/<name>`) → `git merge origin/main` (resolve conflicts before anything else).
-2. Read, in order: this file → the **newest 3 entries** of [docs/devlog.md](docs/devlog.md) → [docs/progress/README.md](docs/progress/README.md) and **all three** person files → [docs/specs/README.md](docs/specs/README.md) → every spec in the current stage → [docs/decisions.md](docs/decisions.md) (latest lines).
+2. Read, in order: this file → **[docs/hackathon.md](docs/hackathon.md) deadlines** (if one is < 3 h away, tell your human before anything else) → the **newest 3 entries** of [docs/devlog.md](docs/devlog.md) → [docs/progress/README.md](docs/progress/README.md) and **all three** person files → [docs/specs/README.md](docs/specs/README.md) → every spec in the current stage → [docs/decisions.md](docs/decisions.md) (latest lines).
 3. `make setup && make test`. If tests fail on a fresh `main`, fixing that is the first task.
 4. Tell your human, in 5 lines max: current stage, what's done, what's in progress (and by whom), what you'll do next, any blockers. Then continue the **"Next"** list from the newest devlog entry unless your human says otherwise.
 
 **DURING the session: log as you go** (you may be cut off without warning):
 - After **each spec or meaningful piece** (or at least every ~45 min): tests + lint pass → commit → `git push` → append/update your devlog entry → update your progress file and the spec's status.
 - Never leave important work only on the local disk. Small commits pushed often beat one big commit.
+- **Keep the pitch true:** when a feature starts working (or gets cut), update the "What actually works" table in [docs/pitch/pitch.md](docs/pitch/pitch.md); when you add an external library or reuse outside code, add it to **Credits** in [docs/pitch/devpost.md](docs/pitch/devpost.md) (the rules require documenting external code).
+
+## 🏁 Hackathon deliverables (we must be able to demo and pitch)
+Deadlines, rules and judging: [docs/hackathon.md](docs/hackathon.md). **Final submission Sun 9:00 AM ET → our code freeze 8:00 AM.** Judging is a **live demo** at 12:30 PM.
+- Everything we build must serve the **3-minute demo** in [docs/pitch/pitch.md](docs/pitch/pitch.md). When short on time, prefer finishing a demo step over adding breadth.
+- A **seeded backup demo** (S03) must always work, even if live sync breaks.
+- Docs stay **presentation-friendly**: the pitch kit, Devpost draft and architecture diagram must be accurate at every handoff.
 
 **HANDOFF at the end** (human says "handoff" / "wrap up", or runs [docs/handoff/handoff-prompt.md](docs/handoff/handoff-prompt.md), or `/handoff` in Claude Code; also do it yourself if you sense the session is ending):
 1. `make test && make lint`. If something is broken and can't be fixed in a few minutes, commit it on your branch with a clear **"WIP / broken: why"** note instead of merging.

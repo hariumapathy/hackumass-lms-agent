@@ -7,7 +7,7 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 ## Entry template
 ```markdown
 ## <YYYY-MM-DD HH:MM ET> · <person>'s laptop · <tool + model> · branch <dev/name>
-**Hour:** H<n> of 36 (clock started Fri Nov 13 21:30 ET, ends Sun Nov 15 09:30 ET)
+**Hour:** H<n> (hacking began Fri Nov 13 20:30 ET; final Devpost submission Sun Nov 15 09:00 ET; code freeze 08:00)
 **Done:** S__ (what, commit abc1234, PR #_) ...
 **In progress (not finished):** S__: what's left, where the code is
 **Decisions / design changes:** one line each (also in docs/decisions.md)
@@ -20,8 +20,9 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 ---
 
 ## 2026-11-14 18:15 ET · Hari's laptop · Claude Code (Opus) · branch dev/hari
-**Hour:** H20.75 of 36 (clock started Fri Nov 13 21:30 ET, ends Sun Nov 15 09:30 ET)
+**Hour:** ~H22 (hacking began Fri Nov 13 20:30 ET; **final Devpost submission Sun 09:00 ET**, code freeze 08:00; judging 12:30)
 **Done:**
+- Hackathon facts captured in [docs/hackathon.md](hackathon.md); pitch kit + Devpost draft in [docs/pitch/](pitch/pitch.md).
 - Planning docs, specs S00–S34 (Draft), AGENTS.md, workflow, branches `dev/hari|neal|soumith`, roles (Neal A, Hari B, Soumith C).
 - **S00 scaffolding** (commit 1695e7b, PR #1): `backend/` (FastAPI `/health`), `apps/web/` (Next.js 16), `supabase/`, `Makefile`, `.env.example`, CI. `make test` + `make lint` green locally.
 - Reviewed three third-party MCP servers (Gradescope, Piazza, Canvas). Findings: [docs/research/mcp-servers-review.md](research/mcp-servers-review.md).
@@ -34,7 +35,8 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **Decisions / design changes:** relay protocol (green self-merge to `main` at handoff); scaffolding uses `make` + pinned `npx` tools (see S00 notes).
 
 **Roadblocks:**
-- **Time:** ~15.5 h left at this entry. Proposed compressed plan (cut Echo360 S15 to stretch, minimal S16/S26/S34) **awaits Hari's approval**; not yet applied to docs.
+- 🚨 **Devpost draft must exist by Sat 11:59 PM** (Hari creates it, adds Neal + Soumith; text in docs/pitch/devpost.md). Choose ONE `[HACKUMASS]` category (see hackathon.md).
+- **Time:** ~14.5 h to final submission at 18:40. Proposed compressed plan (cut Echo360 S15 to stretch, minimal S16/S26/S34) **awaits Hari's approval**; not yet applied to docs.
 - **MCP server approach awaits Hari's decision** (recommended: borrow pieces into our connectors; see research doc).
 - Docker Desktop wasn't running on Hari's laptop → `make db` (local Supabase) untested.
 - Hosted Supabase project + OpenAI key: Hari will create them and put values in `.env` (never in git or chat).

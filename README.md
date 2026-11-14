@@ -9,6 +9,7 @@
 |---|---|
 | [AGENTS.md](AGENTS.md) | Rules, branches, ownership, contracts, **relay START/HANDOFF protocol**. Read by Claude Code (via `CLAUDE.md`), Codex, Cursor and others |
 | [Dev log](docs/devlog.md) | Newest entry = where things stand right now |
+| [Hackathon](docs/hackathon.md) / [Pitch kit](docs/pitch/pitch.md) | Deadlines + judging; demo script, Devpost draft, credits |
 | [Start prompt](docs/handoff/start-prompt.md) / [Handoff prompt](docs/handoff/handoff-prompt.md) | Paste at the start/end of every session on any laptop (`/start`, `/handoff` in Claude Code) |
 | [Development workflow](docs/08-development-workflow.md) | Spec → tests → code, stage by stage |
 | [Feature specs](docs/specs/README.md) | What to build, exactly, with test plans |

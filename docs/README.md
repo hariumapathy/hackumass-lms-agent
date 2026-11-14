@@ -13,6 +13,8 @@
 | [07-sync-and-storage.md](07-sync-and-storage.md) | Why we sync instead of pulling live, the sync pipeline, where data/files/links are stored |
 | [08-development-workflow.md](08-development-workflow.md) | **How we build:** spec → tests → code, stages, testing strategy, Definition of Done, agent prompt |
 | [specs/](specs/README.md) | **Every feature's spec** (S00–S34): inputs, outputs, interfaces, diagrams, test plans |
+| [hackathon.md](hackathon.md) | **Deadlines, rules, judging criteria, prize categories** |
+| [pitch/](pitch/pitch.md) | **Pitch kit** (demo script, judge Q&A, what works) + [Devpost draft](pitch/devpost.md) |
 | [devlog.md](devlog.md) | **Relay baton**: session-by-session log, newest entry = current state + next steps |
 | [handoff/](handoff/start-prompt.md) | Copy-paste START and HANDOFF prompts (Claude Code + Codex) |
 | [progress/](progress/README.md) | Live status: checkpoints, contracts, each person's progress file |
