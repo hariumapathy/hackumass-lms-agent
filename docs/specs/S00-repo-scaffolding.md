@@ -85,9 +85,10 @@ Implemented as a root `Makefile` (GNU make; works in Git Bash on Windows). `make
 | `SUPABASE_JWT_SECRET` or `SUPABASE_JWKS_URL` | api | Verify user JWTs (S20) |
 | `DATABASE_URL` | api, worker | Postgres connection (pooler) |
 | `ENCRYPTION_KEY` | api, worker | Fernet key for tokens/cookies (S10) |
-| `OPENAI_API_KEY` | api, worker | Default chat model + embeddings |
-| `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` | api | Optional, for model picker (S26) |
-| `EMBEDDINGS_PROVIDER` | api, worker | `openai` (default) or `fake` (tests) |
+| `GEMINI_API_KEY` | api, worker | **Default** chat model + embeddings (free tier) |
+| `OPENAI_API_KEY` | api | Optional, OpenAI models in the picker (S26) |
+| `ANTHROPIC_API_KEY` | api | Optional, Claude in the picker (S26) |
+| `EMBEDDINGS_PROVIDER` | api, worker | `gemini` (default), `openai`, or `fake` (tests) |
 | `NEXT_PUBLIC_API_URL` | web | FastAPI base URL |
 | `WEB_ORIGIN` | api | CORS allow-list |
 | `BROWSER_PROVIDER` | worker | `local` (headed Playwright) or `hosted` (S13) |

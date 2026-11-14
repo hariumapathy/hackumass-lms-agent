@@ -15,7 +15,7 @@ Every week UMass students check Canvas, Gradescope, Piazza, Echo360 and email to
 - **Today view:** everything due, merged across platforms, with "changed" alerts (e.g. a moved midterm).
 - **Study mode:** ask "prep me for my midterm" and get a study plan, quiz and flashcards, each citing the exact slide or lecture timestamp.
 - **Verified citations:** the AI cites passages by ID and our code turns them into real links, so it can't invent sources.
-- **Calendar feed** and study sessions you approve with one click. **Any model** (OpenAI by default).
+- **Calendar feed** and study sessions you approve with one click. **Powered by Google Gemini** by default, with other models optional.
 
 ## How we built it
 Next.js (TypeScript) frontend; Python FastAPI backend with the OpenAI Agents SDK; Supabase (Postgres + pgvector + Storage); a Python sync worker (Procrastinate job queue, Playwright for login-only sites). We worked spec-first and test-first: every feature has a written spec and numbered tests written before the code.
@@ -33,7 +33,7 @@ _(fill in)_
 Official UMass LTI 1.3 app with a Canvas developer key, campus-hosted model, Piazza and email, grade tracking.
 
 ## Built with
-python, fastapi, openai-agents-sdk, next.js, react, typescript, tailwind, supabase, postgresql, pgvector, playwright, procrastinate
+python, fastapi, google-gemini-api, openai-agents-sdk, next.js, react, typescript, tailwind, supabase, postgresql, pgvector, playwright, procrastinate
 
 ## Credits (external code)
 Required by the rules: list everything we didn't write, and mention it during judging.
@@ -42,6 +42,7 @@ Required by the rules: list everything we didn't write, and mention it during ju
 | Next.js `create-next-app` template | Frontend scaffold | MIT |
 | FastAPI, Pydantic, OpenAI Agents SDK, Procrastinate, Playwright, httpx | Backend frameworks/libraries | MIT/Apache-2.0 |
 | Supabase CLI | Local database | MIT |
+| Google Gemini API (chat + embeddings) | Default AI model | Google API terms |
 | Code from [gradescope-mcp](https://github.com/Yuanpeng-Li/gradescope-mcp), [`gradescopeapi`](https://pypi.org/project/gradescopeapi/), [piazza-mcp](https://github.com/profess/piazza-mcp); reference: [canvas-mcp](https://github.com/vishalsachdev/canvas-mcp) | Connector parsing helpers (vendored, see THIRD_PARTY_NOTICES.md) | MIT |
 
 Every external library added later must be added here in the same PR.

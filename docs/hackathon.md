@@ -36,7 +36,7 @@ Source: [hackumass.com](https://www.hackumass.com/), [Devpost](https://hackumass
 | **[HACKUMASS] [AI] Most Impactful AI Hack** | our ONE category (option 2) | Agent + RAG + citations; bigger prize, more competition |
 | Grand prizes (Best Overall, 2nd, 3rd) | automatic | |
 | [Sentient OS] Best Agentic Hack | sponsor opt-in | Tool-using agent with sync + approvals |
-| [MLH] Best Use of Gemini API | sponsor opt-in | Only if Gemini is a real, working model in our picker (S26) |
+| [MLH] Best Use of Gemini API | sponsor opt-in | **Opt in:** Gemini is our default model (decided 2026-11-14); describe it in the Devpost text |
 | [MLH] Best Domain Name (GoDaddy Registry) | sponsor opt-in | Cheap win if we register a domain |
 | [HACKUMASS] Best UI/UX, Best Pitch, Most Secure Hack | (only one HACKUMASS category allowed) | Shape the demo/pitch toward these anyway |
 

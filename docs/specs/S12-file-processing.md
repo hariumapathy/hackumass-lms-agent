@@ -34,7 +34,12 @@ def chunk(units: list[Unit], max_tokens=500, overlap_tokens=60, min_tokens=40) -
 class EmbeddingProvider(Protocol):
     dim: int                                            # 1536
     async def embed(self, texts: list[str]) -> list[list[float]]
-# OpenAIEmbeddings ("text-embedding-3-small"), FakeEmbeddings (deterministic, tests)
+# GeminiEmbeddings (DEFAULT): "gemini-embedding-001" via the OpenAI-compatible endpoint
+#   (https://generativelanguage.googleapis.com/v1beta/openai/), dimensions=1536, then L2-normalize
+#   (Google only pre-normalizes 3072-dim output). Use task type "retrieval document" for chunks and
+#   "retrieval query" for questions if the endpoint supports it.
+# OpenAIEmbeddings ("text-embedding-3-small", 1536 dims) as an alternative; FakeEmbeddings (deterministic, tests)
+# Never mix providers in one database: switching provider means re-embedding everything.
 ```
 
 ## Data flow

@@ -14,11 +14,17 @@ Offer a **curated** list of models that we have actually tested with our tools, 
 ## Inputs
 - `models.yaml` (checked in):
 ```yaml
-default: openai/gpt-default        # placeholder: pick current model IDs at implementation time
+default: gemini/gemini-default    # placeholder: pick the current Gemini Flash model ID at implementation time
 models:
+  - id: gemini/gemini-default       # DEFAULT (free tier; MLH Best Use of Gemini API)
+    label: "Gemini (recommended)"
+    adapter: openai_compat          # native | openai_compat | litellm
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+    tier: recommended
+    env: GEMINI_API_KEY
   - id: openai/gpt-default
-    label: "GPT (default)"
-    adapter: native                 # native | openai_compat | litellm
+    label: "GPT"
+    adapter: native
     tier: recommended
     env: OPENAI_API_KEY
   - id: anthropic/claude-default
@@ -26,12 +32,6 @@ models:
     adapter: litellm
     tier: recommended
     env: ANTHROPIC_API_KEY
-  - id: gemini/gemini-default
-    label: "Gemini"
-    adapter: openai_compat
-    base_url: https://generativelanguage.googleapis.com/v1beta/openai/
-    tier: recommended
-    env: GEMINI_API_KEY
   - id: ollama/llama-local
     label: "Local (Ollama)"
     adapter: openai_compat
