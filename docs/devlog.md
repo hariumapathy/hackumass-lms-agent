@@ -15,6 +15,7 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **State of main:** merged up to <hash>? tests green?
 **Next steps (in order):** 1. ... 2. ... 3. ...
 **Gotchas for the next agent:** ...
+- **Hosted Supabase project created (2026-11-14 17:30 ET):** `hackumass-lms-agent`, ref `eahciwnufpjuzqlxqdni`, us-east-1, free plan, org ParkTheBus (Hari). URL `https://eahciwnufpjuzqlxqdni.supabase.co`; auth uses **JWKS** (`/auth/v1/.well-known/jwks.json`), so S20 needs no JWT secret. Public URL + publishable key are in Hari's `.env`; **service role key and DB connection string are secrets**: Hari shares them via a password manager, never git/chat. No migrations applied yet (S01).
 ```
 
 ---
