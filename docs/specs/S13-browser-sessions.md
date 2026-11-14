@@ -107,3 +107,6 @@ sequenceDiagram
 
 ## Out of scope
 Hosted live-view implementation (stretch), extension-based login, storing passwords, automating Duo.
+
+## Stretch: one "Connect my UMass account" login (after MVP)
+Goal for non-technical students: no Canvas token at all. One live login to UMass SSO (NetID + Duo) whose single-sign-on session is reused to sign in to Canvas, Gradescope ("School credentials") and Echo360 (launched from Canvas) in the same browser context, saving one storage state per platform. Canvas data would then be read with the session instead of a token. **Spike first** (record results here): does one Duo approval carry over to all three? Does Canvas's API accept the session for GET requests from the worker? Until then the MVP keeps the guided Canvas token (S11, S31).

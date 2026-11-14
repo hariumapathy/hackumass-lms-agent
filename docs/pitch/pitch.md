@@ -14,7 +14,7 @@ UMass students juggle Canvas, Gradescope, Piazza, Echo360 and email every week. 
 | Time | Show | Say |
 |---|---|---|
 | 0:00 | Title slide | The problem **every UMass student knows**: Canvas, Gradescope, Piazza, Echo360, UMass email; scattered deadlines, manual studying |
-| 0:20 | Onboarding: paste Canvas token → "4 courses synced" | Setup takes a minute; we never store passwords |
+| 0:20 | Onboarding: guided "Link your Canvas" (1 minute) → "4 classes found" | Built for any student, not just CS majors: no installs, plain language; we never store passwords |
 | 0:45 | **Today view**: due today/this week, a **"CHANGED: Midterm moved"** badge, source chips | Deterministic, from synced data; changes detected automatically |
 | 1:20 | Chat: **"Prep me for my CS 311 midterm"** → status steps stream → study plan + quiz + flashcards | Agent uses tools over our synced database |
 | 2:00 | Click a **citation chip** → opens the exact slide / lecture moment | Links come from synced data and are validated; the AI never writes URLs |

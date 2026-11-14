@@ -22,6 +22,9 @@ We build as a **relay**: one laptop/agent works until its usage limit runs out, 
 - Never leave important work only on the local disk. Small commits pushed often beat one big commit.
 - **Keep the pitch true:** when a feature starts working (or gets cut), update the "What actually works" table in [docs/pitch/pitch.md](docs/pitch/pitch.md); when you add an external library or reuse outside code, add it to **Credits** in [docs/pitch/devpost.md](docs/pitch/devpost.md) (the rules require documenting external code).
 
+## 👤 Users are non-technical UMass students
+Every screen, message and setup step must work for a student who has never used a terminal. Rules (details in [01-vision](docs/01-vision.md#built-for-non-technical-students-top-product-rule)): plain language only (no "token/sync/MCP/model/API" or error codes in the main UI), Today view first, suggested questions in chat, a good default model (choice under Settings → Advanced), one clear action per problem, nothing to install. All technical work (sync, connectors, borrowed code) stays invisible on our servers. **MVP keeps the guided Canvas token step**; the one-UMass-login flow is a stretch goal.
+
 ## 🏁 Hackathon deliverables (we must be able to demo and pitch)
 Deadlines, rules and judging: [docs/hackathon.md](docs/hackathon.md). **Final submission Sun 9:00 AM ET → our code freeze 8:00 AM.** Judging is a **live demo** at 12:30 PM.
 - Everything we build must serve the **3-minute demo** in [docs/pitch/pitch.md](docs/pitch/pitch.md). When short on time, prefer finishing a demo step over adding breadth.

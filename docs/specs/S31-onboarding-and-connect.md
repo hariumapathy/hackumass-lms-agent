@@ -14,31 +14,32 @@ Get a new student from sign-in to a populated dashboard in a few minutes: connec
 ## Steps
 ```mermaid
 flowchart LR
-  A["1. Welcome<br/>what we do + privacy promise"] --> B["2. Canvas<br/>paste token"]
-  B --> C["3. Gradescope + Echo360<br/>live login (optional)"]
-  C --> D["4. Model<br/>pick from /models"]
-  D --> E["5. Calendar<br/>copy .ics URL"]
-  E --> F["6. Syncing…<br/>live counts → Today"]
+  A["1. Welcome<br/>what we do + privacy promise"] --> B["2. Link Canvas<br/>guided, about 1 minute"]
+  B --> C["3. Gradescope + Echo360<br/>UMass login (optional)"]
+  C --> E["4. Calendar<br/>Add to Google Calendar"]
+  E --> F["5. Getting your classes…<br/>live counts → Today"]
 ```
+
+**Audience:** non-technical students ([01-vision](../01-vision.md#built-for-non-technical-students-top-product-rule)). No model choice during onboarding (a good default is set; choice lives in Settings → Advanced, S34). No expiry dates, URLs or jargon to handle.
 
 ## Inputs / outputs per step
 | Step | User input | API calls | Success state |
 |---|---|---|---|
 | 1 Welcome | Continue | — | — |
-| 2 Canvas | Token (+ expiry date, default today+90d) | `POST /connections/canvas` | "Connected as <name>" |
-| 3 Live login | Click "Connect Gradescope" / "Connect Echo360" | `POST /connections/{p}/login`, poll `GET .../login/{id}` every 2 s | "Connected"; else "Skip for now" |
-| 4 Model | Choose option | `GET /models`, `PATCH /me` | Saved |
-| 5 Calendar | Copy URL / "Add to Google Calendar" link | `GET /calendar/feed` | Copied |
-| 6 Syncing | — | poll `GET /sync/status` every 3 s | Counts appear; "Go to Today" enabled after Canvas first sync succeeds |
+| 2 Link Canvas | Paste the code they copied from Canvas | `POST /connections/canvas {token}` (no expiry; API defaults +90 days) | "Canvas linked: 4 classes found" |
+| 3 UMass login | Click "Connect Gradescope" / "Connect Echo360" | `POST /connections/{p}/login`, poll `GET .../login/{id}` every 2 s | "Connected"; else "Skip for now" |
+| 4 Calendar | Click **Add to Google Calendar** (or "Apple / Outlook" link) | `GET /calendar/feed` | "Added" (or "Skip") |
+| 5 Getting your classes | — | poll `GET /sync/status` every 3 s | Counts appear; "Go to Today" enabled after Canvas first sync succeeds |
 
 ## Behavior and rules
-1. **Canvas token guide:** inline numbered steps with screenshots (Account → Settings → + New Access Token → purpose "<app name>", expiry → copy), a button opening `https://umass.instructure.com/profile/settings` in a new tab, and the privacy line: "We only read your Canvas data. We never submit anything."
-2. Token field: masked, paste-friendly, trims whitespace; error messages mapped from S02 codes (`invalid_token` → "Canvas didn't accept that token. Check you copied all of it.").
+1. **Canvas link guide (the only "technical" step, so it must be foolproof):** headline "Link your Canvas (about 1 minute)". Three numbered steps with **real screenshots** of UMass Canvas: (a) button **"Open my Canvas settings"** opens `https://umass.instructure.com/profile/settings` in a new tab; (b) "Scroll to *Approved Integrations*, click **+ New Access Token**, type *Study Agent* as the purpose, pick the **latest** expiry date, click **Generate Token**"; (c) "Copy the long code and paste it here." Privacy line: "We can only read your Canvas. We never submit or change anything." Optional 20-second GIF of the steps.
+2. Paste box: one big field labelled "Paste your Canvas code", masked after paste, trims whitespace, validates on paste (no submit button needed). Friendly errors: `invalid_token` → "That code didn't work. Make sure you copied the whole thing (it's long!)."
 3. **Live login UI:** in `local` mode show "A browser window opened on this computer. Log in with your NetID and approve Duo." In `hosted` mode embed `live_view_url` in an iframe (stretch). Show a spinner + "Waiting for login…", a Cancel button, and handle `expired`/`failed` with retry.
 4. Every connector step is skippable except Canvas.
 5. Progress saved: refreshing the page resumes at the first incomplete step (derived from `/me` connections).
 6. Reconnect mode: `?reconnect=gradescope` jumps to that platform's step and returns to Settings when done.
-7. Copy is plain language; no technical jargon ("session cookie" → "stay logged in").
+7. Copy is plain language; no technical jargon ("session cookie" → "stay logged in", "sync" → "keep your classes up to date", "token" only where Canvas itself uses the word).
+8. Calendar: **Add to Google Calendar** uses Google's "add by URL" link with our feed URL; also "Apple Calendar" (`webcal://`) and "Outlook" links. Note under it: "New study sessions can take a few hours to show up in Google Calendar."
 
 ## Errors and edge cases
 | Case | Expected behavior |
@@ -61,6 +62,8 @@ flowchart LR
 | S31-T04 | Refresh resumes at first incomplete step | component |
 | S31-T05 | Reconnect mode returns to settings after success | component |
 | S31-T06 | E2E (mocked): full onboarding → Today | e2e |
+| S31-T07 | No onboarding screen contains the words token (outside the Canvas instructions), sync, MCP, model or API | component |
+| S31-T08 | Calendar step renders Google/Apple/Outlook links built from the feed URL | component |
 
 ## Out of scope
-Piazza/email connect (stretch), hosted live view iframe (stretch).
+Piazza/email connect (stretch), hosted live view iframe (stretch), **one "Connect my UMass account" login for all platforms without a Canvas token (stretch, see S13)**.

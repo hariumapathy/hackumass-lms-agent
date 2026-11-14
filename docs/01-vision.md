@@ -23,6 +23,15 @@ Tracking deadlines, finding slides, and gathering exam prep is manual. General L
 - Real productivity benefit day-to-day, not just a chatbot
 - Plausibly adoptable by UMass / a university (security + FERPA story)
 
+## Built for non-technical students (top product rule)
+Our user is the average UMass Amherst student: they can sign in to Canvas and Gradescope, and that's it. They will never set up servers, install tools, pick AI models or read error codes. **If a step needs explaining, it's a bug.**
+- **Setup:** one guided screen per account; nothing to install; works in a browser and on a phone. MVP: a guided Canvas link step (the student creates an access token with step-by-step pictures and pastes it). Stretch: **one "Connect my UMass account" login (NetID + Duo) for Canvas, Gradescope and Echo360** with no token.
+- **Words:** plain language only. Never show "token", "sync", "MCP", "model", "API" or error codes in the main UI. Say "We'll keep your classes up to date", "Reconnect Gradescope".
+- **Defaults:** a good AI model is picked for them; model choice lives under Settings → Advanced.
+- **First screen:** the Today view, never a blank chat. Chat starts with suggested questions ("What's due this week?", "Prep me for my next exam").
+- **Problems:** one clear action per problem ("Reconnect", "Try again"), never a dead end.
+- **Calendar:** an "Add to Google Calendar" button, not a URL to copy.
+
 ## Two core design principles
 1. **Sync first, agent second.** A sync layer pulls everything into one normalized store (Courses, Assignments/Items, Events, Materials, Announcements, Posts, Recordings). The agent queries *our* database, not live platforms. Faster, cheaper, model-agnostic, demo-reliable. Details: [07](07-sync-and-storage.md).
 2. **The dashboard is deterministic; the LLM adds on top.** "What's due this week" is a database query, not an LLM guess. The LLM prioritizes, summarizes, extracts deadlines from syllabi/emails, and helps study. This avoids the worst failure: the AI inventing a deadline.
