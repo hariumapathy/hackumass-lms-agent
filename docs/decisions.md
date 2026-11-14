@@ -17,6 +17,7 @@
 | 2026-11-14 | Agent tools read only our database; only the sync worker touches platforms and credentials | Security (prompt injection can't act on the LMS), speed, model-agnostic |
 | 2026-11-14 | ~9 tools organized by action, not per platform | Sync already merged platforms; fewer tools = better tool choice, esp. smaller models |
 | 2026-11-14 | One MCP server over our combined data (stretch), not one per platform | Lets students use their data in Claude/ChatGPT without reintroducing live pulling |
+| 2026-11-14 | Agent "live pulls" = high-priority narrow sync jobs (`fetch_latest`), same worker code as scheduled sync | Keeps credentials out of the agent, results stay citable and reusable, one code path |
 | 2026-11-14 | Email is a nice-to-have: try Microsoft sign-in first, fall back to manual forward + seeded demo emails | Tenant may block app consent and external forwarding; Canvas announcements already cover most course email |
 
 _Still in planning — stack, roles and final MVP scope not yet locked. See [06-open-questions.md](06-open-questions.md)._

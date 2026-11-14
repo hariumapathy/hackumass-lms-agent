@@ -29,7 +29,20 @@ Live pulling is slow (10–30+ s per question once the AI chains calls; cloud-br
 | Grades | hourly |
 | Files | checked every sync; processed only when `updated_at` changes |
 | Echo360 recordings | ~daily |
-| On demand | "Sync now" button; before exam prep |
+| On demand | "Sync now" button; before exam prep; agent's `fetch_latest` (below) |
+
+## On-demand sync (agent-triggered)
+Same worker and connector code as scheduled sync; only the trigger and scope differ. The agent never calls platforms itself.
+
+1. A tool returns no/weak results or stale freshness → agent calls `fetch_latest(scope)` (course, item, file, or source).
+2. A **high-priority** job runs the normal pipeline for just that scope; results are stored with chunk IDs, so they're citable and reused later.
+3. The tool waits (poll job status, ≤15 s), then re-queries the DB. Slow scopes (new transcript, big PDF): answer now, "I'll update this when it's ready," finish in background.
+
+Requirements this adds:
+- Connectors support **narrow scopes** (fetch one course/item/file by ID), not just "everything since last sync."
+- **One job per (student, source, scope)** at a time (pg-boss `singletonKey`); diff writes are idempotent upserts, so overlap with scheduled sync is safe.
+- Tools return **coverage + freshness** (`searched`, `last_synced`, `not connected`) so the agent (and harness rules) know when to fetch. Expired session → show **Reconnect**, never guess.
+- **Log misses** (questions the DB couldn't answer) to decide what to sync next.
 
 ## Storage (all in Supabase)
 ```

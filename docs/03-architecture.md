@@ -56,7 +56,7 @@ flowchart TB
   CHAT --> TOOLS
   CHAT --> CITE
   TOOLS --> DB
-  TOOLS -- "refresh_course" --> QUEUE
+  TOOLS -- "fetch_latest (high priority)" --> QUEUE
   CITE --> DB
   CONNECT --> SECRETS
   CONNECT --> QUEUE
@@ -140,7 +140,7 @@ sequenceDiagram
 | `get_material(id, pages? or time range?)` | Read a full section (e.g. slides 10–20) after search finds it |
 | `get_course_overview(course)` | Syllabus, grading, schedule, staff |
 | `get_grades(course?)` | Scores and weights (stretch) |
-| `refresh_course(course)` | Ask the sync worker for an update now |
+| `fetch_latest(scope)` | When the DB can't answer or is stale: queue a high-priority sync of one course / item / file / source, wait (≤15 s), re-query. See [07](07-sync-and-storage.md#on-demand-sync-agent-triggered) |
 | `create_study_set(type, ...)` | Study plan / quiz / flashcards as structured data for the UI |
 | `add_study_block(...)` | Add to the calendar feed; **requires the student's click** |
 
@@ -169,7 +169,8 @@ sequenceDiagram
 |---|---|
 | **Vercel AI SDK / Mastra** | ✅ Recommended. Built for custom tools + streaming to a web app + many providers |
 | LangGraph / Pydantic AI | ✅ Good if we go Python |
-| **OpenAI Codex** (CLI + SDK, Apache-2.0, supports custom providers) | ❌ Not as the core. It's a *coding* agent (file edits, shell, repo sandbox). Fine as a dev tool for us |
+| **OpenAI Codex** (CLI + SDK, Apache-2.0, supports custom providers and MCP) | ❌ Not as the core: a *coding* agent (shell + file-edit tools, repo sandbox, one CLI process per session, tuned for OpenAI models). A shell-capable agent reading untrusted Piazza/email content is a prompt-injection risk. ✅ Good for building the project, and as a stretch "self-healing connector" agent that proposes scraper fixes as PRs |
+| OpenAI Agents SDK (TS + Python, open source) | ✅ Reasonable alternative to the AI SDK; general-purpose, works with non-OpenAI models via adapters |
 | Claude-only / OpenAI-only agent SDKs | ❌ Conflicts with model choice |
 | LibreChat / Open WebUI | Fallback only: could host our MCP server if custom chat runs late |
 
