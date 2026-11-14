@@ -23,25 +23,8 @@ Course info is scattered across Canvas, Gradescope, Piazza, Campuswire, Echo360,
 
 We never see or store platform passwords. The production path is an official LTI 1.3 app plus a Canvas developer key issued by university IT, with data and models on campus infrastructure.
 
-## Architecture (draft)
-```
-Canvas token / Cloud browser / Extension ──► Sync + Ingest ──► Postgres + pgvector
-                                             (normalize, dedupe,      │
-                                              diff, chunk, embed)     ▼
-Next.js app (Today · Study · Chat · Settings · .ics) ◄── Agent (Vercel AI SDK) ◄── any model
-```
-Details: [docs/03-architecture.md](docs/03-architecture.md)
-
-## Planned layout
-```
-apps/web             Next.js + Tailwind + shadcn/ui
-apps/extension       Chrome MV3 (stretch)
-services/sync        Sync workers + cloud-browser connectors
-packages/agent       Agent tools, prompts, citation validation
-packages/connectors  Canvas, Gradescope, Echo360, Piazza parsers
-db/                  Schema + migrations
-docs/                Planning docs
-```
+## Architecture
+A sync worker copies course data into Supabase; the AI agent only reads that database, never the platforms directly. Diagrams, tools and repo layout: [docs/03-architecture.md](docs/03-architecture.md).
 
 ## Team
 - [@hariumapathy](https://github.com/hariumapathy)

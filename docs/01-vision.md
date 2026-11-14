@@ -36,11 +36,22 @@ Tracking deadlines, finding slides, and gathering exam prep is manual. General L
 6. **Catch-up mode** — "I was sick last week, what did I miss?"
 7. **Stretch** — grade tracking / "what do I need on the final", group-project coordination, notifications, in-Canvas side panel.
 
-## Differentiation (answer to "isn't this just NotebookLM + Canvas?")
-- **Zero manual upload** — materials arrive automatically.
-- **Cross-source deadline merge + dedupe** — one item even if it appears in Canvas, the syllabus, Piazza, and email.
-- **Change detection** — "Midterm moved to Thursday" updates the item and flags it.
-- **Every claim cites its source** — and links are verified, never generated (see [04](04-citations-and-freshness.md)).
+## Differentiation (vs. NotebookLM, or Claude/ChatGPT plus connectors)
+
+| | General assistant + connectors | Us |
+|---|---|---|
+| Coverage | Canvas at best; Gradescope, Piazza, Echo360 have no official connectors and UMass Duo blocks most | Connectors for UMass's actual platforms |
+| Course materials | Fetched and read per question, limited by context | Whole semester indexed ahead of time |
+| Memory | Stateless: can't notice "midterm moved" or merge duplicates | Versions, merged items, change log |
+| Proactive | Waits to be asked | Dashboard, morning brief, change alerts |
+| Trust | AI reads deadlines and writes links | Deadlines from queries; links built from synced data and verified ([04](04-citations-and-freshness.md)) |
+| Interface | Chat box | Today view, quizzes, flashcards, calendar feed |
+| Setup | Configure each connector and token | One guided onboarding |
+| Model / cost | Tied to one paid plan | Any model, incl. free/local or university-hosted |
+
+**Positioning:** *"A general assistant can reach your data. We already have it organized, verified, and watching for changes."* Not a competitor: our MCP server (stretch) lets students use their organized data inside Claude or ChatGPT too.
+
+**Honest risk:** big AI companies could build pieces of this. Our edge is depth on student-specific problems and the university deployment story.
 
 ## University adoption story
 In production this becomes an official **LTI 1.3 app + Canvas developer key** issued by UMass IT, data stays on university infrastructure, and the model can be a campus-hosted open model. This addresses FERPA before judges ask.

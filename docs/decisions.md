@@ -14,6 +14,9 @@
 | 2026-11-14 | No storing NetID passwords, no getting around Duo | Duo still needs a phone approval anyway; bypassing it likely violates UMass policy; huge breach liability; kills adoption |
 | 2026-11-14 | Background sync + targeted live refresh, not live pulling | Search, change detection, merging and instant dashboard all need a stored copy |
 | 2026-11-14 | Supabase for everything stored (Postgres + pgvector, Storage, encrypted secrets); separate Node sync worker | One service; Vercel can't run long syncs or Playwright |
+| 2026-11-14 | Agent tools read only our database; only the sync worker touches platforms and credentials | Security (prompt injection can't act on the LMS), speed, model-agnostic |
+| 2026-11-14 | ~9 tools organized by action, not per platform | Sync already merged platforms; fewer tools = better tool choice, esp. smaller models |
+| 2026-11-14 | One MCP server over our combined data (stretch), not one per platform | Lets students use their data in Claude/ChatGPT without reintroducing live pulling |
 | 2026-11-14 | Email is a nice-to-have: try Microsoft sign-in first, fall back to manual forward + seeded demo emails | Tenant may block app consent and external forwarding; Canvas announcements already cover most course email |
 
 _Still in planning — stack, roles and final MVP scope not yet locked. See [06-open-questions.md](06-open-questions.md)._

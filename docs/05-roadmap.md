@@ -29,13 +29,4 @@ Person A = data and connectors · Person B = app, UI and agent
 | 24–30 | Seed realistic demo account (backup) | UI polish, loading states, mobile layout |
 | 30–36 | Bug fixes, demo script, slides, 2-min video | Same |
 
-## Planned repo layout
-```
-apps/web             Next.js app
-apps/extension       Chrome MV3 (stretch)
-services/sync        Sync workers + cloud-browser connectors (Playwright)
-packages/agent       Agent tools, prompts, citation validation
-packages/connectors  Source parsers/normalizers (Canvas, Gradescope, Echo360, Piazza)
-db/                  Schema + migrations
-docs/                Planning docs (this folder)
-```
+Repo layout: see [03](03-architecture.md#where-each-piece-lives-in-the-repo).
