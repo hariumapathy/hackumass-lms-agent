@@ -139,7 +139,12 @@ sequenceDiagram
 - **Citation check** runs as an **output guardrail**: drop chunk IDs not returned by this run's tools; check quoted text appears in the cited chunk.
 - **Writes need a click:** `add_study_block` pauses for approval (SDK human-in-the-loop if available, else our own confirm step in the UI).
 - **Streaming:** run in streamed mode; FastAPI forwards events to the browser as Server-Sent Events (text deltas, "tool running" status, final structured result).
-- **Models:** OpenAI by default; Claude, Gemini and Ollama via the SDK's LiteLLM model adapter. Test our tools on each model we offer; adapter models are second-class.
+- **Models:** OpenAI natively; Gemini/Ollama via their OpenAI-compatible endpoints; Claude (and others) via the LiteLLM adapter. The adapter only translates request/response formats; model intelligence is unchanged, but strict tool-argument and structured-output guarantees are OpenAI-only. Rules:
+  - Keep tool inputs simple: flat params, few optionals, enums, clear descriptions.
+  - Validate all tool args and outputs with Pydantic; let the SDK return errors to the model; max ~2 retries.
+  - For non-OpenAI models, return study sets via the `create_study_set` tool rather than free-form JSON.
+  - **Curated picker:** "Recommended (tested)" models + local models labeled "Experimental."
+  - **Model test script:** 10–15 golden questions × every model in the picker; checks right tools called, citations valid, study sets parse. Run before the demo.
 - **Tracing is OFF by default for us** (or sent to our own logger). The SDK's default sends traces, including course content, to OpenAI.
 
 **Tools are organized by action, not by platform.** Sync already merged every platform into the same tables, so one `search_materials` covers Canvas files, Echo360 transcripts and Piazza posts; the platform is just a filter.
