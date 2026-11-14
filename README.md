@@ -2,7 +2,18 @@
 
 **One login, every class.** An AI study partner that already knows your Canvas, Gradescope, Piazza, Echo360 lectures and more. Built at HackUMass 2026.
 
-> **Status: planning.** Start with the [planning docs](docs/README.md). Nothing is locked yet; add ideas to [open questions](docs/06-open-questions.md).
+> **Status: planning done, feature specs drafted, no code yet.** Builders (and your coding agents): start with [AGENTS.md](AGENTS.md).
+
+## For builders
+| Start here | |
+|---|---|
+| [AGENTS.md](AGENTS.md) | Rules, branches, ownership, contracts. Read by Claude Code (via `CLAUDE.md`), Codex, Cursor and others |
+| [Development workflow](docs/08-development-workflow.md) | Spec → tests → code, stage by stage |
+| [Feature specs](docs/specs/README.md) | What to build, exactly, with test plans |
+| [Progress](docs/progress/README.md) | Who's doing what, checkpoints, blockers |
+| [Planning docs](docs/README.md) | Vision, architecture, decisions |
+
+**Branches:** `dev/hari`, `dev/neal`, `dev/soumith`. Work on yours, merge `main` in often, open PRs into `main`.
 
 ## Problem
 Course info is scattered across Canvas, Gradescope, Piazza, Campuswire, Echo360, and email. Tracking deadlines and gathering study material is manual, and general-purpose LLMs need everything uploaded by hand.

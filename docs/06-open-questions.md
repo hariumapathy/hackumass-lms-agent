@@ -20,7 +20,5 @@ Add your own below. Move answered ones into [decisions.md](decisions.md).
 - [ ] Do UMass students get **"Need admin approval"** when connecting a Microsoft (Graph) mail app? (Decides whether email option A is feasible.)
 - [ ] Is **automatic external forwarding** blocked on UMass Outlook? (Decides email option B.)
 - [ ] Do our tools work reliably with **Claude / Gemini / a local model** through the adapters? (Answered by the model test script in [03](03-architecture.md#agent-and-tools); decides which models the picker offers.)
-- [ ] Does the **Python Agents SDK's approval (human-in-the-loop) support** cover `add_study_block`, or do we build our own confirm step?
-
 ## Teammate ideas
 _Neal, Soumith — add yours here._

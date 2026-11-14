@@ -14,9 +14,15 @@
 | 2026-11-14 | No storing NetID passwords, no getting around Duo | Duo still needs a phone approval anyway; bypassing it likely violates UMass policy; huge breach liability; kills adoption |
 | 2026-11-14 | Background sync + targeted live refresh, not live pulling | Search, change detection, merging and instant dashboard all need a stored copy |
 | 2026-11-14 | Supabase for everything stored (Postgres + pgvector, Storage, encrypted secrets); separate sync worker | One service; Vercel can't run long syncs or Playwright |
-| 2026-11-14 | **Stack: Next.js (TS) frontend + Python backend** (FastAPI, OpenAI Agents SDK, Procrastinate worker, Playwright) | Team choice; Python's better PDF/slide parsing; Agents SDK has guardrails + approvals built in. DB schema in `db/` is the contract between halves |
+| 2026-11-14 | **Stack: Next.js (TS) frontend + Python backend** (FastAPI, OpenAI Agents SDK, Procrastinate worker, Playwright) | Team choice; Python's better PDF/slide parsing; Agents SDK has guardrails built in. DB schema is the contract between halves |
 | 2026-11-14 | Curated model picker validated by a golden-question test script; simple tool schemas + Pydantic validation | Adapter-based models lose OpenAI's strict-schema guarantees; prompts behave differently per model |
 | 2026-11-14 | Team of 3: roles A data and sync, B agent and API, C frontend and product; contracts (schema, API/SSE format, seed data) agreed in hours 0–2 | Parallel work without blocking; seed data lets B and C build before connectors land |
+| 2026-11-14 | **Spec first, tests first, stage by stage** ([08](08-development-workflow.md), [specs](specs/README.md)); agents implement only `Ready` specs | Fewer bugs; three people + three agents stay consistent |
+| 2026-11-14 | Personal branches `dev/hari`, `dev/neal`, `dev/soumith`; PRs into `main` at least per checkpoint; per-person progress files | Parallel work; no merge conflicts on status notes |
+| 2026-11-14 | Study blocks use a **proposal pattern** (tool proposes, separate endpoint approves) instead of paused agent runs | Works with every model; no run-state resume |
+| 2026-11-14 | `supabase/` is the DB folder (Supabase CLI layout); local Supabase for dev and integration tests | Standard tooling; one command to reset |
+| 2026-11-14 | Hybrid search (vector + full-text, RRF); `chunks.id` is a short integer | Better recall; short IDs are easier for models to cite exactly |
+| 2026-11-14 | Live login MVP = local headed browser on the demo machine; hosted live view is stretch | Zero infrastructure for the demo |
 | 2026-11-14 | Agents SDK tracing off (or to our own logger) | Default export would send students' course content to OpenAI |
 | 2026-11-14 | Agent tools read only our database; only the sync worker touches platforms and credentials | Security (prompt injection can't act on the LMS), speed, model-agnostic |
 | 2026-11-14 | ~9 tools organized by action, not per platform | Sync already merged platforms; fewer tools = better tool choice, esp. smaller models |

@@ -21,14 +21,16 @@
 
 | Role | Owns | Folders |
 |---|---|---|
-| **A: Data and sync** | Schema + migrations, sync worker + job queue, Canvas / Gradescope / Echo360 connectors, live-view login (backend side), parsing + embeddings, merge + change detection, `fetch_latest` jobs, demo seed data | `db/`, `backend/connectors/`, `backend/sync/` |
-| **B: Agent and API** | FastAPI + JWT check, agent tools, Agents SDK agent + prompts, SSE stream, citation guardrail, approvals, `create_study_set`, `.ics` feed, model picker backend + model test script | `backend/api/`, `backend/agent/` |
+| **A: Data and sync** | Schema + migrations, sync worker + job queue, Canvas / Gradescope / Echo360 connectors, live-view login (backend side), parsing + embeddings, merge + change detection, `fetch_latest` jobs, demo seed data | `supabase/`, `backend/app/connectors/`, `backend/app/sync/` |
+| **B: Agent and API** | FastAPI + JWT check, agent tools, Agents SDK agent + prompts, SSE stream, citation guardrail, approvals, `create_study_set`, `.ics` feed, model picker backend + model test script | `backend/app/api/`, `backend/app/agent/` |
 | **C: Frontend and product** | Next.js app, auth, onboarding + connect flow (incl. live-view embed), Today view, chat UI on SSE, study cards (plan / quiz / flashcards), citation chips, settings, polish + mobile; leads demo script, slides and video | `apps/web/` |
 
 **Contracts (agreed together in hours 0–2, then changed only by agreement):**
-1. **DB schema** in `db/` (A writes, B reads, C reads via Supabase for the dashboard).
-2. **API + SSE event format** (B defines, C consumes): endpoints, event types (`status`, `text`, `study_set`, `approval_required`, `citations`, `done`, `error`).
-3. **Seed data** in `db/seed/`: a realistic fake semester loaded on day one, so B and C build against real-shaped data before A's connectors are done.
+1. **DB schema** ([S01](specs/S01-database-schema.md)): A writes, B reads.
+2. **API + SSE event format** ([S02](specs/S02-api-contract.md)): B defines, C consumes.
+3. **Seed data** ([S03](specs/S03-seed-data.md)): a realistic fake semester loaded on day one, so B and C build against real-shaped data before A's connectors are done.
+
+**Spec IDs per stage and role:** [specs/README.md](specs/README.md). **How each feature is built (spec → tests → code):** [08](08-development-workflow.md).
 
 ## 36-hour plan
 

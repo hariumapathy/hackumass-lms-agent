@@ -134,10 +134,10 @@ sequenceDiagram
 **Harness = the loop around the model.** It sends the model the conversation plus a tool list; the model asks to call a tool; the harness runs it and returns the result; repeat until the model answers (step limit ~8).
 
 **We use the OpenAI Agents SDK (Python)** inside FastAPI:
-- **Tools** are plain Python functions with Pydantic-typed arguments, registered via the SDK's function-tool decorator. Keep them framework-agnostic in `backend/agent/tools/` so swapping harness later is hours, not a rewrite.
+- **Tools** are plain Python functions with Pydantic-typed arguments, registered via the SDK's function-tool decorator. Keep them framework-agnostic in `backend/app/agent/tools/` so swapping harness later is hours, not a rewrite.
 - **Structured output** (`output_type`) returns study plans, quizzes and flashcards as data the UI renders as cards.
 - **Citation check** runs as an **output guardrail**: drop chunk IDs not returned by this run's tools; check quoted text appears in the cited chunk.
-- **Writes need a click:** `add_study_block` pauses for approval (SDK human-in-the-loop if available, else our own confirm step in the UI).
+- **Writes need a click:** `add_study_block` only creates *proposed* blocks; the UI shows Add / Skip after the answer and a separate endpoint records the decision. No paused runs, works with every model ([S25](specs/S25-approvals-and-calendar.md)).
 - **Streaming:** run in streamed mode; FastAPI forwards events to the browser as Server-Sent Events (text deltas, "tool running" status, final structured result).
 - **Models:** OpenAI natively; Gemini/Ollama via their OpenAI-compatible endpoints; Claude (and others) via the LiteLLM adapter. The adapter only translates request/response formats; model intelligence is unchanged, but strict tool-argument and structured-output guarantees are OpenAI-only. Rules:
   - Keep tool inputs simple: flat params, few optionals, enums, clear descriptions.
@@ -174,7 +174,7 @@ sequenceDiagram
 | Frontend | Next.js + Tailwind + shadcn/ui on Vercel | Fast modern UI |
 | App auth | Supabase Auth (Google + magic link); FastAPI verifies the Supabase JWT on every request | One click for students; one identity across both halves |
 | Backend API | FastAPI (Python, managed with `uv`) | Async, Pydantic-native, SSE streaming |
-| Agent harness | **OpenAI Agents SDK (Python)** | Tool loop, structured output, guardrails, human-in-the-loop, streaming |
+| Agent harness | **OpenAI Agents SDK (Python)** | Tool loop, structured output, guardrails, streaming |
 | Models | OpenAI default; others via LiteLLM adapter | Model choice in settings |
 | Data | Supabase: Postgres + pgvector, Storage, encrypted secrets | One service; see [07](07-sync-and-storage.md) |
 | Sync | Python worker + **Procrastinate** (Postgres job queue: priorities, locks, retries); `httpx` for Canvas; Playwright (Python) for the rest | Deterministic, no AI driving browsers |
@@ -183,8 +183,8 @@ sequenceDiagram
 | Hosting | Vercel (frontend) + Supabase + Railway / Render (two Python processes from one codebase: API and worker) | Minimal devops |
 
 **The contract between the halves:**
-- **SQL migrations in `db/` are the single source of truth** for the schema. Generate TypeScript types for the frontend (Supabase CLI) and keep Pydantic models in the backend matching them.
-- **Chat stream format** (SSE event types) and **REST endpoints** are documented in `backend/api` and are the only way the frontend talks to the backend (plus Supabase Auth, and direct read-only Supabase queries for the dashboard if convenient, protected by Row Level Security).
+- **SQL migrations in `supabase/migrations/` are the single source of truth** for the schema ([S01](specs/S01-database-schema.md)); backend Pydantic models mirror them.
+- **REST endpoints + SSE chat events** ([S02](specs/S02-api-contract.md)) are the only way the frontend talks to the backend (plus Supabase Auth). Frontend TS types are generated from FastAPI's OpenAPI schema.
 - **Sync and API never call each other**: they meet only at the database and the job queue.
 
 ### Agent harness options considered
@@ -201,15 +201,18 @@ sequenceDiagram
 ## Where each piece lives in the repo
 
 ```
-apps/web/            Next.js frontend (TypeScript): UI only
-backend/             Python (uv project)
-  api/               FastAPI: chat (SSE), connect, calendar feed, MCP (stretch)
-  agent/             Agents SDK agent, tools/, guardrails, prompts
-  connectors/        Canvas, Gradescope, Echo360, Piazza: fetch + normalize
-  sync/              worker, scheduler, pipeline, file processing, live-view login
-db/                  SQL migrations (source of truth), Row Level Security policies
-apps/extension/      Browser extension (stretch)
+apps/web/              Next.js frontend (TypeScript): UI only
+backend/app/           Python (uv project)
+  api/                 FastAPI routes: chat (SSE), connect, today, calendar feed
+  agent/               Agents SDK runtime, tools/, prompts/, citations, models
+  connectors/          Canvas, Gradescope, Echo360 (+ browser/ for live login)
+  sync/                worker, jobs, pipeline, processing/, merge
+  db/ core/            repositories + models; settings, clock, crypto, logging
+backend/evals/         model evals (not in CI)
+supabase/              migrations/ (schema source of truth), seed/
+apps/extension/        Browser extension (stretch)
 ```
+Full layout, commands and env vars: [S00](specs/S00-repo-scaffolding.md). Every feature's detailed spec: [specs/](specs/README.md).
 
 ## Security and privacy
 - **AI never sees credentials**; tools are read-only except `add_study_block`, which needs a click.
