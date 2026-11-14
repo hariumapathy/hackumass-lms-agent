@@ -40,7 +40,7 @@ Same worker and connector code as scheduled sync; only the trigger and scope dif
 
 Requirements this adds:
 - Connectors support **narrow scopes** (fetch one course/item/file by ID), not just "everything since last sync."
-- **One job per (student, source, scope)** at a time (pg-boss `singletonKey`); diff writes are idempotent upserts, so overlap with scheduled sync is safe.
+- **One job per (student, source, scope)** at a time (Procrastinate queueing lock); diff writes are idempotent upserts, so overlap with scheduled sync is safe.
 - Tools return **coverage + freshness** (`searched`, `last_synced`, `not connected`) so the agent (and harness rules) know when to fetch. Expired session → show **Reconnect**, never guess.
 - **Log misses** (questions the DB couldn't answer) to decide what to sync next.
 
@@ -61,4 +61,4 @@ Secrets      Canvas tokens, session cookies (encrypted, separate, worker-only, n
 **Size:** roughly a few hundred MB of originals per student; likely fine on Supabase's free tier for a few demo accounts (check limits). If tight, keep only extracted text + the Canvas link. Later: store shared course files once per course (needs permission care).
 
 ## Where it runs
-Sync can't live in Vercel functions (time limits; Playwright needs a real server). Use **one Node.js worker** on a small host (Railway / Render / Fly.io) with a **Postgres job queue** (e.g. pg-boss) for scheduling, retries and one-sync-per-student-at-a-time. Alternative: a hosted job service (Inngest / Trigger.dev).
+Sync runs as its own long-lived process (a first sync takes minutes; Playwright needs a real server). Use **one Python worker process** (same `backend/` codebase as the API) on a small host (Railway / Render / Fly.io) with **Procrastinate**, a Postgres-based job queue, for scheduling, priorities, retries and one-sync-per-scope-at-a-time. No extra infrastructure (no Redis).

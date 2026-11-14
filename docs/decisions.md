@@ -7,13 +7,15 @@
 | 2026-11-13 | Sync first, agent second; deterministic dashboard | Reliability, cost, model-agnostic; avoids invented deadlines |
 | 2026-11-14 | **Echo360 is in scope** | Lecture transcripts + timestamped citations are a strong, differentiated use case |
 | 2026-11-14 | Connector tiers: official API → cloud browser session → extension (stretch) | Agent keeps working with the laptop closed; extension-only needs the browser open |
-| 2026-11-14 | Not using Codex as the core agent harness (leaning Vercel AI SDK / Mastra) | Codex is open source but built as a coding agent; poor fit for custom tools + web streaming + model choice |
+| 2026-11-14 | Not using Codex as the core agent harness | Open source, but built as a coding agent; poor fit for custom tools + web streaming + model choice; injection risk with shell access |
 | 2026-11-14 | LLM cites by chunk ID; links rendered from stored platform-ID URLs and validated | Hallucinated links become structurally impossible; staleness handled by sync status + tombstones |
 | 2026-11-14 | Canvas via personal access token (confirmed available, 90-day max); renewal reminder at ~day 80 | Official API, server-side, no browser needed |
 | 2026-11-14 | Canvas client is read-only (GET only) | Student tokens can't be scoped and could otherwise submit work |
 | 2026-11-14 | No storing NetID passwords, no getting around Duo | Duo still needs a phone approval anyway; bypassing it likely violates UMass policy; huge breach liability; kills adoption |
 | 2026-11-14 | Background sync + targeted live refresh, not live pulling | Search, change detection, merging and instant dashboard all need a stored copy |
-| 2026-11-14 | Supabase for everything stored (Postgres + pgvector, Storage, encrypted secrets); separate Node sync worker | One service; Vercel can't run long syncs or Playwright |
+| 2026-11-14 | Supabase for everything stored (Postgres + pgvector, Storage, encrypted secrets); separate sync worker | One service; Vercel can't run long syncs or Playwright |
+| 2026-11-14 | **Stack: Next.js (TS) frontend + Python backend** (FastAPI, OpenAI Agents SDK, Procrastinate worker, Playwright) | Team choice; Python's better PDF/slide parsing; Agents SDK has guardrails + approvals built in. DB schema in `db/` is the contract between halves |
+| 2026-11-14 | Agents SDK tracing off (or to our own logger) | Default export would send students' course content to OpenAI |
 | 2026-11-14 | Agent tools read only our database; only the sync worker touches platforms and credentials | Security (prompt injection can't act on the LMS), speed, model-agnostic |
 | 2026-11-14 | ~9 tools organized by action, not per platform | Sync already merged platforms; fewer tools = better tool choice, esp. smaller models |
 | 2026-11-14 | One MCP server over our combined data (stretch), not one per platform | Lets students use their data in Claude/ChatGPT without reintroducing live pulling |
