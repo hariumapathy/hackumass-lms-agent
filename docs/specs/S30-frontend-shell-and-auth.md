@@ -13,7 +13,7 @@ The app frame every screen lives in: routes, layout and navigation, Supabase sig
 
 ## Inputs
 - Supabase Auth (Google + email magic link).
-- Generated API types (`just types`, S02); MSW mocks for development without the backend.
+- Generated API types (`make types`, S02); MSW mocks for development without the backend.
 
 ## Outputs
 - Authenticated app with these routes:
@@ -62,7 +62,7 @@ export async function streamChat(body: ChatRequest, handlers: {
 2. **Auth:** Supabase JS client with session persistence; protected routes redirect to `/` when signed out; token refreshed automatically; 401 from API → sign out + redirect.
 3. **Data fetching:** TanStack Query for GETs (cache, retries for `retryable` errors only); mutations invalidate relevant queries.
 4. **SSE client:** `fetch` POST with `Authorization`, read `response.body` stream, parse `event:`/`data:` frames (handles frames split across chunks), dispatch typed events; abort on unmount or "Stop" button.
-5. **Dev without backend:** `NEXT_PUBLIC_API_MOCKS=1` enables MSW with S02 handlers (incl. scripted chat stream).
+5. **Dev without backend:** `NEXT_PUBLIC_API_MOCKS=1` enables MSW with S02 handlers (incl. scripted chat stream). **The MSW handlers are built here** (moved from S02, which also moves S02-T05/T06 here). Build them from `src/lib/api/openapi.json`, `schema.d.ts` and `backend/app/api/CONTRACT.md`. Alternative: run the backend stubs with `make api`; they already return realistic mock data and a scripted chat stream (`POST /chat?delay_ms=150`).
 6. Accessibility: keyboard navigation, focus states, `aria-live="polite"` for streaming text and status lines, color contrast AA.
 7. Times displayed in the profile timezone (from `/me`), relative where useful ("in 3 days").
 8. Design: shadcn/ui components, Tailwind tokens, light + dark mode.

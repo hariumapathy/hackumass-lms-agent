@@ -82,6 +82,9 @@ Implement <SPEC-ID> following the workflow:
 6. Update docs/progress/<my-name>.md. Do not commit or push unless I ask.
 ```
 
+## Relay sessions across laptops (Claude Code + Codex)
+We hand work from laptop to laptop as usage limits run out. The protocol (START, log-as-you-go, HANDOFF with green self-merge) lives in [AGENTS.md](../AGENTS.md#-relay-sessions-start-and-handoff-mandatory); the baton is [devlog.md](devlog.md); copy-paste prompts are in [handoff/](handoff/start-prompt.md) (`/start` and `/handoff` in Claude Code). Both tools read `AGENTS.md` (Claude Code via `CLAUDE.md`).
+
 ## Writing a good spec
 - **Concrete over vague:** exact function signatures, endpoint paths, JSON shapes, table columns, error codes.
 - **Examples:** at least one realistic input and output.

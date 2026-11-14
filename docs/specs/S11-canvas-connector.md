@@ -71,7 +71,7 @@ sequenceDiagram
   A->>Q: enqueue_sync(full, trigger=connect)
   A-->>W: Connection {status: active}
 ```
-`expires_at`: Canvas doesn't return token expiry via `/users/self`; the UI asks the student for the expiry date they chose (default today + 90 days) and sends it as optional `expires_at`.
+`expires_at`: Canvas doesn't return token expiry via `/users/self`. The UI does **not** ask the student (non-technical rule); the API stores `expires_at = now + 90 days` (the guide tells students to pick the longest expiry) and Settings shows a renewal reminder before then. The optional `expires_at` field stays for a future "detect expiry" improvement.
 
 ## Errors and edge cases
 | Case | Expected behavior |

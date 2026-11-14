@@ -15,7 +15,7 @@ One place to manage connections, model choice, timezone, the calendar feed, and 
 | Section | Shows | Actions → API |
 |---|---|---|
 | **Connections** | Each platform: status (active / needs reconnect / error / not connected), last sync, Canvas token expiry ("expires in 12 days") | Reconnect → `/onboarding?reconnect=<p>` · Disconnect → `DELETE /connections/{p}` (confirm dialog) · Sync now → `POST /sync {platform}` |
-| **AI model** | Options from `GET /models`, grouped Recommended / Experimental; unavailable ones disabled with reason | Select → `PATCH /me {model_choice}` |
+| **Advanced → AI model** (collapsed by default) | Options from `GET /models`, grouped Recommended / Experimental; unavailable ones disabled with reason; the default is pre-selected and labelled "Recommended" | Select → `PATCH /me {model_choice}` |
 | **Profile** | Display name, timezone (default from browser) | `PATCH /me` |
 | **Calendar** | Feed URL (masked), copy button, "Add to Google Calendar" helper, refresh-delay note | Rotate → `POST /calendar/feed/rotate` (confirm: "old link stops working") |
 | **Privacy** | What we store, what we never store (passwords), model provider note | **Delete my data** → `DELETE /me/data` (type "DELETE" to confirm) → signed out, landing page |

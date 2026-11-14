@@ -38,7 +38,7 @@ flowchart TB
   subgraph WORKER["Sync worker: Python on Railway / Render"]
     SCHED["Scheduler"]
     CANVASC["Canvas connector<br/>token, GET only"]
-    BROWSERC["Browser connectors: Playwright<br/>Gradescope, Echo360, Piazza"]
+    BROWSERC["Browser connectors: Playwright<br/>Gradescope, Echo360, Piazza<br/>reuse gradescopeapi + piazza-mcp code"]
     LIVE["Live-view login<br/>shown inside the web app"]
     PIPE["Pipeline: normalize, diff, merge,<br/>parse, chunk, embed"]
   end

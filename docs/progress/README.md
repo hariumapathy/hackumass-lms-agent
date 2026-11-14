@@ -4,9 +4,13 @@ Team-wide status. Each person's detailed status lives in their own file (only th
 
 | Person | Branch | Role | Status file |
 |---|---|---|---|
-| Hari | `dev/hari` | TBD | [hari.md](hari.md) |
-| Neal | `dev/neal` | TBD | [neal.md](neal.md) |
-| Soumith | `dev/soumith` | TBD | [soumith.md](soumith.md) |
+| Hari | `dev/hari` | B: agent and API | [hari.md](hari.md) |
+| Neal | `dev/neal` | A: data and sync | [neal.md](neal.md) |
+| Soumith | `dev/soumith` | C: frontend and product | [soumith.md](soumith.md) |
+
+Roles are defaults; anyone may claim a `Ready` spec in the current stage ([AGENTS.md](../../AGENTS.md#team-branches-ownership)).
+
+## Current stage: **0. Foundations** (S00–S03). Next: review specs → `Ready`, then scaffold.
 
 ## Contracts
 | Contract | Location | Status |
