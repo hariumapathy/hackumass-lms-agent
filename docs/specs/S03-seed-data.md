@@ -13,7 +13,7 @@ A realistic fake semester loaded into the DB on day one, so B can build tools an
 
 ## Inputs
 - `supabase/seed/*.json` fixture files (hand-written + generated text).
-- `EMBEDDINGS_PROVIDER` (`fake` for tests, `openai` for the demo account).
+- `EMBEDDINGS_PROVIDER` (`fake` for tests, `gemini` for the demo account).
 
 ## Outputs
 - `uv run app seed [--user-email demo@example.com] [--reset]`: creates (or reuses) a Supabase auth user and loads all fixtures for that user, including chunks with embeddings.
@@ -45,7 +45,7 @@ Content must be **plausible academic text** (write it or generate it once and co
 ## Errors and edge cases
 | Case | Expected behavior |
 |---|---|
-| `EMBEDDINGS_PROVIDER=openai` without API key | Fail with a clear message before inserting anything |
+| `EMBEDDINGS_PROVIDER=gemini` without `GEMINI_API_KEY` | Fail with a clear message before inserting anything |
 | Fixture references unknown course | Loader fails listing the bad reference |
 
 ## Acceptance criteria

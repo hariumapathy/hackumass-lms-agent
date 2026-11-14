@@ -14,12 +14,22 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **Roadblocks:** what, what was tried, options
 **State of main:** merged up to <hash>? tests green?
 **Next steps (in order):** 1. ... 2. ... 3. ...
-0. **FIRST (Hari's next session): apply the Gemini-default decision** (docs/decisions.md): update S26 `models.yaml` default + tiers, S22 `model_for` notes, S12 embeddings provider/dimension (verify Gemini embedding output dims = 1536 or pick alternative), 03 stack table + diagram LLM label, `.env.example` comments (GEMINI_API_KEY required, OPENAI_API_KEY optional), Devpost credits + hackathon.md (opt in to MLH Best Use of Gemini API). Hari gets a free key at aistudio.google.com and puts it in `.env`.
 **Gotchas for the next agent:** ...
-- **Hosted Supabase project created (2026-11-14 17:30 ET):** `hackumass-lms-agent`, ref `eahciwnufpjuzqlxqdni`, us-east-1, free plan, org ParkTheBus (Hari). URL `https://eahciwnufpjuzqlxqdni.supabase.co`; auth uses **JWKS** (`/auth/v1/.well-known/jwks.json`), so S20 needs no JWT secret. Public URL + publishable key are in Hari's `.env`; **service role key and DB connection string are secrets**: Hari shares them via a password manager, never git/chat. No migrations applied yet (S01).
 ```
 
+> **Agents editing this file with scripts:** match the newest dated entry, not the template above (an earlier `sed` inserted into the template by mistake).
+
 ---
+
+## 2026-11-14 18:52 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
+**Hour:** ~H22.4 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
+**Start check:** main = 478380a; no new commits from Neal/Soumith yet; `make test` + `make lint` green; usage window reset.
+**Done:**
+- Step 0: **Gemini is t**In progress:** nothing half-done.abel, Devpost credits/built-with, pitch, hackathon.md (opt in to MLH Best Use of Gemini API).
+- Fixed earlier devlog edits that had landed inside the entry template.
+**In progress:** Step 0: apply the **Gemini-default decision** (docs/decisions.md) to S26 `models.yaml` default/tiers, S22 notes, S12 embeddings (Gemini embedding at 1536 dims, else alternative), 03 stack table + diagram label, `.env.example`, settings default, Devpost credits + hackathon.md (MLH Best Use of Gemini API opt-in).
+**State of the hosted DB:** Supabase project `hackumass-lms-agent`, ref `eahciwnufpjuzqlxqdni`, us-east-1, free plan, org ParkTheBus (Hari), created 17:30 ET. URL `https://eahciwnufpjuzqlxqdni.supabase.co`; auth uses **JWKS** (`/auth/v1/.well-known/jwks.json`), so S20 needs no JWT secret. Public URL + publishable key are in Hari's `.env`; **service role key, DB connection string, GEMINI_API_KEY are secrets** (Hari fills them in and shares via a password manager, never git/chat). No migrations applied yet (S01).
+**Next steps (in order):** 1. Finish step 0. 2. S20 real JWT auth (JWKS). 3. S21 agent tools (needs S01 schema from Neal for DB queries; build against seed fixtures meanwhile).
 
 ## 2026-11-14 17:55 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF
 **Hour:** ~H21.5 (hacking began Fri 20:30 ET). **~6 h to the Devpost draft deadline (Sat 23:59), ~15 h to final submission (Sun 09:00), code freeze 08:00.** (Earlier docs said 18:15/18:40; the real time at this handoff was 17:55.)

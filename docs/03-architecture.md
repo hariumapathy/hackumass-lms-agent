@@ -25,7 +25,7 @@ flowchart TB
     MCP["MCP server<br/>same tools, for other AI apps"]
   end
 
-  LLM["Model providers<br/>chat: OpenAI by default, others via LiteLLM<br/>embeddings: one fixed model"]
+  LLM["Model providers<br/>chat: Gemini by default (free tier), others optional<br/>embeddings: one fixed model"]
 
   subgraph SUPA["Supabase"]
     AUTH["Auth<br/>Google, magic link"]
@@ -139,7 +139,7 @@ sequenceDiagram
 - **Citation check** runs as an **output guardrail**: drop chunk IDs not returned by this run's tools; check quoted text appears in the cited chunk.
 - **Writes need a click:** `add_study_block` only creates *proposed* blocks; the UI shows Add / Skip after the answer and a separate endpoint records the decision. No paused runs, works with every model ([S25](specs/S25-approvals-and-calendar.md)).
 - **Streaming:** run in streamed mode; FastAPI forwards events to the browser as Server-Sent Events (text deltas, "tool running" status, final structured result).
-- **Models:** OpenAI natively; Gemini/Ollama via their OpenAI-compatible endpoints; Claude (and others) via the LiteLLM adapter. The adapter only translates request/response formats; model intelligence is unchanged, but strict tool-argument and structured-output guarantees are OpenAI-only. Rules:
+- **Models:** **Gemini is the default** (free tier, via its OpenAI-compatible endpoint, also eligible for MLH's Gemini prize); OpenAI natively; Ollama via its OpenAI-compatible endpoint; Claude (and others) via the LiteLLM adapter. The adapter only translates request/response formats; model intelligence is unchanged, but strict tool-argument and structured-output guarantees are OpenAI-only. Rules:
   - Keep tool inputs simple: flat params, few optionals, enums, clear descriptions.
   - Validate all tool args and outputs with Pydantic; let the SDK return errors to the model; max ~2 retries.
   - For non-OpenAI models, return study sets via the `create_study_set` tool rather than free-form JSON.
@@ -175,7 +175,7 @@ sequenceDiagram
 | App auth | Supabase Auth (Google + magic link); FastAPI verifies the Supabase JWT on every request | One click for students; one identity across both halves |
 | Backend API | FastAPI (Python, managed with `uv`) | Async, Pydantic-native, SSE streaming |
 | Agent harness | **OpenAI Agents SDK (Python)** | Tool loop, structured output, guardrails, streaming |
-| Models | OpenAI default; others via LiteLLM adapter | Model choice in settings |
+| Models | **Gemini default** (free tier, OpenAI-compatible endpoint); OpenAI native; Claude via LiteLLM | $0 for the hackathon; choice under Settings → Advanced |
 | Data | Supabase: Postgres + pgvector, Storage, encrypted secrets | One service; see [07](07-sync-and-storage.md) |
 | Sync | Python worker + **Procrastinate** (Postgres job queue: priorities, locks, retries); `httpx` for Canvas; Playwright (Python) for the rest | Deterministic, no AI driving browsers |
 | Doc parsing | PyMuPDF, python-pptx, markitdown | Python's strongest advantage: better slide/PDF text |

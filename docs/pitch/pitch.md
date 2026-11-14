@@ -29,7 +29,7 @@ See the diagram in [03-architecture.md](../03-architecture.md#system-diagram). T
 - **Sync first, agent second:** a worker copies course data into one database; the AI only reads that database.
 - **No passwords:** Canvas token; Gradescope/Echo360 via a one-time browser login with Duo.
 - **Verified citations:** the model cites chunk IDs; our code resolves them to real links.
-- **Any model:** OpenAI by default, others via adapters, tested with a golden-question script.
+- **Any model:** Google Gemini by default (free tier), OpenAI/Claude optional, all tested with a golden-question script.
 
 ## Judging criteria mapping
 See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we-score).

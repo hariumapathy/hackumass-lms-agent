@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
     gemini_api_key: SecretStr | None = None
-    embeddings_provider: Literal["openai", "fake"] = "openai"
+    embeddings_provider: Literal["gemini", "openai", "fake"] = "gemini"
     web_origin: str = "http://localhost:3000"
     public_api_url: str = "http://localhost:8000"  # used to build calendar feed URLs (S25)
     browser_provider: Literal["local", "hosted"] = "local"

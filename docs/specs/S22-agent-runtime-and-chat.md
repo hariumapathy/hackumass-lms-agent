@@ -84,7 +84,7 @@ Rules:
 5. **After the run:** pass final text + `ctx.allowed_chunk_ids` to S23 → `citations` event with resolved citations and `dropped` list; `done` with cleaned `final_text`.
 6. **Persistence:** assistant message saved with cleaned text, resolved citations, study set IDs, block IDs; `agent_runs` saved with model, turns, tool call names + durations (no content), status.
 7. **Errors:** model/provider error → `error{code:"model_error", retryable:true}`; `MaxTurnsExceeded` → send what we have + `error{code:"max_turns"}`; client disconnect → cancel the run, mark `agent_runs.status="error"`.
-8. **Model per request:** `model_for(profile.model_choice or default)` (S26). Agent built per request; tools shared.
+8. **Model per request:** `model_for(profile.model_choice or default)` (S26); the default is **Gemini** through its OpenAI-compatible endpoint (`OpenAIChatCompletionsModel` with an `AsyncOpenAI(base_url=..., api_key=GEMINI_API_KEY)` client). Agent built per request; tools shared. Because no OpenAI key is required, tracing must be disabled (rule 1) or the SDK will try to export to OpenAI.
 9. Conversations endpoints (`GET /conversations`, `GET /conversations/{id}`) return saved messages with citations (S02 types).
 
 ## Errors and edge cases
