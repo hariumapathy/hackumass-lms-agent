@@ -42,6 +42,6 @@ Required by the rules: list everything we didn't write, and mention it during ju
 | Next.js `create-next-app` template | Frontend scaffold | MIT |
 | FastAPI, Pydantic, OpenAI Agents SDK, Procrastinate, Playwright, httpx | Backend frameworks/libraries | MIT/Apache-2.0 |
 | Supabase CLI | Local database | MIT |
-| _If adopted:_ code from [gradescope-mcp](https://github.com/Yuanpeng-Li/gradescope-mcp), [`gradescopeapi`](https://pypi.org/project/gradescopeapi/), [piazza-mcp](https://github.com/profess/piazza-mcp); reference: [canvas-mcp](https://github.com/vishalsachdev/canvas-mcp) | Connector parsing helpers | MIT |
+| Code from [gradescope-mcp](https://github.com/Yuanpeng-Li/gradescope-mcp), [`gradescopeapi`](https://pypi.org/project/gradescopeapi/), [piazza-mcp](https://github.com/profess/piazza-mcp); reference: [canvas-mcp](https://github.com/vishalsachdev/canvas-mcp) | Connector parsing helpers (vendored, see THIRD_PARTY_NOTICES.md) | MIT |
 
 Every external library added later must be added here in the same PR.

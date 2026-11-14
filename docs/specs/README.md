@@ -46,7 +46,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S34 | [Settings](S34-settings.md) | C | S30, S26 | Draft |
 
 ## Stage 4: Stretch (only after H24, in order)
-Piazza connector (A) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.
+[S17 Piazza connector](S17-piazza-connector.md) (A, Draft) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)

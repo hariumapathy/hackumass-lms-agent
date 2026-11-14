@@ -1,6 +1,6 @@
 # Review: third-party MCP servers for Gradescope, Piazza, Canvas
 
-Reviewed 2026-11-14 (shallow clones at the commits below). **Status: decision pending (Hari).** Once decided, record it in [decisions.md](../decisions.md) and update the affected specs.
+Reviewed 2026-11-14 (shallow clones at the commits below). **Decision (2026-11-14): Option A, borrow the pieces.** Applied in [S14](../specs/S14-gradescope-connector.md), [S17](../specs/S17-piazza-connector.md), S11 (reference) and [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md).
 
 | Repo | Commit / date | License | Size |
 |---|---|---|---|
