@@ -1,6 +1,6 @@
 # Hari: progress
 
-**Branch:** `dev/hari` · **Role:** B (agent and API) · **Last updated:** 2026-11-14 ~18:30 ET
+**Branch:** `dev/hari` · **Role:** B (agent and API) · **Last updated:** 2026-11-14 17:55 ET (handoff)
 
 _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines._
 
@@ -10,7 +10,7 @@ _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines
 - **S02 API + SSE contract (code):** typed route stubs for every endpoint (mock data, demo-auth stub), error envelope, SSE framing, scripted `POST /chat` stream, `backend/app/api/CONTRACT.md`, `make types` → `apps/web/src/lib/api/{openapi.json,schema.d.ts}`. 27 backend tests pass; ruff, pyright, eslint and typecheck clean.
 
 ## In progress
-- S00 acceptance: `make db` (needs Docker Desktop running) and CI green on PR #1.
+- S00: `make db` untested (needs Docker Desktop). CI green; PR #1 merged to main at handoff.
 - S02: waiting for Soumith's review.
 
 ## Next

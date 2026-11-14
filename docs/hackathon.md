@@ -1,6 +1,6 @@
 # HackUMass XIV: deadlines, rules, judging
 
-Source: [hackumass.com](https://www.hackumass.com/), [Devpost](https://hackumass-xiv.devpost.com/) and [rules](https://hackumass-xiv.devpost.com/rules), checked **2026-11-14 18:40 ET**. Dashboard: https://dashboard.hackumass.com (each person signs in themselves; never put passwords in the repo or in chat). Instagram: @hackumass. **Every agent: re-check this page at session START; if a deadline is < 3 h away, tell your human first.**
+Source: [hackumass.com](https://www.hackumass.com/), [Devpost](https://hackumass-xiv.devpost.com/) and [rules](https://hackumass-xiv.devpost.com/rules), checked **2026-11-14 ~17:45 ET**. Dashboard: https://dashboard.hackumass.com (each person signs in themselves; never put passwords in the repo or in chat). Instagram: @hackumass. **Every agent: re-check this page at session START; if a deadline is < 3 h away, tell your human first.**
 
 ## Deadlines (all ET)
 | When | What | Status |

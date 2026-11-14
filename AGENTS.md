@@ -6,7 +6,7 @@ This file is for **any coding agent** working in this repo (Claude Code, Codex, 
 HackUMass 2026 (36 hours, team of 3). An AI study agent for UMass students: a **sync worker** copies each student's Canvas, Gradescope and Echo360 data into Supabase; a **Python agent** (OpenAI Agents SDK) answers questions, builds study plans/quizzes/flashcards with verified citations, and shows a Today view of deadlines; a **Next.js** frontend is the UI.
 
 ## Current status
-**Don't trust this line for details; read the newest entry in [docs/devlog.md](docs/devlog.md).** Summary: Stage 0 in progress (S00 scaffolding built, S02 API contract being built). Do not assume a file, package or endpoint exists; check first.
+**Don't trust this line for details; read the newest entry in [docs/devlog.md](docs/devlog.md).** Summary: Stage 0 in progress: S00 scaffolding + S02 API contract built and on `main`; S01 schema + S03 seed (Neal) next; then Stage 1. Do not assume a file, package or endpoint exists; check first.
 
 ## ⚡ Relay sessions: START and HANDOFF (mandatory)
 We build as a **relay**: one laptop/agent works until its usage limit runs out, then the next laptop continues (Hari → Neal → Soumith → Hari ...), mixing **Claude Code and Codex**. An agent can be cut off at any moment, so **the repo must always be ready for the next agent**.
