@@ -6,7 +6,7 @@ Add your own below. Move answered ones into [decisions.md](decisions.md).
 - [ ] **Platforms:** which do our actual courses use? Canvas / Gradescope / Piazza / Campuswire / Echo360 / other? Is student email Outlook (Microsoft 365)?
 - [ ] **Connector strategy:** agree on Canvas token + cloud browser session, extension as stretch? (Explained in [02](02-integrations-and-auth.md#connector-strategy).)
 - [ ] **App login:** Google + email magic link via Supabase?
-- [ ] **Roles:** who takes data/connectors vs. app/UI/agent?
+- [ ] **Roles:** who takes A (data and sync), B (agent and API), C (frontend and product)? See [05](05-roadmap.md#roles).
 - [ ] **Hackathon timing + prize tracks:** any sponsor tracks (model providers, MLH categories) to design toward?
 - [ ] **Product name.**
 
