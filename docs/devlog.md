@@ -26,9 +26,10 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 - **S00 scaffolding** (commit 1695e7b, PR #1): `backend/` (FastAPI `/health`), `apps/web/` (Next.js 16), `supabase/`, `Makefile`, `.env.example`, CI. `make test` + `make lint` green locally.
 - Reviewed three third-party MCP servers (Gradescope, Piazza, Canvas). Findings: [docs/research/mcp-servers-review.md](research/mcp-servers-review.md).
 - Relay protocol + this devlog + start/handoff prompts.
+- **S02 API + SSE contract** (commit `7c3745d`, PR #1): typed stubs for every endpoint backed by `backend/app/api/mock_data.py`, error envelope, SSE framing, scripted `POST /chat` stream (`?delay_ms=` for UI work), `backend/app/api/CONTRACT.md`, `make types` → `apps/web/src/lib/api/{openapi.json,schema.d.ts}`. 27 backend tests pass; ruff, pyright, eslint and typecheck clean.
 
 **In progress (not finished):**
-- **S02 API + SSE contract**: being finished by a parallel Claude Code session on `dev/hari` (schemas, SSE framing, error envelope, auth stub, mock data, route stubs; then CONTRACT.md + `make types`). Tests: `backend/tests/unit/test_s02_contract.py`. Check `git log dev/hari` and its devlog/progress notes for where it stopped.
+- **S02:** needs Soumith's review (spec status still "In progress"). MSW handlers + frontend SSE parser (S02-T05/T06) **moved to S30**. Auth is still the demo stub until S20.
 
 **Decisions / design changes:** relay protocol (green self-merge to `main` at handoff); scaffolding uses `make` + pinned `npx` tools (see S00 notes).
 
@@ -41,7 +42,7 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **State of main:** `a768196` (docs only). PR #1 (`dev/hari` → `main`): roles + S00 (+ S02 when done); CI not yet reported at time of writing.
 
 **Next steps (in order):**
-1. Finish S02 (if not already), merge PR #1 when green.
+1. Soumith reviews S02; Hari decides on merging PR #1 (roles + S00 + S02) once CI is green.
 2. Neal (A): S01 schema + S03 seed, then S10 → S11 → S12.
 3. Hari (B): S20 → S21 → S22 → S23.
 4. Soumith (C): S30 → S32 → S33 against the S02 mocks/types.
@@ -49,4 +50,5 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **Gotchas for the next agent:**
 - Next.js is **v16**: read `apps/web/AGENTS.md` before frontend code. Frontend test tooling is pinned for **Node 20**.
 - No global pnpm/Supabase CLI needed: `make` runs pinned versions via `npx`.
-- `current_user` in `backend/app/api/deps.py` is a **stub** until S20.
+- `current_user` in `backend/app/api/deps.py` is a **stub** until S20: any `Authorization: Bearer x` works.
+- Backend depends on `tzdata` (Windows has no IANA timezone database). Re-run `make types` after any API change.
