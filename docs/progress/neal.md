@@ -30,6 +30,7 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 -
 
 ## Notes for other agents
+- **E2E rehearsal (2026-11-14 ~20:40, no real accounts):** `scripts/fake_canvas.py` (fake Canvas on :8765 serving the S11 fixtures) → API on DB mode (`DATA_SOURCE=db CANVAS_BASE_URL=http://127.0.0.1:8765 EMBEDDINGS_PROVIDER=fake`) + `make worker` → `POST /connections/canvas` → sync `succeeded` (16 new; re-sync 16 unchanged) → 2 courses, 7 items (merged), 2 posts, 5 materials, PDF chunked. **Gap found (Hari's lane, already on his Next list):** `/today`, `/courses`, `/items`, `/changes`, `/citations` still return mock data in DB mode, so the Today view doesn't show synced data yet.
 - **Hari:** I wired `DELETE /connections/{platform}` (S13-T06, mine per S02/S13) in `connections.py`, DB mode only, following your `_db_mode()` pattern; nothing else in the file changed.
 - Live login runs in the API process (window opens on the machine running `make api`; login state is in memory).
 - **Hari:** `POST /connections/canvas` can call `connect_canvas(...)` above. S20 delete-my-data can call `app.sync.processing.delete_user_files(user_id)` (removes Storage files under `users/{user_id}/`) and drop the T07 xfail.
