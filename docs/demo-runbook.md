@@ -2,6 +2,15 @@
 
 Verified on Neal's laptop on 2026-11-14: email-link sign-in → fresh account → real Canvas connection → eight imported courses → Today with actual deadlines → real Gemini answers with syllabus and announcement citations. The production web server avoids compilation on page switches. Everything uses **local** Supabase; the hosted project is not needed.
 
+## Quick start (already set up once? just these)
+```bash
+make demo-db        # 1. start the local database (+ demo semester). Skip if it's already running and you want to keep data
+make demo-api       # 2. terminal 2: API + AI (keep open)
+make demo-worker    # 3. terminal 3: imports Canvas/Gradescope/Piazza (keep open)
+make demo-web       # 4. terminal 4: website; wait for "Ready", then open http://localhost:3000
+```
+Sign in with `demo@example.com` → open http://127.0.0.1:54324 → click the link in "Your sign-in link".
+
 ## 0. One-time prerequisites (about 10 min, most of it downloads)
 | Need | How |
 |---|---|

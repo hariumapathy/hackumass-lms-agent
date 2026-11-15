@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { cn } from "@/lib/utils";
+import { BrandMark } from "./brand-mark";
 import { ExpiryBanner } from "./expiry-banner";
 import { SyncMonitor } from "./sync-monitor";
 import { DESKTOP_QUERY, useMediaQuery } from "./use-media-query";
@@ -32,14 +33,14 @@ export function useCourses() {
   return useQuery({ queryKey: ["courses"], queryFn: () => api().courses(), staleTime: 5 * 60_000 });
 }
 
-/** App frame: left sidebar on desktop, bottom tab bar under 768px (S30 rule 1). */
+/** App frame: left sidebar on desktop, top bar + bottom tab bar under 768px (S30 rule 1, S35). */
 export function AppShell({ children }: { children: ReactNode }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   return isDesktop ? (
     <div className="flex min-h-dvh">
       <SyncMonitor />
       <Sidebar />
-      <main className="min-w-0 flex-1 px-6 py-8">
+      <main className="min-w-0 flex-1 px-8 py-8">
         <ExpiryBanner />
         {children}
       </main>
@@ -47,7 +48,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   ) : (
     <div className="flex min-h-dvh flex-col">
       <SyncMonitor />
-      <main className="min-w-0 flex-1 px-4 pt-6 pb-24">
+      <header className="sticky top-0 z-20 flex items-center gap-2 bg-maroon px-4 py-2.5 text-white shadow-sm">
+        <BrandMark size="sm" />
+      </header>
+      <main className="min-w-0 flex-1 px-4 pt-5 pb-24">
         <ExpiryBanner />
         {children}
       </main>
@@ -61,38 +65,61 @@ function Sidebar() {
   const { signOut } = useAuth();
   const courses = useCourses();
   return (
-    <nav aria-label="Sidebar" className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col gap-6 border-r bg-sidebar px-3 py-6">
-      <span className="px-3 text-sm font-semibold tracking-tight">LMS Agent</span>
-      <ul className="flex flex-col gap-1">
-        {NAV.map((item) => (
-          <li key={item.href}>
-            <NavLink item={item} active={isActive(pathname, item.href)} />
-          </li>
-        ))}
-      </ul>
-      <div className="flex flex-col gap-1">
-        <span className="px-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Courses</span>
-        <ul className="flex flex-col gap-0.5">
-          {(courses.data ?? []).map((c) => (
-            <li key={c.id}>
-              <Link
-                href={`/courses/${c.id}`}
-                aria-current={isActive(pathname, `/courses/${c.id}`) ? "page" : undefined}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-sidebar-accent focus-visible:outline-2",
-                  isActive(pathname, `/courses/${c.id}`) && "bg-sidebar-accent font-medium",
-                )}
-              >
-                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: c.color ?? "currentColor" }} aria-hidden />
-                {c.code}
-              </Link>
+    <nav
+      aria-label="Sidebar"
+      className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar"
+    >
+      <div className="bg-maroon px-5 py-5 text-white">
+        <BrandMark />
+      </div>
+      <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-5">
+        <ul className="flex flex-col gap-1">
+          {NAV.map((item) => (
+            <li key={item.href}>
+              <NavLink item={item} active={isActive(pathname, item.href)} />
             </li>
           ))}
         </ul>
+        <div className="flex flex-col gap-1.5">
+          <span className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            Your courses
+          </span>
+          <ul className="flex flex-col gap-0.5">
+            {(courses.data ?? []).map((c) => {
+              const active = isActive(pathname, `/courses/${c.id}`);
+              return (
+                <li key={c.id}>
+                  <Link
+                    href={`/courses/${c.id}`}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2",
+                      active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+                    )}
+                  >
+                    <span
+                      className="size-2.5 shrink-0 rounded-full ring-2 ring-white/70 dark:ring-black/40"
+                      style={{ backgroundColor: c.color ?? "currentColor" }}
+                      aria-hidden
+                    />
+                    <span className="truncate">{c.code}</span>
+                    {c.upcoming_count > 0 && (
+                      <span className="ml-auto rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
+                        {c.upcoming_count}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
-      <Button variant="ghost" size="sm" className="mt-auto justify-start" onClick={() => void signOut()}>
-        <LogOut aria-hidden /> Sign out
-      </Button>
+      <div className="border-t border-sidebar-border p-3">
+        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={() => void signOut()}>
+          <LogOut aria-hidden /> Sign out
+        </Button>
+      </div>
     </nav>
   );
 }
@@ -104,11 +131,12 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent focus-visible:outline-2",
-        active && "bg-sidebar-accent font-medium",
+        "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2",
+        active &&
+          "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:inset-y-1.5 before:left-0 before:w-1 before:rounded-full before:bg-primary",
       )}
     >
-      <Icon className="size-4" aria-hidden />
+      <Icon className={cn("size-4", active ? "text-primary" : "text-muted-foreground")} aria-hidden />
       {item.label}
     </Link>
   );
@@ -117,7 +145,10 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 function BottomTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Bottom tabs" className="fixed inset-x-0 bottom-0 z-10 border-t bg-background pb-[env(safe-area-inset-bottom)]">
+    <nav
+      aria-label="Bottom tabs"
+      className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+    >
       <ul className="grid grid-cols-4">
         {NAV.map((item) => {
           const Icon = item.icon;
@@ -128,8 +159,8 @@ function BottomTabs() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2 text-xs text-muted-foreground",
-                  active && "font-medium text-foreground",
+                  "relative flex flex-col items-center gap-1 py-2.5 text-xs text-muted-foreground transition-colors",
+                  active && "font-semibold text-primary before:absolute before:top-0 before:h-0.5 before:w-10 before:rounded-full before:bg-primary",
                 )}
               >
                 <Icon className="size-5" aria-hidden />

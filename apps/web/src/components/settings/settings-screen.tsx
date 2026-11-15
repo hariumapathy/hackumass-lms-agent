@@ -36,7 +36,7 @@ export function SettingsScreen() {
   if (me.isError) return <ErrorState error={me.error} onRetry={() => void me.refetch()} />;
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
       <ConnectionsSection me={me.data} />
       <ProfileSection me={me.data} />
       <CalendarSection />
