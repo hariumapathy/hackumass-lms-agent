@@ -280,7 +280,7 @@ async def test_s10_t11_one_malformed_record_is_skipped(conn, user) -> None:  # n
 async def test_s10_t12_new_or_changed_material_queues_processing(conn, user) -> None:  # noqa: ANN001
     queued: list[UUID] = []
 
-    async def pm(uid: UUID, material_id: UUID) -> None:
+    async def pm(uid: UUID, material_id: UUID, source: dict) -> None:
         queued.append(material_id)
 
     await _sync(conn, user, FakeConnector([course(), material()]), process_material=pm)
