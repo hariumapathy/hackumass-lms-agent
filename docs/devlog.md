@@ -23,6 +23,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-15 00:40 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/test-calendar-piazza
+**Done:** synced main (`10c3de8`, calendar + Piazza merged by Soumith); 477 backend + 75 web tests green. **Calendar re-verified live** (chat proposal → Add → downloaded .ics has the session at 3 PM ET). **Piazza live-verified with Hari's real account** after fixing the Windows live-login bugs (details: S17 "Live verification", live-test-bugs.md). Change summaries now plain language.
+**Gotchas:** stop `make demo-worker` before running integration tests (it grabs queued test jobs: S13-T06 fails otherwise). An old orphaned `next dev` (PID from an earlier session) can hold :3000 and crash ("Jest worker…" 500s): kill it in Task Manager (node.exe) before `make demo-web`.
+**Next:** merge this branch; UMass UI branch (S35).
+
 ## 2026-11-15 00:30 ET · Soumith's laptop · Claude Code (Opus 5.5) · HANDOFF (Soumith pauses; next laptop continues)
 **Hour:** ~H28. Final submission **Sun 09:00**, code freeze **08:00**, judging 12:30.
 **Done this session:**

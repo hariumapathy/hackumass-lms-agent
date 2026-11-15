@@ -61,6 +61,7 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Real material citations | ✅ Gemini answer with a real syllabus page and announcement citation verified |
 | Calendar file and saved study-session approvals (S25) | ✅ verified live 2026-11-14 (Soumith): real Gemini proposes → Add puts it in the private calendar file, Skip keeps it out. Local demo = download + import; auto-subscribe needs a public HTTPS API |
 | Live Gradescope login + imports (S13/S14) | ✅ saved session imported 20 student courses and 238 assignments; three courses and five deadlines merged with Canvas |
-| Piazza posts (S17): read-only connector + **Connect Piazza** in Settings/onboarding | 🟡 built and tested with saved fixtures + local DB (477 backend tests); **live Piazza login not yet verified**, don't demo it live until it is |
+| Calendar (S25): approve a proposed study session → it appears in the downloadable calendar (.ics) | ✅ re-verified live 2026-11-15 (Add → feed has the session at the right time) |
+| Piazza posts (S17): read-only connector + **Connect Piazza** in Settings/onboarding | ✅ **live-verified with a real account** (2026-11-15): login window → posts imported → shown on the course page → cited by the chat |
 | Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |
