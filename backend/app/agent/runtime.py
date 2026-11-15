@@ -275,7 +275,9 @@ class ChatRuntime:
                 needs_reconnect=coverage.needs_reconnect,
             )
         )
-        ctx = RunCtx(user_id=user.user_id, timezone=tz, clock=self.clock, data=data)
+        ctx = RunCtx(
+            user_id=user.user_id, timezone=tz, clock=self.clock, data=data, block_store=store
+        )
         state = RunState(specs={t.name: t for t in self.tools})
         agent = build_agent(model, [to_function_tool(t) for t in self.tools], instructions)
         result = Runner.run_streamed(
@@ -348,7 +350,12 @@ class ChatRuntime:
             if ctx.proposed_blocks:
                 yield s.ApprovalRequiredEvent(
                     blocks=ctx.proposed_blocks,
-                    summary=ctx.block_summary or f"Add {len(ctx.proposed_blocks)} study sessions?",
+                    summary=ctx.block_summary
+                    or (
+                        "Add this study session?"
+                        if len(ctx.proposed_blocks) == 1
+                        else f"Add these {len(ctx.proposed_blocks)} study sessions?"
+                    ),
                 )
             yield s.CitationsEvent(citations=citations, dropped=checked.dropped_ids)
             message = s.Message(

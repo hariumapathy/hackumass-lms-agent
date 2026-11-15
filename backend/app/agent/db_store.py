@@ -120,3 +120,9 @@ class DbChatStore:
         async with self._connection() as conn:
             rows = await repo.list_blocks(conn, user_id)
         return [s.StudyBlock.model_validate(r) for r in rows]
+
+    async def propose_block(self, user_id: UUID, block: s.StudyBlock, now: datetime) -> bool:
+        from app.db.repositories.calendar import propose
+
+        async with self._connection() as conn:
+            return await propose(conn, user_id, block, now)

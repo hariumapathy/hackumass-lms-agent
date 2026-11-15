@@ -1,6 +1,6 @@
 # Neal: progress
 
-**Branch:** `main` (explicit user request for this fix session) · **Role:** demo integration across A/B/C · **Last updated:** 2026-11-14 22:00 ET
+**Branch:** `codex/calendar-piazza-ui` (latest user request: one review branch; no merge) · **Role:** demo integration across A/B/C · **Last updated:** 2026-11-14 22:34 ET
 
 ## Done
 - Updated local main from remote `1b882c7`; read relay notes/specs and traced the Canvas → worker → DB → UI path.
@@ -12,12 +12,13 @@
 - Checks: 440 backend passed, 1 skipped, 1 expected failure; 71 frontend; 6 browser tests; lint/format/types and production build green.
 
 ## In progress
-- None. Production stack left running; manual Refresh completed (323 unchanged records, 125 canonical deadlines), and Today updated its freshness indicator without a page reload.
+- Claimed S25 Google Calendar/private feed + approvals, then S17 Piazza, per user request. Existing S13/S14 live Gradescope flow verified (20 courses, 238 assignments).
+- Previous demo work: Production stack left running; manual Refresh completed (323 unchanged records, 125 canonical deadlines), and Today updated its freshness indicator without a page reload.
 
 ## Next
-1. Review `docs/live-test-bugs.md`: prioritize complete data deletion and reproduce account-switch cache behavior. Replacement Canvas token accepted and refresh completed; keep the local demo stack running.
-2. S25 calendar feed + approval persistence are still stubs; skip those demo steps until implemented under their spec.
-3. Manual Gradescope NetID/Duo check remains for a teammate with that account.
+1. Finish S25 Calendar checks, commit separately and push this review branch; public Google/Apple subscription validation requires reachable HTTPS hosting. Local ICS download is supported.
+2. S17 Piazza: saved-cookie/read-only spike, update design + implementation plan, failing fixtures, implementation, checks, separate commit. Human login may be required.
+3. S35 responsive UMass UI: follow research and test plan; preserve SSE. Then S18 Campuswire feasibility. Keep Devpost and bug report honest.
 
 ## Blocked on / needs from others
 - None for the Canvas/Today/chat demo. Hosted Supabase is not required locally.
@@ -43,7 +44,7 @@
 - pgvector lives in schema `extensions`: write `%s::extensions.vector` when casting a parameter; `<=>` works as-is.
 - Clients (`authenticated`) can only SELECT their own rows; `anon` gets nothing. All writes go through the backend.
 - Integration tests: `tests/integration/db.py` has `AsUser(conn, user_id)` (run SQL as a signed-in student), `create_auth_user`, `insert_minimal_rows`. Use unique emails: tests re-run against the same DB.
-- User explicitly authorized work on main this session; changes span shared backend and frontend folders.
+- Earlier fixes were authorized on main. Latest instruction overrides that: new features stay on the review branch, one commit each, no self-merge. Changes span shared backend and frontend folders.
 - Runtime credentials live only in ignored local files / encrypted local DB. Never copy real account content or secrets into fixtures or docs.
 - Existing local Supabase needed `make db-stop && make db` to pick up callback URL changes; no database reset was used. Use `nvm use 26` on this laptop (default shell Node 18 cannot build Next 16).
 - Default demo embeddings remain fake (keyword retrieval); real Gemini chat and real material citations were verified. Re-embedding/provider changes require care; see S12.

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, RefreshCw } from "lucide-react";
-import { calendarLinks } from "@/components/connect/calendar-links";
+import { CalendarButtons } from "@/components/connect/calendar-step";
 import { ErrorState, Loading } from "@/components/states/states";
 import { Button } from "@/components/ui/button";
 import {
@@ -299,21 +299,7 @@ function CalendarSection() {
       {feed.isError && <ErrorState error={feed.error} onRetry={() => void feed.refetch()} />}
       {feed.data && (
         <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap gap-2">
-            <Button asChild size="sm">
-              <a href={calendarLinks(feed.data.url).google} target="_blank" rel="noopener noreferrer">
-                Add to Google Calendar
-              </a>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <a href={calendarLinks(feed.data.url).apple}>Add to Apple Calendar</a>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <a href={calendarLinks(feed.data.url).outlook} target="_blank" rel="noopener noreferrer">
-                Add to Outlook
-              </a>
-            </Button>
-          </div>
+          <CalendarButtons feedUrl={feed.data.url} />
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span className="font-mono text-xs">{maskFeedUrl(feed.data.url)}</span>
             <Button

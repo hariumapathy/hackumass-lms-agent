@@ -59,5 +59,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Demo mode with no backend at all ("Continue with demo data"): the backup demo always works | ✅ |
 | Live Canvas connection → worker → database → Today/course pages; disconnect and automatic view refresh | ✅ verified on Neal's laptop with eight real courses; correct UMass host; production navigation |
 | Real material citations | ✅ Gemini answer with a real syllabus page and announcement citation verified |
-| Calendar subscription and saved study-session approvals (S25) | ⬜ still stubs; skip in live-data demo |
+| Calendar file and saved study-session approvals (S25) | ✅ verified live 2026-11-14 (Soumith): real Gemini proposes → Add puts it in the private calendar file, Skip keeps it out. Local demo = download + import; auto-subscribe needs a public HTTPS API |
+| Live Gradescope login + imports (S13/S14) | ✅ saved session imported 20 student courses and 238 assignments; three courses and five deadlines merged with Canvas |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

@@ -45,3 +45,6 @@
 _Still in planning — stack, roles and final MVP scope not yet locked. See [06-open-questions.md](06-open-questions.md)._
 
 | 2026-11-14 | Demo fixes authorized on main: use official UMass Canvas host `umamherst.instructure.com`; DB dashboard and disconnect; priority merge before bulk file processing; production demo UI; email sign-in with Google opt-in only when configured | Live token check exposed wrong host, mock dashboard, stale caches and merge starvation; no schema or API shape changes |
+
+- 2026-11-14 (Neal, user workflow override): new features share `codex/calendar-piazza-ui`, one verified commit each; user reviews before merge. S25 keeps the specified private ICS approach; localhost offers download/manual import, public HTTPS is required for subscription. Ambiguous/nonexistent DST times are rejected.
+- 2026-11-14 (Soumith): reviewed and approved merging `codex/calendar-piazza-ui` (S25) and `neal/s17-piazza` into main on Neal's behalf, each only after live end-to-end checks + green tests; one PR per feature.

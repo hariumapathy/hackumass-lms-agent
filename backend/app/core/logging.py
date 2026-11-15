@@ -6,6 +6,7 @@ Never logs headers, cookies, query strings, bodies, message text or course conte
 
 import json
 import logging
+import re
 import time
 import uuid
 from contextvars import ContextVar
@@ -14,6 +15,26 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 request_log = logging.getLogger("app.request")
 _user_box: ContextVar[dict[str, str | None] | None] = ContextVar("_user_box", default=None)
+
+
+class CalendarAccessFilter(logging.Filter):
+    """Uvicorn's default access log otherwise includes the private feed token in its path."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if isinstance(record.args, tuple) and len(record.args) >= 3:
+            args = list(record.args)
+            if isinstance(args[2], str):
+                args[2] = re.sub(
+                    r"^/calendar/[^/?]+\.ics(?:\?.*)?$", "/calendar/[private].ics", args[2]
+                )
+            record.args = tuple(args)
+        return True
+
+
+def protect_calendar_access_logs() -> None:
+    logger = logging.getLogger("uvicorn.access")
+    if not any(isinstance(f, CalendarAccessFilter) for f in logger.filters):
+        logger.addFilter(CalendarAccessFilter())
 
 
 def set_log_user(user_id: str) -> None:

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Done: live-verified end to end 2026-11-14 (Soumith); Google/Apple file import still a manual check |
 | **Stage** | 2 |
 | **Role** | B |
 | **Depends on** | S22 |
@@ -11,7 +11,7 @@
 ## Purpose
 Let the agent suggest study sessions that the student **approves with a click** before anything is written to their calendar, and publish deadlines + approved sessions as a private `.ics` feed any calendar app can subscribe to.
 
-## Design: proposal pattern (no paused runs)
+## Design plan: proposal pattern (no paused runs)
 The tool **never writes to the calendar**. It creates `study_blocks` with `status="proposed"` and returns "proposed, awaiting approval." After the answer, the UI shows Add / Skip. The decision endpoint flips status. This avoids pausing and resuming agent runs and works the same with every model provider.
 
 ```mermaid
@@ -67,9 +67,9 @@ class AddStudyBlockArgs(BaseModel):
 | Student declines | Blocks `declined`; never appear in feed |
 
 ## Acceptance criteria
-- [ ] Proposed blocks only appear in the feed after approval
+- [x] Proposed blocks only appear in the feed after approval
 - [ ] Feed imports cleanly into Google Calendar and Apple Calendar (manual check)
-- [ ] Rotating the token breaks the old URL
+- [x] Rotating the token breaks the old URL
 
 ## Test plan
 | ID | Test | Type |
@@ -86,3 +86,22 @@ class AddStudyBlockArgs(BaseModel):
 
 ## Out of scope
 Writing directly to Google/Outlook calendars (OAuth), editing blocks after approval (delete + re-propose instead), reminders/notifications.
+
+## Implementation clarifications (2026-11-14)
+- Google Calendar integration is the private subscription-feed design above; direct OAuth writes remain out of scope. Google must be able to fetch a public HTTPS API URL. On localhost, validate/download ICS; a Google subscription cannot reach the laptop's loopback address. Never advertise successful Google subscription from a local link.
+- Nonexistent or ambiguous local clock times at DST transitions are rejected with a readable request for another time, rather than silently choosing an offset.
+- Feed-token lookup is a private repository helper: the secret is the authorization for this one public endpoint. Every subsequent content query uses its resolved user ID. Feed tokens must not be written to request logs.
+
+## Implementation plan
+1. Add scoped repository operations for private feed links, deadline selection, approval decisions and atomic overlap checks; retain the existing schema and response contracts.
+2. Register `add_study_block` with the existing runtime; validate local time and save proposals before emitting one approval card.
+3. Render escaped ICS with `icalendar`; resolve the private URL to its owner before scoped reads and redact URL secrets from access logs.
+4. Reuse calendar controls in onboarding and Settings. Local feeds offer downloads; public HTTPS feeds offer subscription links.
+5. Verify fixtures, real local Postgres, scripted streaming, frontend regression tests, production build and browser flows; document external calendar checks separately.
+
+## Verification checkpoint (2026-11-14)
+- Initial new S25 tests failed against the old stubs before implementation. Database tests now cover owner isolation, proposal persistence/overlap, decisions/expiry, feed contents, stable IDs/sequences, escaping and link rotation.
+- Unit tests cover valid/past/future proposals, maximum count, overlap, DST ambiguity/nonexistence and private access-log redaction. Scripted runtime exercises the actual proposal tool and a single approval event.
+- Full backend suite: 452 passed, 1 skipped, 1 expected failure before the additional actual-tool runtime case; that runtime suite rerun is recorded in the devlog. Frontend: 72 passed; browser: 6 passed; lint/types/build passed.
+- Live check 2026-11-14 (Soumith's laptop, local stack, real Gemini): the chat proposed a session, the feed did **not** contain it before Add; after **Add** the feed went 24 → 25 events with the correct UTC time (3 PM ET = 20:00Z); a second proposal was **Skipped** and stayed out. Fixed during the check: the card read "Add 1 study sessions?" (now "Add this study session?") and the answer told students to approve "in your calendar" (tool result + prompt now say "click Add below"); onboarding Download now counts as added.
+- Pending: manual import into Google and Apple; automatic subscriptions require public HTTPS hosting. No direct Google OAuth integration is claimed. See [calendar runbook](../calendar-runbook.md).

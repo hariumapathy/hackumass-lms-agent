@@ -11,6 +11,7 @@ from app.agent.tools.args import (
     SearchMaterialsArgs,
 )
 from app.agent.tools.runner import ToolSpec
+from app.agent.tools.study_blocks import AddStudyBlockArgs, add_study_block
 from app.agent.tools.study_sets import CreateStudySetArgs, create_study_set
 
 READ_TOOLS: list[ToolSpec] = [
@@ -66,6 +67,17 @@ STUDY_SET_TOOL = ToolSpec(
     "search_materials or get_material in this chat. Pass exactly one payload matching `type`.",
 )
 
-AGENT_TOOLS: list[ToolSpec] = [*READ_TOOLS, STUDY_SET_TOOL]
+AGENT_TOOLS: list[ToolSpec] = [
+    *READ_TOOLS,
+    STUDY_SET_TOOL,
+    ToolSpec(
+        "add_study_block",
+        AddStudyBlockArgs,
+        add_study_block,
+        "Propose a study session for the student to approve. start_local is their local date/time "
+        "without an offset; duration_min is 15-240. Does not add anything to a calendar until "
+        "the student clicks Add. Never claim a proposed session is approved.",
+    ),
+]
 
 __all__ = ["AGENT_TOOLS", "READ_TOOLS", "STUDY_SET_TOOL"]

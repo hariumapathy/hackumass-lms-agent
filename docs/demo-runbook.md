@@ -61,6 +61,6 @@ For real-quality search on real data, run steps 2–3 with `EMBEDDINGS_PROVIDER=
 
 Stop everything: Ctrl+C in each terminal, then `make db-stop`.
 
-Remaining demo limits: calendar feed and study-block approval persistence (S25) are still stubs; skip calendar onboarding for the live Canvas demo. The seeded/MSW backup remains available.
+Calendar (S25) works locally: ask the chat to schedule a study session, click **Add**, then Settings → Calendar → **Download calendar** (import into Google Calendar via Settings → Import & export). Google "subscribe" links only appear when `PUBLIC_API_URL` is public HTTPS; see [calendar-runbook.md](calendar-runbook.md). The seeded/MSW backup remains available.
 
 Live rehearsal issues, fixed and outstanding: [live-test-bugs.md](live-test-bugs.md).

@@ -44,7 +44,20 @@ async def study_set(study_set_id: UUID, user: User, request: Request) -> s.Study
 
 
 @router.post("/study-blocks/decision", response_model=s.StudyBlocksResponse)
-async def decide_blocks(body: s.StudyBlockDecision, user: User) -> s.StudyBlocksResponse:
+async def decide_blocks(
+    body: s.StudyBlockDecision, user: User, request: Request
+) -> s.StudyBlocksResponse:
+    from app.core.settings import get_settings
+    from app.db.pool import connection
+    from app.db.repositories.calendar import decide
+
+    if get_settings().data_source == "db":
+        async with connection() as conn:
+            return s.StudyBlocksResponse(
+                blocks=await decide(
+                    conn, user.user_id, body.block_ids, body.approve, request.app.state.clock.now()
+                )
+            )
     status: s.StudyBlockStatus = "approved" if body.approve else "declined"
     wanted = set(body.block_ids)
     blocks = [

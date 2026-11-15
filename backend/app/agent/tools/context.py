@@ -1,5 +1,6 @@
 """RunCtx: what the harness passes to every tool (never chosen by the model)."""
 
+import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -22,4 +23,6 @@ class RunCtx:
     study_sets: list[Any] = field(default_factory=list)  # s.StudySet created this run (S24)
     proposed_blocks: list[Any] = field(default_factory=list)  # s.StudyBlock proposals (S25)
     block_summary: str | None = None
+    block_store: Any = None
+    block_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     status_emitter: StatusEmitter | None = None

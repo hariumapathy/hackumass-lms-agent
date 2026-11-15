@@ -23,6 +23,7 @@ dependencies = [
     "playwright>=1.65.2",
     "gradescopeapi==1.8.1",
     "piazza-api==0.16.0",
+    "icalendar>=7.3.0",
 ]
 
 [dependency-groups]
