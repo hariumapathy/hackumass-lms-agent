@@ -119,12 +119,12 @@ async def process_material(user_id: str, material_id: str) -> None:
 
 @app.task(name="merge_user", queue="sync")
 async def merge_user(user_id: str) -> None:
-    """S16 implements cross-platform merge. Until then: 1:1 item per unmerged source (S16-lite),
-    so synced assignments show up on the Today view."""
-    from app.sync.merge import merge_one_to_one
+    """S16: merge courses/items across platforms and write canonical item changes."""
+    from app.sync import merge
 
     async with await _connect() as conn:
-        await merge_one_to_one(conn, UUID(user_id))
+        stats = await merge.merge_user(conn, UUID(user_id))
+    log.info("merge_user %s: %s", user_id, stats.model_dump())
 
 
 async def _defer(task: Any, kwargs: dict[str, Any], lock: str | None = None, priority: int = 0):

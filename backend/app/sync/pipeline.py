@@ -191,7 +191,6 @@ class _Store:
         if outcome == "unchanged":
             await self.touch("item_sources", ex["id"])
             return outcome, ex["id"]
-        old_fields = (ex["raw"] or {}).get("_normalized", {})
         await self.one(
             "update item_sources set raw_title = %s, raw_due_at = %s, raw = %s, source_url = %s, "
             "content_hash = %s, source_updated_at = %s, last_synced_at = %s, status = 'changed' "
@@ -208,9 +207,8 @@ class _Store:
                 ex["id"],
             ),
         )
-        await self.change_rows(
-            "item", ex["item_id"] or ex["id"], cid, old_fields, _jsonable(new_fields)
-        )
+        # No `changes` row here: S16 `merge_user` compares canonical items and writes one row per
+        # canonical field change (a non-canonical source moving must not alert the student).
         return outcome, ex["id"]
 
     async def post(self, rec: NPost) -> tuple[str, UUID]:
@@ -323,7 +321,9 @@ class _Store:
     async def mark_removed(self, seen: dict[str, set[UUID]]) -> int:
         """Full scope only: rows of this platform not seen in this run -> removed (+ change)."""
         removed = 0
-        entity = {"item_sources": "item", "materials": "material", "posts": "post"}
+        # Removed item sources get no change row here: S16 marks the canonical item removed (and
+        # writes its change) once all of its sources are gone.
+        entity = {"materials": "material", "posts": "post"}
         for table in SOURCE_TABLES:
             ids = list(seen.get(table, set()))
             cur = await self.conn.execute(
