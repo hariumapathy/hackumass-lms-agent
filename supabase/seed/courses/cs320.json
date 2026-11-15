@@ -1,0 +1,53 @@
+{
+  "course": "cs320",
+  "items": [
+    {"key": "lab1", "type": "lab", "title": "Lab 1: Git and Code Review", "due": "-40d 17:00", "points": 10, "sources": ["canvas", "gradescope"]},
+    {"key": "lab2", "type": "lab", "title": "Lab 2: Unit Testing with Jest", "due": "-26d 17:00", "points": 10, "sources": ["canvas", "gradescope"]},
+    {"key": "lab3", "type": "lab", "title": "Lab 3: Continuous Integration", "due": "-12d 17:00", "points": 10, "sources": ["canvas", "gradescope"]},
+    {"key": "lab4", "type": "lab", "title": "Lab 4: Testing", "due": "+0d 23:59", "points": 10, "sources": ["canvas", "gradescope"],
+     "description": "Write unit tests for the provided shopping-cart module until branch coverage is at least 90%. Submit the repository link on Gradescope."},
+    {"key": "proj1", "type": "project", "title": "Project 1: Requirements Document", "due": "-19d 23:59", "points": 50, "sources": ["canvas"]},
+    {"key": "proj2", "type": "project", "title": "Project 2: Milestone 1", "due": "+5d 23:59", "points": 50, "sources": ["canvas"],
+     "description": "Working vertical slice of your team project: one user story implemented end to end with tests, a CI pipeline that runs on every pull request, and a short demo video."},
+    {"key": "proj3", "type": "project", "title": "Project 2: Milestone 2", "due": "+19d 23:59", "points": 50, "sources": ["canvas"]},
+    {"key": "survey320", "type": "other", "title": "Mid-semester team survey", "due": "+4d 23:59", "points": null, "sources": ["canvas"]},
+    {"key": "quiz320-3", "type": "quiz", "title": "Quiz 3: Design Patterns", "due": "+8d 12:00", "points": 15, "sources": ["canvas"]},
+    {"key": "final320", "type": "exam", "title": "Final Exam", "due": "+29d 13:00", "points": 100, "sources": ["canvas"]}
+  ],
+  "posts": [
+    {"key": "b1", "kind": "announcement", "title": "Lab 4 due tonight", "posted": "-4h", "author": "Prof. Chen",
+     "body": "Reminder: Lab 4 (testing) is due tonight at 11:59 PM on Gradescope. The autograder checks branch coverage; run the coverage script locally before submitting."},
+    {"key": "b2", "kind": "announcement", "title": "Milestone 1 demo slots", "posted": "-2d", "author": "Prof. Chen",
+     "body": "Sign up for a 10-minute Milestone 1 demo slot with your TA mentor. Every team member must be present and should be able to explain one part of the code."},
+    {"key": "b3", "kind": "announcement", "title": "Guest lecture on code review", "posted": "-9d", "author": "Prof. Chen",
+     "body": "Thursday's lecture is a guest talk on code review practices at a local software company. Material from the talk can appear on Quiz 3."}
+  ],
+  "materials": [
+    {"key": "syllabus", "kind": "syllabus", "title": "COMPSCI 320 Syllabus", "mime_type": "application/pdf", "pages": [
+      "COMPSCI 320: Introduction to Software Engineering, Fall 2026. Students learn to build software in teams: requirements, design, testing, version control, continuous integration and code review, through a semester-long team project.",
+      "Grading: team project 45% (requirements 10%, milestone 1 10%, milestone 2 10%, final release 15%), labs 20%, quizzes 10%, final exam 25%. Labs are graded by the Gradescope autograder.",
+      "Team policy: every team member must contribute code through pull requests. Peer evaluations at each milestone can adjust individual project grades by up to 20%."
+    ]},
+    {"key": "l10", "kind": "file", "title": "Lecture 10 slides: Software Testing", "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pages": [
+      "Testing shows the presence of bugs, not their absence. The goal is to find failures cheaply and early.",
+      "Unit tests check one function or class in isolation. Integration tests check that components work together. End-to-end tests drive the whole system like a user.",
+      "The test pyramid: many fast unit tests, fewer integration tests, very few slow end-to-end tests.",
+      "Coverage: statement coverage counts executed lines; branch coverage counts both outcomes of each decision. High coverage does not mean good tests, but low coverage means untested code.",
+      "Test doubles: stubs return canned answers, mocks verify calls, fakes are simple working implementations such as an in-memory database.",
+      "Test-driven development: write a failing test, write the smallest code that passes, refactor. Repeat."
+    ]},
+    {"key": "l11", "kind": "file", "title": "Lecture 11 slides: Continuous Integration", "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pages": [
+      "Continuous integration: every change is merged to the main branch often and checked automatically by a build that runs the tests.",
+      "A CI pipeline typically installs dependencies, runs linters, runs unit tests, and reports the result on the pull request before anyone reviews it.",
+      "Keep the main branch green. If a change breaks the build, fixing it is the team's top priority.",
+      "Flaky tests pass and fail without code changes. Quarantine them and fix the cause; never just re-run until green."
+    ]},
+    {"key": "l12", "kind": "file", "title": "Lecture 12 slides: Design Patterns", "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pages": [
+      "Design patterns are reusable solutions to common design problems. They give teams a shared vocabulary.",
+      "Strategy: put interchangeable algorithms behind one interface so the caller can swap them at runtime.",
+      "Observer: subjects notify registered observers when their state changes; common in user interfaces.",
+      "Adapter: wrap an existing class so it matches the interface a client expects.",
+      "Quiz 3 covers Strategy, Observer, Adapter and Factory: know the problem each solves and draw its class diagram."
+    ]}
+  ]
+}

@@ -2,7 +2,7 @@
 PNPM := npx -y pnpm@10.34.9
 SUPABASE := npx -y supabase@3.1.0
 
-.PHONY: setup db db-stop db-reset api worker web test test-backend test-web lint types
+.PHONY: setup db db-stop db-reset seed api worker web test test-backend test-web lint types
 
 setup:
 	cd backend && uv sync
@@ -14,9 +14,15 @@ db:
 db-stop:
 	$(SUPABASE) stop
 
+# Seed embeddings: fake by default (fast, no key). `make db-reset SEED_EMBEDDINGS=gemini` for the demo.
+SEED_EMBEDDINGS ?= fake
+
 db-reset:
 	$(SUPABASE) db reset
-	@echo "Seed loading arrives with S03 (uv run app seed)."
+	cd backend && uv run app seed --reset --embeddings $(SEED_EMBEDDINGS)
+
+seed:
+	cd backend && uv run app seed --reset --embeddings $(SEED_EMBEDDINGS)
 
 api:
 	cd backend && uv run uvicorn app.main:app --reload --port 8000

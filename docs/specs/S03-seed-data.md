@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): built + tested on `dev/neal`; awaiting review |
 | **Stage** | 0 |
 | **Role** | A (writes), used by everyone |
 | **Depends on** | S01 |
@@ -49,9 +49,9 @@ Content must be **plausible academic text** (write it or generate it once and co
 | Fixture references unknown course | Loader fails listing the bad reference |
 
 ## Acceptance criteria
-- [ ] `make db-reset` loads everything in under 60 s with fake embeddings
+- [x] `make db-reset` loads everything in under 60 s with fake embeddings (0.5 s locally)
 - [ ] Today view (S32) and agent tools (S21) return non-empty, sensible data from seed
-- [ ] Seed covers every enum value used by the UI (statuses, item types, post kinds, connection statuses)
+- [x] Seed covers every enum value used by the UI (statuses, item types, post kinds, connection statuses)
 
 ## Test plan
 | ID | Test | Type |
@@ -64,3 +64,12 @@ Content must be **plausible academic text** (write it or generate it once and co
 
 ## Out of scope
 Multiple demo users; realistic file binaries in Storage (text-only materials are fine for seed).
+
+## Implementation notes (2026-11-14, Neal)
+- Loader `backend/app/db/seed.py`, dates `backend/app/db/seed_dates.py`, CLI `uv run app seed [--user-email] [--password] [--reset] [--embeddings fake|gemini]`, `make db-reset` / `make seed` (`SEED_EMBEDDINGS=fake` default). Fixtures: `supabase/seed/semester.json` + `supabase/seed/courses/<key>.json`.
+- **IDs match `app/api/mock_data.py`** (`uuid5(NAMESPACE_URL, "hackumass-mock/<kind>/<key>")`) for courses, items, posts, changes, study sets and blocks. Tests seed under their own namespace.
+- Counts: 4 courses, 35 items (45 sources), 15 posts, 24 materials, 123 chunks, 3 changes, 2 study sets, 4 blocks, 1 conversation. Smaller than the ~400 chunks guessed in the spec; enough for every demo question. More text can be added to the JSON without code changes.
+- Pre-S12 chunking: one chunk per page/slide, transcript window or post, with the S12 context header; `token_count` ≈ chars/4 until S12 adds tiktoken.
+- Fixture templates: `{{when:<item>}}` (local due date, so text never contradicts relative dates) and `{{cite:<ref>}}` → `[cite:chunk_<id>]`. Study set payloads use `refs` → `chunk_ids` + a resolved `citations` map (S24 shape).
+- Account: existing `auth.users` row reused; else created via the admin API when `SUPABASE_SERVICE_ROLE_KEY` is set, else (local only) by SQL with a password so sign-in works. Local default login `demo@example.com` / `demo-password-311`; a hosted account requires `--password`.
+- Also added (S10/S12 pieces it needed): `app/core/hashing.py` (`content_hash`, S10-T01) and `app/core/embeddings.py` (Fake + Gemini providers, `get_embeddings`).

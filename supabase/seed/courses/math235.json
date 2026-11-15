@@ -1,0 +1,41 @@
+{
+  "course": "math235",
+  "items": [
+    {"key": "ws5", "type": "assignment", "title": "Written HW 5: Subspaces", "due": "-16d 23:59", "points": 20, "sources": ["canvas"]},
+    {"key": "ws6", "type": "assignment", "title": "Written HW 6: Determinants", "due": "-6d 23:59", "points": 20, "sources": ["canvas"]},
+    {"key": "quiz6", "type": "quiz", "title": "Quiz 6: Determinants", "due": "-4d 23:59", "points": 10, "sources": ["canvas"]},
+    {"key": "quiz7", "type": "quiz", "title": "Quiz 7: Eigenvalues", "due": "+3d 23:59", "points": 10, "sources": ["canvas"]},
+    {"key": "ws7", "type": "assignment", "title": "Written HW 7: Eigenvectors", "due": "+7d 23:59", "points": 20, "sources": ["canvas"]},
+    {"key": "exam2", "type": "exam", "title": "Exam 2", "due": "+12d 18:30", "points": 100, "sources": ["canvas"]},
+    {"key": "final", "type": "exam", "title": "Final Exam", "due": "+24d 15:30", "points": 200, "sources": ["canvas"]}
+  ],
+  "posts": [
+    {"key": "a2", "kind": "announcement", "title": "Office hours moved", "posted": "-2h", "author": "Prof. Okafor",
+     "body": "This week only, Wednesday office hours move to 3-4 PM in LGRT 1234. Bring questions on eigenvalues for Quiz 7."},
+    {"key": "m2", "kind": "announcement", "title": "Exam 2 topics", "posted": "-1d", "author": "Prof. Okafor",
+     "body": "Exam 2 covers sections 3.1-5.3: determinants, vector spaces, subspaces, eigenvalues and eigenvectors, and the characteristic equation. Diagonalization is not on Exam 2."},
+    {"key": "m3", "kind": "announcement", "title": "Written HW 6 grades posted", "posted": "-3d", "author": "TA Marco",
+     "body": "Written HW 6 grades are on Canvas. The most common mistake was expanding a determinant along a row without the alternating signs."}
+  ],
+  "materials": [
+    {"key": "syllabus", "kind": "syllabus", "title": "MATH 235 Syllabus", "mime_type": "application/pdf", "pages": [
+      "MATH 235: Introduction to Linear Algebra, Fall 2026. Topics: systems of linear equations, matrix algebra, determinants, vector spaces, eigenvalues and eigenvectors, orthogonality.",
+      "Grading: written homework 15%, weekly Canvas quizzes 10%, Exam 1 20%, Exam 2 20%, final exam 35%. The lowest quiz score is dropped.",
+      "Exams are closed book; a basic scientific calculator is allowed but not a graphing calculator."
+    ]},
+    {"key": "notes5", "kind": "file", "title": "Notes 5.1-5.2: Eigenvalues", "mime_type": "application/pdf", "pages": [
+      "An eigenvector of a square matrix A is a nonzero vector x with Ax = lambda x for some scalar lambda, called the eigenvalue.",
+      "lambda is an eigenvalue of A exactly when A - lambda I is not invertible, that is when det(A - lambda I) = 0. This is the characteristic equation.",
+      "For a triangular matrix the eigenvalues are the entries on the main diagonal.",
+      "To find eigenvectors for an eigenvalue lambda, solve the homogeneous system (A - lambda I)x = 0. The solution set is the eigenspace.",
+      "Eigenvectors that belong to distinct eigenvalues are linearly independent."
+    ]},
+    {"key": "notes3", "kind": "file", "title": "Notes 3.1-3.3: Determinants", "mime_type": "application/pdf", "pages": [
+      "The determinant of a 2x2 matrix [a b; c d] is ad - bc. A matrix is invertible exactly when its determinant is nonzero.",
+      "Cofactor expansion works along any row or column, with signs alternating in a checkerboard pattern starting with + in the top-left corner.",
+      "Row operations: swapping two rows flips the sign, scaling a row by k scales the determinant by k, adding a multiple of one row to another leaves it unchanged.",
+      "det(AB) = det(A) det(B) and det(A transpose) = det(A)."
+    ]},
+    {"key": "review2", "kind": "page", "title": "Exam 2 Review Sheet", "mime_type": "text/html", "processing_status": "pending", "pages": []}
+  ]
+}
