@@ -12,7 +12,7 @@ _Only Soumith (or Soumith's agent) edits this file. Keep it short; replace stale
 
 - 2026-11-14/15 night: this laptop now runs the full stack (uv, Python 3.12, make, Docker, gh). **S25 calendar verified live** and wording fixed (`codex/calendar-piazza-ui`). On `neal/s17-piazza`: **Connect Piazza** UI, **Echo360 hidden**, calendar branch merged in; all tests green. Soumith approved merging both into main (Neal's review gate).
 
-- 2026-11-15 02:05: **Session B** (split doc) on `friend/submissions-pdf-web`: submitted work out of Overdue + in-app PDF viewer for citations, both live-verified; PR to open: https://github.com/hariumapathy/hackumass-lms-agent/compare/main...friend/submissions-pdf-web?expand=1
+- 2026-11-15 02:05: **Session B** (split doc) on `friend/submissions-pdf-web`: submitted work out of Overdue + in-app PDF viewer for citations, both live-verified; main (incl. Session A) merged in, all green; web search dropped. PR to open: https://github.com/hariumapathy/hackumass-lms-agent/compare/main...friend/submissions-pdf-web?expand=1
 
 ## In progress
 - PRs to open/merge on github.com (agent's `gh` not logged in): calendar first, then Piazza. Links in the newest devlog entry.
