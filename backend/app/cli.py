@@ -108,7 +108,9 @@ COMMANDS = {"openapi": lambda _argv: _openapi(), "seed": _seed, "worker": _worke
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if not args or args[0] in {"-h", "--help"}:
-        print("usage: app <command>\n\ncommands: openapi (S02), seed (S03), worker (S10); evals later")
+        print(
+            "usage: app <command>\n\ncommands: openapi (S02), seed (S03), worker (S10); evals later"
+        )
         return 0
     command = COMMANDS.get(args[0])
     if command is None:
