@@ -26,7 +26,9 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **Verified on a real server** (uvicorn `--reload`, `DATA_SOURCE=db`, local Supabase, real Gemini): local-Supabase JWT accepted, `/me` + `/sync/status` from the DB, `POST /chat` streamed run_started → 4 status → text → citations → done, conversation saved.
 **State of main:** PR #16 (dev/hari) green locally, waiting for Hari's merge. Everything else from Hari is on main.
 
-### Run it yourself on real data (Hari's laptop, Git Bash, Docker Desktop running)
+**Update 20:45 ET:** the steps below are now one command each: see **[demo-runbook.md](demo-runbook.md)** (`make demo-db`, `make demo-api`, `make demo-worker`, `make demo-web`). Verified in a browser: email-link sign-in (local Mailpit) → Today → chat answered by Gemini with citation chips. Fixed `supabase/config.toml` redirect URLs (`localhost:3000/**`), which had broken the local email sign-in.
+
+### Run it yourself on real data (manual version; prefer the runbook)
 1. `make setup` then `make db` (local Supabase; first run downloads images).
 2. Seed the demo student into the LOCAL DB:
    `cd backend && DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY= uv run app seed --embeddings fake --reset`
