@@ -11,6 +11,7 @@ from app.agent.tools.args import (
     SearchMaterialsArgs,
 )
 from app.agent.tools.runner import ToolSpec
+from app.agent.tools.study_sets import CreateStudySetArgs, create_study_set
 
 READ_TOOLS: list[ToolSpec] = [
     ToolSpec(
@@ -56,4 +57,15 @@ READ_TOOLS: list[ToolSpec] = [
     ),
 ]
 
-__all__ = ["READ_TOOLS"]
+STUDY_SET_TOOL = ToolSpec(
+    "create_study_set",
+    CreateStudySetArgs,
+    create_study_set,
+    "Create a study plan, quiz (3-15 questions, mcq needs 4 choices) or flashcards (5-40 cards) "
+    "for the student. Search first; every task/question/card must cite chunk_ids returned by "
+    "search_materials or get_material in this chat. Pass exactly one payload matching `type`.",
+)
+
+AGENT_TOOLS: list[ToolSpec] = [*READ_TOOLS, STUDY_SET_TOOL]
+
+__all__ = ["AGENT_TOOLS", "READ_TOOLS", "STUDY_SET_TOOL"]

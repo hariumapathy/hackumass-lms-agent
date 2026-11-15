@@ -182,25 +182,25 @@ class _NoArgs(BaseModel):
     title: str = "x"
 
 
-def _special_tool(name: str, payload: dict[str, Any]) -> ToolSpec:
-    async def fn(_: RunCtx, __: Any) -> Any:
-        class Raw(ToolResult):
-            def model_dump_json(self, **_kw: Any) -> str:  # type: ignore[override]
-                return json.dumps(payload, default=str)
+def _fake_set_tool() -> ToolSpec:
+    async def fn(ctx: RunCtx, __: Any) -> ToolResult:
+        ctx.study_sets.append(mock.study_set())
+        return ToolResult(results=[{"study_set_id": "x"}])
 
-        return Raw()
+    return ToolSpec("create_study_set", _NoArgs, fn)
 
-    return ToolSpec(name, _NoArgs, fn)
+
+def _fake_block_tool() -> ToolSpec:
+    async def fn(ctx: RunCtx, __: Any) -> ToolResult:
+        ctx.proposed_blocks.append(mock.study_blocks()[len(ctx.proposed_blocks) % 2])
+        ctx.block_summary = "Add 1 session?"
+        return ToolResult(results=[{"proposed": 1}])
+
+    return ToolSpec("add_study_block", _NoArgs, fn)
 
 
 async def test_s22_t04_t05_study_set_and_single_approval_after_text() -> None:
-    study = mock.study_set().model_dump(mode="json")
-    blocks = [b.model_dump(mode="json") for b in mock.study_blocks()]
-    tools = [
-        *READ_TOOLS,
-        _special_tool("create_study_set", {"study_set": study}),
-        _special_tool("add_study_block", {"blocks": blocks[:1], "summary": "Add 1 session?"}),
-    ]
+    tools = [*READ_TOOLS, _fake_set_tool(), _fake_block_tool()]
     model = ScriptedModel(
         [
             [
