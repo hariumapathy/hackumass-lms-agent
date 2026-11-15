@@ -94,3 +94,6 @@ export async function streamChat(body: ChatRequest, handlers: {
 
 ## Out of scope
 Push notifications, offline mode, i18n.
+
+## Demo configuration (2026-11-14, Neal)
+- Local demo uses production build/start, avoiding first-visit compilation. Email-link sign-in verified on local Supabase. Google button requires `NEXT_PUBLIC_GOOGLE_SIGN_IN_ENABLED=1` after its Supabase provider is configured; local demo keeps it hidden.

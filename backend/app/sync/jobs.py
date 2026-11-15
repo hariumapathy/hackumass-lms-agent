@@ -20,7 +20,7 @@ from pydantic import BaseModel
 
 from app.connectors.base import PlatformError, SyncScope, get_connector
 from app.core.clock import Clock, SystemClock
-from app.core.crypto import decrypt, get_fernet
+from app.core.crypto import CryptoError, decrypt, get_fernet
 from app.core.settings import get_settings
 from app.db.repositories import sync as repo
 from app.sync.pipeline import run_sync
@@ -92,7 +92,17 @@ async def execute_sync(
             conn, sj.user_id, sj.sync_run_id, "failed", clock.now(), error="Not connected."
         )
         return "failed"
-    secret = decrypt(ciphertext, get_fernet())
+    try:
+        secret = decrypt(ciphertext, get_fernet())
+    except CryptoError:
+        message = "Please reconnect this account so we can update your classes."
+        await repo.set_connection_status(
+            conn, sj.user_id, sj.platform, "needs_reconnect", error=message
+        )
+        await repo.mark_run(
+            conn, sj.user_id, sj.sync_run_id, "needs_reconnect", clock.now(), error=message
+        )
+        return "needs_reconnect"
     outcome = await run_sync(
         conn,
         user_id=sj.user_id,
@@ -108,7 +118,12 @@ async def execute_sync(
     if outcome.status == "retry":
         raise PlatformError(outcome.error or "platform error")
     if outcome.status == "succeeded":
-        await _defer(merge_user, {"user_id": str(sj.user_id)}, lock=f"merge:{sj.user_id}")
+        await _defer(
+            merge_user,
+            {"user_id": str(sj.user_id)},
+            lock=f"merge:{sj.user_id}",
+            priority=PRIORITY["manual"],
+        )
     return outcome.status
 
 

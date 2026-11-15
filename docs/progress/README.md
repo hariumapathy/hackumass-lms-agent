@@ -25,7 +25,7 @@ Feature-by-feature status lives in the spec index: [specs/README.md](../specs/RE
 | Checkpoint | Goal | Status |
 |---|---|---|
 | H2 | Contracts agreed; repo + Supabase set up | Partial: repo, hosted Supabase, S02 done; S01/S03 pending |
-| H10 | A question about real Canvas data answered end to end in the UI | Not started |
+| H10 | A question about real Canvas data answered end to end in the UI | Verified locally 2026-11-14 (Neal): eight live courses, Today, Gemini + real citations |
 | H18 | Study mode with verified citations from real data; Gradescope connected | Not started |
 | H24 | MVP feature freeze; full demo run-through | Not started |
 | H30 | Code freeze; bug fixes only | Not started |

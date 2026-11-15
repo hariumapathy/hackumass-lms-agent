@@ -140,12 +140,12 @@ function ConnectionRow({ platform, connection }: { platform: Platform; connectio
     mutationFn: () => api().disconnect(platform),
     onSuccess: async () => {
       setConfirming(false);
-      await Promise.all(["me", "today", "courses"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
+      await Promise.all(["me", "today", "courses", "sync-status"].map((k) => qc.invalidateQueries({ queryKey: [k] })));
     },
   });
   const refresh = useMutation({
     mutationFn: () => api().sync({ platform }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["today"] }),
+    onSuccess: () => Promise.all(["today", "sync-status"].map((key) => qc.invalidateQueries({ queryKey: [key] }))),
   });
 
   let expiry: string | null = null;

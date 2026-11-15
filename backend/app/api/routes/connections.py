@@ -2,10 +2,11 @@
 and sync status (S10) are real; mock mode keeps the S02 stubs. Logins: S13."""
 
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
+from psycopg import AsyncConnection
 
 from app.api import mock_data as mock
 from app.api import schemas as s
@@ -89,14 +90,10 @@ async def login_status(
 
 
 @router.delete("/connections/{platform}", status_code=204)
-async def disconnect(platform: s.Platform, user: User) -> Response:
-    """S13 rule 6: delete the connection + its secret and cancel queued syncs. Synced course
-    data stays (Delete my data removes it). Idempotent: 204 even if not connected."""
+async def disconnect(platform: s.Platform, user: User, request: Request) -> Response:
     if _db_mode():
-        from app.sync.disconnect import disconnect_platform
-
         async with connection() as conn:
-            await disconnect_platform(conn, user.user_id, platform)
+            await sync_repo.disconnect(conn, user.user_id, platform, request.app.state.clock.now())
     return Response(status_code=204)
 
 
@@ -120,26 +117,32 @@ async def start_sync(body: s.SyncRequest, user: User) -> s.SyncStartResponse:
 
 
 @router.get("/sync/status", response_model=s.SyncStatusResponse)
-async def sync_status(user: User) -> s.SyncStatusResponse:
+async def sync_status(user: User, request: Request) -> s.SyncStatusResponse:
     if not _db_mode():
         return s.SyncStatusResponse(sources=mock.sources())
+    async with connection() as conn:
+        return s.SyncStatusResponse(
+            sources=await source_statuses(conn, user.user_id, request.app.state.clock.now())
+        )
+
+
+async def source_statuses(
+    conn: AsyncConnection[Any], user_id: UUID, now: datetime
+) -> list[s.SourceStatus]:
+    """Shared freshness for Today and /sync/status."""
     from app.agent.tools.coverage import SCHEDULE_INTERVAL
 
-    now = datetime.now(UTC)
-    async with connection() as conn:
-        rows = await sync_repo.list_connections(conn, user.user_id)
-        running = await sync_repo.running_platforms(conn, user.user_id)
-    return s.SyncStatusResponse(
-        sources=[
-            s.SourceStatus(
-                platform=c.platform,
-                connection_status=c.status,
-                last_sync_at=c.last_sync_at,
-                running=c.platform in running,
-                stale=c.last_sync_at is None
-                or now - c.last_sync_at > 2 * SCHEDULE_INTERVAL[c.platform],
-            )
-            for c in rows
-            if c.status != "disconnected"
-        ]
-    )
+    rows = await sync_repo.list_connections(conn, user_id)
+    running = await sync_repo.running_platforms(conn, user_id)
+    return [
+        s.SourceStatus(
+            platform=c.platform,
+            connection_status=c.status,
+            last_sync_at=c.last_sync_at,
+            running=c.platform in running,
+            stale=c.last_sync_at is None
+            or now - c.last_sync_at > 2 * SCHEDULE_INTERVAL[c.platform],
+        )
+        for c in rows
+        if c.status != "disconnected"
+    ]

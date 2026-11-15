@@ -5,17 +5,19 @@ Next.js 16 (App Router, TypeScript), Tailwind 4, shadcn/ui (Radix), TanStack Que
 
 _Last verified: 2026-11-14 ~20:20 ET on `main` @ `a081914` (+ the Canvas-guide fix on `dev/soumith`): 70 unit/component tests, 6 Playwright e2e tests, lint, typecheck and `next build` all green; screenshots checked at 1280 px and 375 px._
 
-## Screens (all built; all work in mock mode)
+## Screens (all built; mock backup and real DB dashboard)
+
+2026-11-14 integration update: Today/course/items/changes/citations now read the DB in `DATA_SOURCE=db`; Canvas connect, disconnect and import status are real. Verified local email sign-in → fresh Canvas account → eight courses → real Gemini answer and citation card. `make demo-web` builds/starts production for fast page switches; see [demo runbook](../../docs/demo-runbook.md). Google sign-in appears only with `NEXT_PUBLIC_GOOGLE_SIGN_IN_ENABLED=1` after configuring its provider. Calendar/S25 remain stubs.
 | Route | Screen | Spec | Real backend today? |
 |---|---|---|---|
 | `/` | Landing + sign-in (Google, email link; "Continue with demo data" in mock mode) | S30 | Supabase sign-in needs env vars (below) |
 | `/auth/callback` | Finishes sign-in, sends you to onboarding or Today | S30 | yes |
-| `/onboarding` | 5 steps: welcome → paste Canvas code (guided) → Gradescope/Echo360 login → calendar → "getting your classes". `?reconnect=<platform>` jumps to one step | S31 | **UMass login (Gradescope/Echo360) is live** (S13: opens a browser window on the machine running the API); Canvas connect + `/sync/status` still stubs |
-| `/today` | Overdue / due today / this week / exams / changes banner / announcements / per-source freshness; Canvas-expiry banner on every signed-in screen | S32, S34 | stub data (`mock_data.py`) |
+| `/onboarding` | 5 steps: welcome → paste Canvas code (guided) → Gradescope/Echo360 login → calendar → "getting your classes". `?reconnect=<platform>` jumps to one step | S31 | **UMass login (Gradescope/Echo360) is live** (S13: opens a browser window on the machine running the API); Canvas connect + `/sync/status` are real |
+| `/today` | Overdue / due today / this week / exams / changes banner / announcements / per-source freshness; Canvas-expiry banner on every signed-in screen | S32, S34 | real database in `DATA_SOURCE=db` |
 | `/courses/[id]` | Course: upcoming + past items, posts, materials | S32 | stub data |
 | `/chat`, `/chat/[id]` | Streaming answers, tool progress, citation chips + cards, study-set cards, Add/Skip study sessions, Stop, Try again, suggested questions | S33 | **real agent** (Gemini) when the API has a key; scripted stream otherwise |
 | `/study`, `/study/[id]` | Study sets: plan (checkboxes), quiz (one question at a time, score), flashcards (flip, keyboard) | S33 | real (in-memory store from the agent run) |
-| `/settings` | Accounts (Refresh / Reconnect / Disconnect), profile, calendar buttons + new link, privacy + Delete my data, Advanced → AI choice | S34 | stubs (`/me` doesn't persist yet) |
+| `/settings` | Accounts (Refresh / Reconnect / Disconnect), profile, calendar buttons + new link, privacy + Delete my data, Advanced → AI choice | S34 | real profile + connections; calendar still stubbed |
 
 ## Run it
 

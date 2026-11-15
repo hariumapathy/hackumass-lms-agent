@@ -43,3 +43,5 @@
 
 | 2026-11-14 | **Merge steward:** one Claude session merges each `dev/*` branch into `main` every 15 min when CI + local checks are green, resolving conflicts on a `merge/<name>` branch (never pushes to `dev/*`); rules in [handoff/merge-steward.md](handoff/merge-steward.md) | Three people + many agents push constantly; one owner for integration avoids drift and stale `main` |
 _Still in planning — stack, roles and final MVP scope not yet locked. See [06-open-questions.md](06-open-questions.md)._
+
+| 2026-11-14 | Demo fixes authorized on main: use official UMass Canvas host `umamherst.instructure.com`; DB dashboard and disconnect; priority merge before bulk file processing; production demo UI; email sign-in with Google opt-in only when configured | Live token check exposed wrong host, mock dashboard, stale caches and merge starvation; no schema or API shape changes |

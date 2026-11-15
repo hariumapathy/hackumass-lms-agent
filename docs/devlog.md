@@ -21,12 +21,39 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+
+
+## 2026-11-14 22:11 ET · Neal's laptop · Codex · branch main · live-test inventory
+**Done:** User requested a compiled bug list rather than a video. Added `docs/live-test-bugs.md`: ten resolved demo issues and six remaining findings, with live observations separated from code-confirmed gaps and the unproven account-switch cache risk. Replacement Canvas token accepted through the UI; refresh finished and Today showed the fresh timestamp. No credentials recorded in files or logs.
+**Next:** P1 complete Storage/job cleanup in Delete my data; reproduce account-switch cache retention. Then S25 calendar/approval persistence and hide the unimplemented Echo360 connector. See the report for priorities/evidence. No implementation changes in this follow-up; previous green test/build results remain applicable.
+
+## 2026-11-14 22:00 ET · Neal's laptop · Codex · branch main (explicit user request)
+**Hour:** ~H25; Devpost draft due 23:59 tonight, final Sun 09:00, code freeze 08:00.
+**Done:** S32/S23 database dashboard integration; S13-T06 disconnect; S10 merge priority/readiness and unreadable-credential recovery; UI refresh on import completion; production demo server; Google button opt-in. Live Canvas → eight courses → real Today/course pages → Gemini deadline answer and a cited midterm-scope answer (syllabus page + announcement), verified in the browser. No real data or credentials added to fixtures/git. Tests were written failing-first for the DB dashboard, disconnect, cache refresh, merge readiness/priority and unreadable credential fixes.
+**Decisions / corrections:** original repo used the wrong Canvas hostname. Corrected defaults, guide and docs to `umamherst.instructure.com`, confirmed via UMass IT. No schema or API response changes. Details in decisions.md and owning specs.
+**Roadblocks resolved:** old local Supabase callback configuration required a restart without resetting data; an old API was using different auth settings, restarted with `make demo-api`. Large initial file queue delayed the merge, so merges now get manual priority. Old unreadable credentials no longer leave runs queued forever.
+**Validation:** 440 backend pass / 1 skip / 1 expected failure; 71 frontend pass; 6 browser tests; all lint/format/type checks and production build green. Dedicated live account is separate from seeded backup. Demo uses fake embeddings with keyword retrieval and real Gemini chat.
+**State of main:** demo fixes committed and pushed as `4d64086` (remote at start `1b882c7`). Final manual Refresh succeeded: 323 unchanged records, 125 canonical deadlines; Today changed from updating to fresh without a page reload. Local API + worker + production web are the demo stack. Hosted Supabase not used.
+**Next steps (in order):** 1. Rehearse live Canvas flow via demo-runbook.md. 2. S25 is still stubbed: skip calendar/approval-persistence demo steps until built. 3. Manual Gradescope login/Duo check. Devpost draft deadline still applies.
+**Gotchas:** `make demo-db` resets all local data; do not run it after live imports unless intentional. `nvm use 26` on this laptop (default Node 18 cannot build Next); `NODE_OPTIONS=--no-experimental-webstorage` for frontend tests. Pause the worker during integration tests that manipulate the queue. Frontend public settings require a rebuild.
+
+## 2026-11-14 21:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF: demo gaps found by Hari (fix these first)
+Hari ran `docs/demo-runbook.md` in a fresh clone: UI loads, but the demo feels stale. Root causes and fixes, **in this order** (Hari's agent hit its usage limit; next laptop please take these):
+1. **Today / course pages always show the S02 mock semester**, even in DB mode: `backend/app/api/routes/dashboard.py` (`/today`, `/courses`, `/courses/{id}`, `/items`, `/changes`, `/changes/seen`, `/citations`) still return `mock_data`. Wire them to the DB when `get_settings().data_source == "db"` (same pattern as `/me` in `routes/account.py`; reuse `app/db/repositories/agent.py` queries: `list_items`, `list_changes`, `list_courses`, `chunks_by_id` + `app.agent.citations.resolve_rows`). Without this, a real Canvas connect only shows up in **chat**, never on Today. Biggest demo gap.
+2. **Disconnect does nothing**: `DELETE /connections/{platform}` in `routes/connections.py` is still the S02 stub (204, no change), so Settings keeps showing "connected". In DB mode: set `connections.status='disconnected'` and delete its `connection_secrets` row (repository fn with `(conn, user_id, platform)`). Then Settings shows Connect again, and the Canvas token step can be used.
+3. **Real Canvas test**: `POST /connections/canvas` is real (stores encrypted, queues the sync). It needs `make demo-worker` running to actually pull data. Then item 1 makes it visible. Use a **fresh** token. Real files are embedded with `EMBEDDINGS_PROVIDER` (demo default `fake` → keyword search only; for real data start api/worker with `EMBEDDINGS_PROVIDER=gemini`).
+4. **Slow page switches** ("Rendering…" corner badge): that's Next.js **dev mode** compiling each page on first visit. For the demo, change `demo-web` in `scripts/demo-local.sh` to `pnpm build && pnpm start` (production server, fast navigation). Keep `make web` as dev mode.
+5. **"Continue with Google" is not set up**: it needs a Google OAuth provider in Supabase (`supabase/config.toml` `[auth.external.google]` + client id/secret, and on the hosted project). Until then, **email link is the only working sign-in** (local inbox at http://127.0.0.1:54324). Either configure it or hide the button for the demo (Soumith).
+**What's real today:** email-link sign-in; `/me` profile; chat with the real Gemini agent on the DB (deadlines, materials, citations, flashcards); Connect Canvas API + worker sync (S11/S12, untested with a live token); sync status. **What's still mock:** Today, course pages, items, changes, citations panel, disconnect, Google sign-in.
+
 ## 2026-11-14 20:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF (Hari's backend is done for the MVP)
 **Done since 20:25:** `POST /connections/canvas` wired to Neal's `connect_canvas` (DB mode): bad token → 400 `invalid_token` with a plain message; good token → stored **encrypted**, first `connect` sync queued (S11-T12, `tests/integration/test_s11_connect_route_db.py`). `POST /sync` + `GET /sync/status` real in DB mode. `ENCRYPTION_KEY` generated in Hari's local `.env` (API and worker must share it). Tests never get the hosted secret key. **432 backend tests pass with the local DB; lint clean.**
 **Verified on a real server** (uvicorn `--reload`, `DATA_SOURCE=db`, local Supabase, real Gemini): local-Supabase JWT accepted, `/me` + `/sync/status` from the DB, `POST /chat` streamed run_started → 4 status → text → citations → done, conversation saved.
 **State of main:** PR #16 (dev/hari) green locally, waiting for Hari's merge. Everything else from Hari is on main.
 
-### Run it yourself on real data (Hari's laptop, Git Bash, Docker Desktop running)
+**Update 20:45 ET:** the steps below are now one command each: see **[demo-runbook.md](demo-runbook.md)** (`make demo-db`, `make demo-api`, `make demo-worker`, `make demo-web`). Verified in a browser: email-link sign-in (local Mailpit) → Today → chat answered by Gemini with citation chips. Fixed `supabase/config.toml` redirect URLs (`localhost:3000/**`), which had broken the local email sign-in.
+
+### Run it yourself on real data (manual version; prefer the runbook)
 1. `make setup` then `make db` (local Supabase; first run downloads images).
 2. Seed the demo student into the LOCAL DB:
    `cd backend && DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY= uv run app seed --embeddings fake --reset`

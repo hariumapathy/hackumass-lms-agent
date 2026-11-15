@@ -9,7 +9,7 @@ Each synced record stores a canonical URL built from the platform's stable IDs:
 
 | Source | Stored canonical link |
 |---|---|
-| Canvas assignment | `umass.instructure.com/courses/{course_id}/assignments/{id}` |
+| Canvas assignment | `umamherst.instructure.com/courses/{course_id}/assignments/{id}` |
 | Canvas file / slides | `/courses/{course_id}/files/{file_id}` (+ page number we parsed) |
 | Canvas announcement | `/courses/{course_id}/discussion_topics/{id}` |
 | Piazza | `piazza.com/class/{class_id}/post/{post_number}` |

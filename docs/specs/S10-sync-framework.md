@@ -149,3 +149,6 @@ Platform-specific fetching (S11, S14, S15), file parsing (S12), cross-platform m
 - `process_material` is a stub until S12. `GET /sync/status` / `POST /sync` route wiring happens with the API DB wiring (B lane).
 - **Incomplete listings** (found while building S11): connectors add `(course_platform_id, table)` to `ctx.incomplete` for windowed or hidden sections (Canvas: announcements are a 60-day window; a 403 tab). Full-scope removal skips those course/table pairs, so old announcements and hidden tabs are never marked `removed`. Test S10-T04b.
 - S12 extended the pipeline: new/changed materials carry their `download`/`text`/`cues` payload to `process_material`, and new/changed posts are queued for `process_post`.
+
+## Demo hardening (2026-11-14, Neal)
+- Dashboard merges use manual-refresh priority (10), ahead of bulk file jobs. Import status includes pending/active merge jobs. Unreadable encrypted credentials terminate as `needs_reconnect` instead of remaining queued (regression in `test_s10_sync_db.py`).

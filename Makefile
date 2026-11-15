@@ -2,7 +2,7 @@
 PNPM := npx -y pnpm@10.34.9
 SUPABASE := npx -y supabase@3.1.0
 
-.PHONY: setup db db-stop db-reset seed api worker web test test-backend test-web lint types
+.PHONY: setup db db-stop db-reset seed api worker web test test-backend test-web lint types demo-db demo-api demo-worker demo-web
 
 setup:
 	cd backend && uv sync
@@ -48,3 +48,16 @@ lint:
 types:
 	cd backend && uv run app openapi > ../apps/web/src/lib/api/openapi.json
 	cd apps/web && npx openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts
+
+# Local demo on any laptop (docs/demo-runbook.md): always the LOCAL Supabase stack, real agent.
+demo-db: db
+	bash scripts/demo-local.sh seed
+
+demo-api:
+	bash scripts/demo-local.sh api
+
+demo-worker:
+	bash scripts/demo-local.sh worker
+
+demo-web:
+	bash scripts/demo-local.sh web

@@ -109,7 +109,7 @@ To change one: write the proposal under "Contract change proposals" in your prog
 - **Data**: Supabase (Postgres + pgvector, Storage, Auth). Migrations as plain SQL in `supabase/migrations/`.
 - Full layout and commands: [S00](docs/specs/S00-repo-scaffolding.md).
 - Pinned versions and why: [S00 implementation notes](docs/specs/S00-repo-scaffolding.md#implementation-notes-pinned-versions-2026-11-14). **Next.js 16**: read `apps/web/AGENTS.md` before frontend work. Node 20 is supported; don't upgrade test tooling past the Node-20-compatible versions without the team.
-- Commands: `make setup | db | db-reset | api | worker | web | test | lint | types`.
+- Commands: `make setup | db | db-reset | api | worker | web | test | lint | types`. **Run the whole demo locally:** [docs/demo-runbook.md](docs/demo-runbook.md) (`make demo-db`, `demo-api`, `demo-worker`, `demo-web`).
 - **Reusing outside code** (decided: borrow pieces of gradescope-mcp/piazza-mcp, see S14/S17): copy into `backend/app/connectors/<platform>/_vendored/` with a header (source repo, commit, license, what you changed) and the upstream LICENSE file, and add it to [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) + Devpost credits in the same PR. Never reuse their password logins.
 - Keep tool schemas simple (flat params, enums); validate with Pydantic. See [03](docs/03-architecture.md#agent-and-tools).
 
