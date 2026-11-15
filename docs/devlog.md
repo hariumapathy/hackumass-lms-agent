@@ -23,6 +23,10 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-15 02:20 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/real-data-demo
+**Done:** **Real-data demo mode** for judging/video (Hari: "only my stuff, no mock data"): `make demo-real-api|worker|web` (+ optional `make demo-real-wipe`). Real mode = `CHAT_MODE=agent` (never the scripted fake answer), Gemini embeddings for real files, Canvas host `umamherst.instructure.com`, refuses to start without `GEMINI_API_KEY`. Audit: every route already reads only the DB in DB mode; the only leak was the scripted chat fallback. **Bug fixed:** Gemini embeddings crashed on every call (response has no `index`) → real files could never become searchable; regression test + live check (2 × 1536). Coverage no longer tells students to connect Echo360 (not offered). Dry run with a fresh account: onboarding step 1, empty Today, real agent answers "nothing connected yet", Canvas guide links the right host. Hari's local `.env` had `CANVAS_BASE_URL=https://umass.instructure.com` (wrong host) and `EMBEDDINGS_PROVIDER=openai` (unsupported): fixed the Canvas line; real mode overrides both.
+**Next:** Hari runs docs/demo-runbook.md "⭐ Real-data demo" with his own email + fresh Canvas code; record the demo video; Devpost text before 09:00.
+
 ## 2026-11-15 01:50 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/gradescope-live
 **Done:** PR #26 (UMass UI) merged. **Gradescope live-verified on Windows** with Hari's account: login window → 258 imported, 238 assignments merged across 18 courses, shown on Today and answered in chat (S14 "Live verification on Windows"). Fix: courses with no upcoming work fold under "Show other courses (N)" (sidebar + Today) so years of past terms don't clutter navigation. 79 web tests.
 **Gotcha:** don't run `pnpm build` while `pnpm dev` is running in the same folder: the dev server keeps working but loses its CSS (no maroon/yellow). Restart the dev server, or use `make demo-web` (production).

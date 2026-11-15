@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field
 from app.agent.tools.timefmt import ago
 
 PLATFORMS = ("canvas", "gradescope", "echo360", "piazza")
+# Offered in the app today (Echo360 is a stretch goal): only these are reported as "not connected"
+# so the AI doesn't tell students to connect something they can't.
+OFFERED = ("canvas", "gradescope", "piazza")
 
 # Schedule intervals (S10 rule 3); Piazza (S17, stretch) assumed hourly. Stale = older than 2x.
 SCHEDULE_INTERVAL = {
@@ -41,7 +44,8 @@ def compute_coverage(
     for platform in PLATFORMS:
         conn = by_platform.get(platform)
         if conn is None:
-            cov.not_connected.append(platform)
+            if platform in OFFERED:
+                cov.not_connected.append(platform)
             continue
         if source and platform != source:
             continue

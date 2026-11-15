@@ -2,7 +2,41 @@
 
 Verified on Neal's laptop on 2026-11-14: email-link sign-in → fresh account → real Canvas connection → eight imported courses → Today with actual deadlines → real Gemini answers with syllabus and announcement citations. The production web server avoids compilation on page switches. Everything uses **local** Supabase; the hosted project is not needed.
 
-## Quick start (already set up once? just these)
+## ⭐ Real-data demo: only your own Canvas, Gradescope and Piazza (no demo data)
+Use this for judging and the demo video. Everything you see comes from your real accounts, and every link opens the real Canvas/Gradescope/Piazza page. Real mode never falls back to the canned demo answer: if the AI fails you get an honest error with Retry.
+
+**Before you start:** Docker Desktop running; repo root `.env` has `GEMINI_API_KEY=` (AI Studio prepaid credit; ~half a cent per question, plus a little for indexing your files). Nothing else is needed (`ENCRYPTION_KEY` is generated automatically; real mode uses Canvas host `umamherst.instructure.com`).
+
+1. **Update and install** (once):
+   ```bash
+   git checkout main && git pull && make setup
+   ```
+2. **Database.** Pick one:
+   - Keep what's there and just use a new account (the demo student stays in the database but you never see it): `make db`
+   - Or start completely empty (deletes every local account and import, demo included; asks you to type WIPE): `make demo-real-wipe`
+3. **Start three terminals** in the repo folder and leave them open:
+   ```bash
+   make demo-real-api
+   ```
+   ```bash
+   make demo-real-worker
+   ```
+   ```bash
+   make demo-real-web
+   ```
+   Wait for "Ready" in the web terminal (it builds the site first, about a minute).
+4. **Sign in as yourself:** open http://localhost:3000, type your own email (e.g. your UMass address; any address works), click **Email me a link**. The link does **not** go to your real inbox: open the local inbox http://127.0.0.1:54324 and click "Your sign-in link". A new account starts in onboarding.
+5. **Connect your accounts** (onboarding, about 3 minutes):
+   - **Canvas:** click *Open my Canvas settings* → *+ New Access Token* (purpose "Study Agent") → copy the code → paste → **Link Canvas**. Use a fresh code; delete it in Canvas after the event.
+   - **Gradescope:** **Connect Gradescope** → an Edge window opens → log in with NetID + Duo yourself. It closes on its own.
+   - **Piazza:** **Connect Piazza** → log in in the window yourself.
+   - **Calendar:** skip or download; then wait on "Getting your classes" until it says you're set.
+6. **Let the first import finish** (several minutes for Canvas files; deadlines appear first, files become searchable after). Settings shows each source as "Updated X m ago" when done.
+7. **Demo it:** Today (your real deadlines, changes, announcements; source chips open the real pages) → a course page → Chat, e.g. *"What's due this week?"*, *"What does my <course> syllabus say about late work?"*, *"Make 5 flashcards from my <course> slides"*, *"Schedule a 1-hour study session tomorrow at 3 PM"* → Add → Settings → Download calendar.
+
+**Don't** run `make demo-db` or `make demo-real-wipe` after importing unless you want to start over. If port 3000/8000 is busy from an earlier run: `netstat -ano | findstr :3000` then `taskkill /PID <pid> /F` (PowerShell/cmd; in Git Bash use `//PID` and `//F`).
+
+## Quick start with the seeded demo student (backup demo)
 ```bash
 make demo-db        # 1. start the local database (+ demo semester). Skip if it's already running and you want to keep data
 make demo-api       # 2. terminal 2: API + AI (keep open)

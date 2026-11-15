@@ -348,3 +348,17 @@ async def test_s12_storage_creates_private_bucket_when_missing() -> None:
 
     assert json.loads(bucket.calls[0].request.content)["public"] is False
     assert up.calls[0].request.headers["apikey"] == "service-key"
+
+
+@respx.mock
+async def test_s12_gemini_embeddings_without_index_keep_input_order() -> None:
+    """Gemini's OpenAI-compatible endpoint returns no `index` field (found in the live test)."""
+    first = [1.0] + [0.0] * 1535
+    second = [0.0, 1.0] + [0.0] * 1534
+    respx.post(f"{GeminiEmbeddings.base_url}/embeddings").mock(
+        return_value=httpx.Response(
+            200, json={"data": [{"embedding": first}, {"embedding": second}]}
+        )
+    )
+    a, b = await GeminiEmbeddings("test-key").embed(["a", "b"])
+    assert a[0] == 1.0 and b[1] == 1.0

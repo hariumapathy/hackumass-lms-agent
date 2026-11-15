@@ -2,7 +2,7 @@
 PNPM := npx -y pnpm@10.34.9
 SUPABASE := npx -y supabase@3.1.0
 
-.PHONY: setup db db-stop db-reset seed api worker web test test-backend test-web lint types demo-db demo-api demo-worker demo-web
+.PHONY: setup db db-stop db-reset seed api worker web test test-backend test-web lint types demo-db demo-api demo-worker demo-web demo-real-api demo-real-worker demo-real-web demo-real-wipe
 
 setup:
 	cd backend && uv sync
@@ -62,3 +62,16 @@ demo-worker:
 
 demo-web:
 	bash scripts/demo-local.sh web
+
+# Real-data demo (docs/demo-runbook.md "Real-data demo"): your own Canvas/Gradescope/Piazza only.
+demo-real-wipe: db
+	DEMO_MODE=real bash scripts/demo-local.sh wipe
+
+demo-real-api:
+	DEMO_MODE=real bash scripts/demo-local.sh api
+
+demo-real-worker:
+	DEMO_MODE=real bash scripts/demo-local.sh worker
+
+demo-real-web:
+	DEMO_MODE=real bash scripts/demo-local.sh web

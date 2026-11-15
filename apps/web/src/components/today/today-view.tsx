@@ -46,7 +46,7 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
 
       {today.changes.length > 0 && <ChangeBanner changes={today.changes} onMarkSeen={onMarkSeen} busy={markingSeen} />}
 
-      {nothingDue && <Empty title="Nothing due this week 🎉" description="New deadlines show up here as soon as they sync." />}
+      {nothingDue && <Empty title="Nothing due this week 🎉" description="New deadlines show up here as soon as we bring them in from your classes." />}
       {today.due_today.length > 0 && (
         <Section title="Due today" count={today.due_today.length} tone="today">{items(today.due_today)}</Section>
       )}

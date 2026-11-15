@@ -5,6 +5,9 @@
 #   scripts/demo-local.sh api      FastAPI on :8000 (DATA_SOURCE=db, real agent)
 #   scripts/demo-local.sh worker   sync worker (Canvas / Gradescope sync after "Connect")
 #   scripts/demo-local.sh web      writes apps/web/.env.local for the local stack, starts Next.js
+#   scripts/demo-local.sh wipe     empty the local DB (migrations only, NO demo semester)
+# DEMO_MODE=real (make demo-real-*): only the student's own data. The agent never falls back to
+# the scripted demo answer, real files get Gemini embeddings, Canvas = UMass Amherst's host.
 # Needs in the root .env: GEMINI_API_KEY (agent). ENCRYPTION_KEY is generated once if empty.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -29,9 +32,20 @@ export SUPABASE_JWKS_URL="$API_URL/auth/v1/.well-known/jwks.json"
 export SUPABASE_JWT_SECRET="$(val JWT_SECRET)"
 export SUPABASE_SERVICE_ROLE_KEY="$(val SECRET_KEY)"
 export DATA_SOURCE=db
-export CHAT_MODE="${CHAT_MODE:-auto}"
-# The local seed uses fake embeddings; the agent must embed queries the same way.
-export EMBEDDINGS_PROVIDER="${EMBEDDINGS_PROVIDER:-fake}"
+if [ "${DEMO_MODE:-seed}" = "real" ]; then
+  # Real data only: never the scripted fake answer; semantic search over real files.
+  export CHAT_MODE=agent
+  export EMBEDDINGS_PROVIDER="${EMBEDDINGS_PROVIDER_REAL:-gemini}"
+  export CANVAS_BASE_URL="${CANVAS_BASE_URL_REAL:-https://umamherst.instructure.com}"
+  if [ "$cmd" != "web" ] && [ "$cmd" != "wipe" ] && [ -z "$(env_val GEMINI_API_KEY)" ]; then
+    echo "Real mode needs GEMINI_API_KEY in .env (the AI and file search use it)." >&2
+    exit 1
+  fi
+else
+  export CHAT_MODE="${CHAT_MODE:-auto}"
+  # The local seed uses fake embeddings; the agent must embed queries the same way.
+  export EMBEDDINGS_PROVIDER="${EMBEDDINGS_PROVIDER:-fake}"
+fi
 export WEB_ORIGIN="${WEB_ORIGIN:-http://localhost:3000}"
 export PUBLIC_API_URL="${PUBLIC_API_URL:-http://localhost:8000}"
 
@@ -46,6 +60,13 @@ if [ -z "$(env_val ENCRYPTION_KEY)" ] && [ "$cmd" != "web" ]; then
 fi
 
 case "$cmd" in
+  wipe)
+    echo "This deletes EVERY account and all data in the LOCAL database (demo + real imports)."
+    read -r -p "Type WIPE to continue: " answer
+    [ "$answer" = "WIPE" ] || { echo "Cancelled."; exit 1; }
+    $SUPABASE db reset
+    echo "Local database is empty (no demo semester). Sign in with your own email and connect your accounts."
+    ;;
   seed)
     $SUPABASE db reset
     cd backend && uv run app seed --reset --embeddings "$EMBEDDINGS_PROVIDER"
@@ -75,7 +96,7 @@ EOF
     exec $PNPM start
     ;;
   *)
-    echo "usage: scripts/demo-local.sh seed|api|worker|web" >&2
+    echo "usage: scripts/demo-local.sh seed|wipe|api|worker|web" >&2
     exit 2
     ;;
 esac
