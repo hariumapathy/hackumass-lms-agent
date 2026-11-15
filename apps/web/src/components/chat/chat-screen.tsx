@@ -245,6 +245,8 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
           >
             <Textarea
               aria-label="Message"
+              // A prefilled question (e.g. from Today or Sessions) is ready to send with Enter.
+              autoFocus={Boolean(searchParams.get("prefill"))}
               placeholder="Ask about deadlines, lectures, or exam prep…"
               value={input}
               disabled={running}
