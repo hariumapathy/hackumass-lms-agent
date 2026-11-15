@@ -6,6 +6,7 @@ SUPABASE := npx -y supabase@3.1.0
 
 setup:
 	cd backend && uv sync
+	cd backend && uv run playwright install chromium
 	cd apps/web && $(PNPM) install
 
 db:

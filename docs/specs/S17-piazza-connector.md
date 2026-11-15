@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Built (fixtures); live spike pending a real login |
+| **Status** | Done: live-verified 2026-11-15 on Hari's laptop (real account) |
 | **Stage** | 4 (stretch; first stretch item for role A) |
 | **Role** | A |
 | **Depends on** | S10, S13 |
@@ -77,3 +77,11 @@ Posting or replying, private messages, running piazza-mcp as a server.
 - **UI:** Piazza is now connectable: Settings → Your accounts lists Canvas, Gradescope, Piazza; onboarding step 3 is "Connect Gradescope and Piazza"; the login window hint for Piazza is "Log in to Piazza the way you normally do" (no NetID/Duo wording). One list `CONNECTABLE_PLATFORMS` in `apps/web/src/lib/platforms.ts` drives Settings, the sources bar and the onboarding finish step. Tests: S31-T09, S32-T10, S34-T01 (updated), e2e S31-T05/T06 now use Piazza.
 - **Automated:** after merging the S25 calendar branch in: 477 backend passed / 1 skipped / 1 xfail (local DB), ruff/pyright clean; web 75 + 6 e2e green.
 - **Live check: NOT done yet.** The stack was running and onboarding was ready, but the session ended before a real Piazza login. To finish: follow docs/demo-runbook.md (api + worker + web), sign in with a non-demo email, Settings → Connect Piazza, the student signs in to Piazza in the window that opens, then check the four points in "Spike results → Live" above and that posts appear on Today/course pages with working links. Record the result here and in pitch.md.
+
+## Live verification (2026-11-15 ~00:20 ET, Hari's laptop, Windows)
+- **Result: works end to end with Hari's real Piazza account.** Settings → Connect Piazza opened a login window, Hari logged in himself, the session was saved (never the password), the `connect` sync **succeeded** (4 new; the 4 seeded fake Piazza posts were marked removed because they're not in the real account).
+- Imported real class **COMPSCI 335 "Inside the Box - How Computers Work"** with 3 posts; each has a `piazza.com/class/<id>/post/<n>` link and one searchable chunk. `GET /courses/{id}` lists them as recent posts.
+- **Chat cites it:** "What did my COMPSCI 335 Piazza say about office hours on Thursday?" → answer with the real post as the citation (`platform=piazza`, working link).
+- **Bugs found and fixed on the way** (branch `hari/test-calendar-piazza`): on Windows the login window never opened (Playwright needs a Proactor loop; the API runs a selector loop for psycopg → now runs on its own thread), Playwright Chromium wasn't installed by `make setup` (now it is), the bundled chrome.exe was blocked from starting ("spawn UNKNOWN" → the visible window now uses installed Edge/Chrome on Windows), `uvicorn --reload` hung and kept stale code (demo API now `uv run app serve`), and onboarding said "Reconnect Piazza / log in again" for a first connect.
+- **To double-check later:** some imported post dates read 2026 although the class name says Fall 2025; compare one post's date on piazza.com.
+

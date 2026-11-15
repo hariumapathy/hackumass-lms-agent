@@ -54,7 +54,8 @@ case "$cmd" in
     if [ -z "$(env_val GEMINI_API_KEY)" ]; then
       echo "Note: GEMINI_API_KEY is empty in .env, so chat uses the scripted demo answer." >&2
     fi
-    cd backend && exec uv run uvicorn app.main:app --reload --port 8000
+    # No --reload: on Windows it can hang or leave an old server on :8000 (see devlog).
+    cd backend && exec uv run app serve --port 8000
     ;;
   worker)
     cd backend && exec uv run app worker

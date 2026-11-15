@@ -6,6 +6,9 @@ Verified on Neal's laptop, 2026-11-14. Fixes are on main in `4d64086`; relay ver
 
 | Issue | What happened | Resolution / evidence |
 |---|---|---|
+| Live login never opened on Windows | `POST /connections/{piazza,gradescope}/login` → 503: Playwright can't start a browser on the API's selector loop (NotImplementedError); bundled chrome.exe then failed with 'spawn UNKNOWN' | Playwright on its own Proactor-loop thread; visible window uses installed Edge/Chrome on Windows; `make setup` installs Chromium; live Piazza login + import + chat citation verified (Hari, 2026-11-15) |
+| Demo API served stale code on Windows | `uvicorn --reload` reload hung / orphaned worker kept :8000 | `make demo-api` runs `uv run app serve` (no reload) |
+| Removed posts read ': status changed' on Today | Change summaries only knew field names | 'X was removed' / 'X is back' (`app/core/change_text.py`) |
 | Wrong Canvas host | Token validation hit `umass.instructure.com` and returned 404 | Corrected to official `umamherst.instructure.com` in defaults, guide, examples and specs; live token accepted |
 | Dashboard ignored real data | Today/courses/items/changes/citations returned the mock semester even in DB mode | User-scoped DB routes; live account showed eight courses and 125 canonical deadlines; syllabus/announcement citations verified |
 | Disconnect was a no-op | API returned success while keeping the connection and secret | Connection/secret removal and queued platform-job cancellation; isolation/idempotency integration test passes |

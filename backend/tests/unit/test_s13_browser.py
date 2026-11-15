@@ -277,3 +277,56 @@ async def test_s13_gradescope_is_logged_in_ignores_sso_pages() -> None:
     assert await GRADESCOPE_LOGIN.is_logged_in(
         FakePage("https://www.gradescope.com/account", ACCOUNT_HTML)
     )
+
+
+# --- Windows event-loop fix: Playwright runs on its own thread + loop ----------------------------
+
+
+async def test_s13_browser_thread_runs_coroutines_on_its_own_loop() -> None:
+    import asyncio
+    import threading
+
+    from app.connectors.browser.local import _BrowserThread
+
+    runner = _BrowserThread(loop_factory=asyncio.new_event_loop)
+    caller_loop = asyncio.get_running_loop()
+
+    async def where() -> tuple[str, bool]:
+        return threading.current_thread().name, asyncio.get_running_loop() is caller_loop
+
+    name, same_loop = await runner.run(where())
+    assert name == "playwright-loop" and same_loop is False
+    assert (await runner.run(where()))[0] == "playwright-loop"  # reuses the same thread
+
+
+async def test_s13_local_provider_uses_thread_when_asked() -> None:
+    import threading
+
+    from app.connectors.browser.local import LocalPlaywrightProvider
+    from app.connectors.browser.types import LoginHandle
+
+    seen: list[str] = []
+    provider = LocalPlaywrightProvider(own_loop=True)
+    provider._thread._loop_factory = __import__("asyncio").new_event_loop  # portable for CI
+
+    async def fake_poll(handle: LoginHandle) -> str:
+        seen.append(threading.current_thread().name)
+        return "pending"
+
+    provider._poll = fake_poll  # type: ignore[method-assign]
+    assert await provider.poll(LoginHandle(login_id="x")) == "pending"
+    assert seen == ["playwright-loop"]
+    inline = LocalPlaywrightProvider(own_loop=False)
+    inline._poll = fake_poll  # type: ignore[method-assign]
+    await inline.poll(LoginHandle(login_id="y"))
+    assert seen[-1] != "playwright-loop"
+
+
+def test_s13_login_window_prefers_installed_browsers_on_windows(monkeypatch) -> None:  # noqa: ANN001
+    from app.connectors.browser import local
+
+    monkeypatch.setattr(local.sys, "platform", "win32")
+    assert local._channels(headless=False) == ["msedge", "chrome", None]
+    assert local._channels(headless=True)[0] is None
+    monkeypatch.setattr(local.sys, "platform", "darwin")
+    assert local._channels(headless=False)[0] is None

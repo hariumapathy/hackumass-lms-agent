@@ -132,6 +132,10 @@ function ReconnectView({ platform, pollMs }: { platform: Platform; pollMs?: numb
   const router = useRouter();
   const qc = useQueryClient();
   const label = PLATFORM_LABEL[platform];
+  const me = useQuery({ queryKey: ["me"], queryFn: () => api().me() });
+  // First-time connect vs. reconnect: same screen, different words (Settings links here for both).
+  const fresh = me.data ? !me.data.connections.some((c) => c.platform === platform) : false;
+  const verb = fresh ? "Connect" : "Reconnect";
   const done = () => {
     for (const key of ["me", "today", "courses", "course", "sync-status"]) void qc.invalidateQueries({ queryKey: [key] });
     router.push("/settings");
@@ -143,14 +147,16 @@ function ReconnectView({ platform, pollMs }: { platform: Platform; pollMs?: numb
         Back to settings
       </Link>
       {platform === "canvas" ? (
-        <CanvasStep heading="Reconnect Canvas" onLinked={done} />
+        <CanvasStep heading={`${verb} Canvas`} onLinked={done} />
       ) : (
         <section aria-labelledby="reconnect-heading" className="flex flex-col gap-4">
           <h1 id="reconnect-heading" className="text-2xl font-semibold tracking-tight">
-            Reconnect {label}
+            {verb} {label}
           </h1>
           <p className="text-muted-foreground">
-            Log in to {label} again so we can keep your classes up to date. We never see your password.
+            {fresh
+              ? `Log in to ${label} so we can bring in your classes. We never see your password.`
+              : `Log in to ${label} again so we can keep your classes up to date. We never see your password.`}
           </p>
           <LiveLogin platform={platform} pollMs={pollMs} onConnected={done} />
         </section>

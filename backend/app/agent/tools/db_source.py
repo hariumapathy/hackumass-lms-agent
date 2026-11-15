@@ -16,6 +16,7 @@ from uuid import UUID
 from app.agent.tools.courses import CourseRef
 from app.agent.tools.coverage import ConnectionState
 from app.agent.tools.data import ChangeRow, ChunkRow, ItemRow, SyncOutcome
+from app.core.change_text import change_summary
 from app.core.embeddings import EmbeddingProvider, to_pgvector
 from app.db.repositories import agent as repo
 from app.db.repositories import sync as sync_repo
@@ -26,11 +27,8 @@ ConnectionFactory = Callable[[], AbstractAsyncContextManager[Any]]
 
 
 def _summary(row: dict[str, Any]) -> str:
-    what = row.get("entity_title") or row["entity_type"]
-    field = {"due_at": "due date", "points": "points", "body": "text", "title": "title"}.get(
-        row["field"], row["field"]
-    )
-    return f"{row['course_code']} {what}: {field} changed".strip()
+    title = row.get("entity_title") or row["entity_type"]
+    return change_summary(row["course_code"], title, row["field"], row.get("new_value"))
 
 
 class DbToolData:
