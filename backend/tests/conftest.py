@@ -15,6 +15,9 @@ LOCAL_DB = "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 # app.sync.jobs builds its connector from DATABASE_URL), before any fixture runs.
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", LOCAL_DB)
 os.environ["SUPABASE_URL"] = "http://127.0.0.1:54321"
+# Never hand the hosted project's secret key to tests; use the local stack's key if provided
+# (`supabase status` prints it), else storage tests skip.
+os.environ["SUPABASE_SERVICE_ROLE_KEY"] = os.environ.get("TEST_SUPABASE_SERVICE_ROLE_KEY", "")
 
 
 def pytest_asyncio_loop_factories(config, item):  # noqa: ANN001, ANN201, ARG001
