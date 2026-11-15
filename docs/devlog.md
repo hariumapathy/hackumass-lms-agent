@@ -21,6 +21,43 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 20:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF (Hari's backend is done for the MVP)
+**Done since 20:25:** `POST /connections/canvas` wired to Neal's `connect_canvas` (DB mode): bad token → 400 `invalid_token` with a plain message; good token → stored **encrypted**, first `connect` sync queued (S11-T12, `tests/integration/test_s11_connect_route_db.py`). `POST /sync` + `GET /sync/status` real in DB mode. `ENCRYPTION_KEY` generated in Hari's local `.env` (API and worker must share it). Tests never get the hosted secret key. **432 backend tests pass with the local DB; lint clean.**
+**Verified on a real server** (uvicorn `--reload`, `DATA_SOURCE=db`, local Supabase, real Gemini): local-Supabase JWT accepted, `/me` + `/sync/status` from the DB, `POST /chat` streamed run_started → 4 status → text → citations → done, conversation saved.
+**State of main:** PR #16 (dev/hari) green locally, waiting for Hari's merge. Everything else from Hari is on main.
+
+### Run it yourself on real data (Hari's laptop, Git Bash, Docker Desktop running)
+1. `make setup` then `make db` (local Supabase; first run downloads images).
+2. Seed the demo student into the LOCAL DB:
+   `cd backend && DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY= uv run app seed --embeddings fake --reset`
+3. API in DB mode against the local stack (one terminal):
+   `eval "$(npx -y supabase@3.1.0 status -o env | grep '^JWT_SECRET=')"; cd backend && DATA_SOURCE=db EMBEDDINGS_PROVIDER=fake DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_JWKS_URL=http://127.0.0.1:54321/auth/v1/.well-known/jwks.json SUPABASE_JWT_SECRET="$JWT_SECRET" uv run uvicorn app.main:app --reload --port 8000`
+4. Sync worker (second terminal, same env vars as step 3): `uv run app worker`. Needed for Canvas connect to actually pull data.
+5. Web app: `apps/web/.env.local` with `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, `NEXT_PUBLIC_SUPABASE_ANON_KEY=<PUBLISHABLE_KEY from npx -y supabase@3.1.0 status>`, `NEXT_PUBLIC_API_URL=http://localhost:8000`; then `make web`. Sign in as `demo@example.com` / `demo-password-311` (seeded) or a new account.
+6. Real Canvas: in the app's Connect Canvas step, paste a **fresh** Canvas token (Canvas → Account → Settings → New Access Token). The worker syncs your real courses; then ask the chat. (For real embeddings use `EMBEDDINGS_PROVIDER=gemini` in steps 2–4, without `--embeddings fake`.)
+7. Evals on the seed: `cd backend && EMBEDDINGS_PROVIDER=fake DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres uv run app evals --db`.
+
+**Not done (deliberately, not MVP-critical):** dashboard endpoints on the DB (`/today`, `/courses`, `/items`, `/changes`, `/citations` still return the S02 mock semester; Soumith's Today view shows mock data until they're wired), S25 `add_study_block` + ICS feed, `models.yaml` picker, Storage/job cleanup in `DELETE /me/data`, wrapping pre-stream DB errors on `/chat` into an `error` event.
+**Next steps (in order):** 1. Hari: merge PR #16; Devpost draft before 23:59; revoke the Canvas token pasted in chat. 2. Whoever has budget: wire `/today` + `/courses` + `/items` + `/changes` to the DB (same `DATA_SOURCE` pattern as `/me`, queries like `app/db/repositories/agent.py`) so the Today view shows real data. 3. Decide the demo DB: hosted needs Neal's migrations + seed applied there and `DATA_SOURCE=db` in that environment; local works today (steps above). 4. Real-data rehearsal with a fresh Canvas token.
+
+## 2026-11-14 20:25 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
+**Hour:** ~H24 (Devpost draft due 23:59; final submission Sun 09:00, freeze 08:00; judging 12:30)
+**Done (PRs #9, #11 merged; newer commits on dev/hari → next PR):**
+- **S22 agent runtime on Gemini** (`app/agent/runtime.py`): SSE events, max turns, timeout, cancel on disconnect, tracing off. Default model **`gemini-3.5-flash`** (2.5 closed to new keys; 3.8 overloaded). **Gemini stream fix** (`app/agent/gemini.py`): tool calls arrive with `index: null`, which broke parallel calls. `CHAT_MODE=auto|agent|scripted` (scripted = demo backup).
+- **S21 tools** (six read tools) on `ToolData`: `MockToolData` (S02 mock semester) and **`DbToolData`** (hybrid search on the S01 schema; `fetch_latest` via S10 jobs).
+- **S23 citations**: allowed IDs only, quote check (rapidfuzz), lenient markers (`[cite: chunk_N]`), deep links, DB resolution (user-scoped).
+- **S24 `create_study_set`** (plan/quiz/flashcards, citation filter, date range). **S26 evals**: `uv run app evals [--db]`, 15 goldens incl. prompt injection.
+- **DB mode** `DATA_SOURCE=db`: `DbChatStore` (conversations, messages, runs, study sets), `/me` routes on `profiles` (S20 DB parts), agent uses the profile timezone/model.
+- Local Supabase running on Hari's laptop (`make db`), seeded with fake embeddings (`uv run app seed --embeddings fake`, env pointed at the local DB). **256 backend tests pass with the DB.** `tests/conftest.py` now pins `DATABASE_URL` to the local DB at import time (fixed Neal's S10-T06 picking up the hosted URL).
+**Eval (seed DB, gemini-3.5-flash): 13/14 pass (93%)**, 0 errors, avg 9.2 s; injection ignored; flashcards OK; G04 uncited. Cost: ~9.6k input + 620 output tokens per question → roughly half a cent at Flash-class prices; Hari loaded $5 prepaid (enough for 1,000+ questions).
+**Roadblocks / human items:** Gemini prepaid credits had run out (402) → Hari topped up. The agent may not run `gh pr merge` (permission check): Hari merges PRs. Hari shared a real Canvas token in chat: **not used or stored**; the plan is to connect through the app's Connect Canvas step once Neal's S11 is on main, with a **fresh** token (revoke the pasted one).
+**Next steps (in order):**
+1. Hari: merge the open dev/hari PR. Devpost draft before 23:59.
+2. Hari's agent: dashboard endpoints on the DB (`/today`, `/courses`, `/items`, `/changes`, `/citations`) in DB mode; `POST /sync` + `GET /sync/status` via S10; S25 `add_study_block` + decision + ICS feed.
+3. When Neal's S11 + S12 land on main: run the real pipeline locally (API `DATA_SOURCE=db` + worker), Hari connects Canvas with a fresh token in the app, then re-run the evals on real courses.
+4. Before the demo: decide hosted vs local DB for the demo (hosted needs migrations + seed applied by Neal), and set `DATA_SOURCE=db` in that environment.
+**Gotchas:** psycopg async on Windows needs a selector loop: scripts use `asyncio.run(..., loop_factory=asyncio.SelectorEventLoop)`; tests that call the app over HTTP with the DB use `httpx.ASGITransport` (not TestClient). Seed with fake embeddings ⇒ run the agent with `EMBEDDINGS_PROVIDER=fake` locally, or vector search mismatches. Bash heredocs with quotes failed in this tool: write edit scripts to files.
+
 ## 2026-11-14 20:20 ET · Soumith's laptop · Claude Code (Opus 5.5) · branch soumith/claude → dev/soumith
 **Hour:** ~H24 (hacking began Fri 20:30 ET). Final submission Sun 09:00, code freeze 08:00, judging 12:30.
 **Start check:** merged `main` @ `a081914` (steward already took dev/soumith in via PR #14; then S13/S14/S16 landed): no conflicts. Web: 70 unit/component + 6 e2e, lint, typecheck, build green on main's code. No Python/uv here, so backend tests and `make api` not run on this laptop.
@@ -38,6 +75,12 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 3. **Anyone with Python + keys:** run the UI in real mode (`apps/web/README.md` § B) and walk the demo script; log drift in the devlog.
 4. **Team:** decide localhost demo vs deployed URL (nothing deployed yet); decide P6–P9 + 409 `login_id` (`progress/soumith.md`).
 **Gotchas:** web env vars only work from `apps/web/.env.local`; mock mode is the always-works backup demo; UI has no password sign-in (seed user uses a magic link via Inbucket).
+
+## 2026-11-14 20:15 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
+**Done (all on main):** PR #12 (S11 Canvas connector, S12 file processing + embeddings, S10 incomplete-listing fix), PR #15 (S16 cross-platform merge, S13 local live login, S14 Gradescope connector). Built by parallel agents in lane A, reviewed and integrated on dev/neal; 423 backend tests green. **Merge steward** running (docs/handoff/merge-steward.md): merged Hari (PR #13) and Soumith (PR #14) into main.
+**Decisions:** merge steward (decisions.md). Only S16 writes item change rows. Connectors report incomplete listings via `ctx.incomplete`.
+**Next steps (in order):** 1. Live checks with real accounts: paste a Canvas token (S11 acceptance), Gradescope NetID+Duo login (S13-T07/S14 spike). 2. Hosted Supabase: apply migrations + seed the demo account (needs hosted DATABASE_URL). 3. Hari: wire `POST /connections/canvas` → `connect_canvas`, `/sync` routes, disconnect (S13-T06), `delete_user_files` in delete-my-data. 4. Stretch: S17 Piazza.
+**Gotchas:** live login opens Chromium on the machine running `make api`; web tests on Node 26 need `NODE_OPTIONS=--no-experimental-webstorage`; PyMuPDF is AGPL (credited).
 
 ## 2026-11-14 19:25 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
 **Hour:** ~H23 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): validation, quote check, deep links, resolution from tool data done; DB resolution + `GET /citations` wait for S01 |
+| **Status** | In progress (Hari): validation + DB resolution done; `GET /citations` route still on mock data |
 | **Stage** | 1 (validation + resolution); deep links completed in Stage 2 with S15 |
 | **Role** | B |
 | **Depends on** | S21, S22 |
