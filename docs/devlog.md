@@ -27,7 +27,10 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **Done:** **S20 auth** (PR into main, see below): JWKS ES256 + HS256 verification, route/repository scans, error envelope, `PATCH /me` validation, chat rate limit, private JSON request logs, psycopg pool + `profiles` repository. 60 backend tests pass; T05/T07 skip "pending S01". Credits/notices updated (PyJWT, psycopg).
 **Decisions / design changes:** `/me` routes stay on mock data (with the real user_id) until S01; tokens accepted by `alg` (JWKS or HS256). Line in decisions.md.
 **Roadblocks:** none. Gotcha found: psycopg async needs a selector loop on Windows (see S20 notes).
-**In progress:** S21 parts that don't need S01.
+**Also done:** **S21 plumbing** on branch `hari/s21-tools` (PR into main): args, runner, course resolver, coverage, truncation, untrusted wrapping, labels, times; 59 new tests. 119 backend tests pass, 2 skip.
+**State of main:** PR #5 (S20) is green on CI but **not merged yet** (the agent wasn't allowed to merge; Hari clicks merge). The S21 PR is stacked on #5.
+**Next steps (in order):** 1. Hari: merge PR #5, then the S21 PR. 2. Hari: Devpost draft before 23:59. 3. After S01 lands: wire `/me` routes to the profiles repository, un-skip S20-T05/T07. 4. After S01+S03: S21 tool SQL (hybrid search) and T02/T04–T06/T09–T11. 5. S22 agent runtime (needs `GEMINI_API_KEY`).
+**Gotchas for the next agent:** auth is real now (tests mint tokens via `tests/helpers.py`); psycopg async on Windows needs `--reload` (selector loop); write files from Python with `encoding="utf-8"`.
 
 ## 2026-11-14 18:52 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
 **Hour:** ~H22.4 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
