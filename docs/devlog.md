@@ -23,6 +23,13 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-14 23:40 ET · Soumith's laptop · Claude Code (Opus 5.5) · branch codex/calendar-piazza-ui → main
+**Hour:** ~H27 (final submission Sun 09:00, freeze 08:00, judging 12:30).
+**Setup:** this laptop now has uv + Python 3.12 + make + Docker Desktop + gh; local Supabase via `make demo-db`-equivalent; API/worker/web from `scripts/demo-local.sh` with real Gemini.
+**Done (S25 live end to end):** 453 backend (1 skip, 1 xfail) with DB; web 73; lint/format/pyright clean. In the browser as `demo@example.com`: Settings shows Download calendar (local feed); chat proposal → feed unchanged (24) → **Add** → 25 events, correct UTC; second proposal **Skip** → stays out. Fixed: card "Add 1 study sessions?" → "Add this study session?"; AI told students to approve "in your calendar" → tool result + prompt say "click Add below"; onboarding Download counts as added. Soumith approved merging on Neal's behalf (decisions.md).
+**Gotchas:** `uvicorn --reload` under OneDrive did not reload, and killing the reloader on Windows **orphans the worker** (`spawn_main(parent_pid=…)`), which keeps serving port 8000 with old code. Check `netstat -ano | findstr :8000` and kill every python child after restarts. `supabase_vector` restarting is harmless on Windows (needs Docker TCP 2375; only Studio logs). PowerShell 5 `Set-Content -Encoding utf8` adds a BOM: strip it.
+**Next:** 1. PR this branch → main, merge. 2. `neal/s17-piazza`: merge main, DB tests, live Piazza login (Soumith logs in), PR, merge. 3. Remaining to-dos from live-test-bugs.md / S35.
+
 ## 2026-11-14 22:38 ET · Neal's laptop · Codex · branch codex/calendar-piazza-ui
 **Workflow / review:** latest user instruction replaces main-only work: design plan → implementation plan → failing feature tests → code → checks → separate feature commit, all on one review branch. No merge before user review. Planning/handoff checkpoint `f00a00f` pushed. Keep this entry current before approaching any usage limit.
 **Done:** prior main `0176e57` includes live Gradescope verification and polished Devpost copy (`16c906b`) plus teammate queue-isolation fixes. Gradescope imported 20 courses / 238 assignments / 186 dated; independent five source-page date checks remain. S25 implemented: private ICS, approval persistence, actual agent tool, owner/overlap guards, DST validation, token rotation, log redaction, honest local-download UI. No schema/API shape changes. See S25 and calendar-runbook.md.

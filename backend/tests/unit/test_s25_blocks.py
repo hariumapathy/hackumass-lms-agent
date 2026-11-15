@@ -25,7 +25,8 @@ async def test_S25_T01_valid_proposal_is_proposed_and_persisted():
             title="Exam review", start_local=datetime(2026, 11, 1, 10), duration_min=60
         ),
     )
-    assert "awaiting" in result.results[0]["status"]
+    status = result.results[0]["status"]
+    assert status.startswith("proposed") and "Add button" in status
     assert len(ctx.proposed_blocks) == 1 and ctx.proposed_blocks[0].status == "proposed"
     assert (await store.blocks(ctx.user_id))[0].start_at == datetime(2026, 11, 1, 15, tzinfo=UTC)
 

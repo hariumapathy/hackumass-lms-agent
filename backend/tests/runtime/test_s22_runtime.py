@@ -79,6 +79,8 @@ async def test_S25_T01_T09_real_tool_persists_and_emits_one_approval() -> None:
     events = await collect(runtime(model, store=store), "Plan study time tomorrow.")
     approvals = [e for e in events if isinstance(e, s.ApprovalRequiredEvent)]
     assert len(approvals) == 1 and len(approvals[0].blocks) == 1
+    # Plain, correct wording for one session (live test showed "Add 1 study sessions?").
+    assert approvals[0].summary == "Add this study session?"
     saved = await store.blocks(TEST_USER_ID)
     assert saved == approvals[0].blocks and saved[0].status == "proposed"
     assert types(events).index("text") < types(events).index("approval_required")
