@@ -14,7 +14,12 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from app.agent.tools.context import RunCtx
-from app.agent.tools.results import ToolResult, collect_chunk_ids, truncate_result
+from app.agent.tools.results import (
+    ToolResult,
+    collect_chunk_ids,
+    collect_chunk_texts,
+    truncate_result,
+)
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +32,11 @@ class ToolSpec:
     args_model: type[BaseModel]
     fn: ToolFn
     description: str = ""
+
+
+def is_tool_error(output: str) -> bool:
+    """Successful tool results are JSON objects; errors are plain sentences."""
+    return not output.lstrip().startswith("{")
 
 
 def _describe(err: ValidationError) -> str:
@@ -51,4 +61,5 @@ async def invoke(spec: ToolSpec, ctx: RunCtx, raw_args: str) -> str:
         return f"{spec.name} failed. Try again once, or answer with what you already have."
     result = truncate_result(result)
     ctx.allowed_chunk_ids |= collect_chunk_ids(result)
+    ctx.chunk_texts.update(collect_chunk_texts(result))
     return result.model_dump_json(exclude_none=True)

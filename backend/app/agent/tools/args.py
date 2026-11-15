@@ -4,7 +4,7 @@
 """
 
 from datetime import date
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -18,6 +18,14 @@ MAX_SECONDS = 20 * 60
 
 class _Args(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _nulls_mean_default(cls, data: Any) -> Any:
+        """Some models (Gemini) send `null` for every optional field; treat it as "not given"."""
+        if isinstance(data, dict):
+            return {k: v for k, v in data.items() if v is not None}
+        return data
 
 
 class GetItemsArgs(_Args):

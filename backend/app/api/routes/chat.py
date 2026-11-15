@@ -1,7 +1,8 @@
-"""Chat (SSE) and conversations (S02 stubs).
+"""Chat (SSE) and conversations.
 
-POST /chat streams a SCRIPTED event sequence that follows the S02 ordering guarantees, so the
-frontend can be built before the real agent runtime (S22) exists.
+POST /chat runs the real agent (S22) when `app.state.chat_runtime` is set (a model key exists and
+CHAT_MODE isn't "scripted"); otherwise it streams the SCRIPTED S02 sequence (frontend dev, tests
+and the demo backup).
 """
 
 import asyncio
@@ -10,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
 from app.api import mock_data as mock
@@ -71,6 +72,11 @@ async def _stream(conversation_id: UUID, delay_s: float) -> AsyncIterator[str]:
             await asyncio.sleep(delay_s)
 
 
+async def _agent_stream(runtime, user: UserCtx, body: s.ChatRequest) -> AsyncIterator[str]:  # noqa: ANN001
+    async for event in runtime.run(user, body):
+        yield sse_event(event)
+
+
 @router.post(
     "/chat",
     response_class=StreamingResponse,
@@ -82,10 +88,16 @@ async def _stream(conversation_id: UUID, delay_s: float) -> AsyncIterator[str]:
         }
     },
 )
-async def chat(body: s.ChatRequest, user: User, delay_ms: int = 0) -> StreamingResponse:
-    conversation_id = body.conversation_id or uuid4()
+async def chat(
+    body: s.ChatRequest, user: User, request: Request, delay_ms: int = 0
+) -> StreamingResponse:
+    runtime = getattr(request.app.state, "chat_runtime", None)
+    if runtime is not None:
+        stream: AsyncIterator[str] = _agent_stream(runtime, user, body)
+    else:
+        stream = _stream(body.conversation_id or uuid4(), min(delay_ms, 2000) / 1000)
     return StreamingResponse(
-        _stream(conversation_id, min(delay_ms, 2000) / 1000),
+        stream,
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -119,13 +131,27 @@ def _demo_conversation() -> s.ConversationDetail:
     )
 
 
+def _store(request: Request):  # noqa: ANN202
+    runtime = getattr(request.app.state, "chat_runtime", None)
+    return runtime.store if runtime is not None else None
+
+
 @router.get("/conversations", response_model=list[s.ConversationSummary])
-async def conversations(user: User) -> list[s.ConversationSummary]:
-    return [_demo_conversation().conversation]
+async def conversations(user: User, request: Request) -> list[s.ConversationSummary]:
+    store = _store(request)
+    if store is None:
+        return [_demo_conversation().conversation]
+    return await store.conversations(user.user_id)
 
 
 @router.get("/conversations/{conversation_id}", response_model=s.ConversationDetail)
-async def conversation(conversation_id: UUID, user: User) -> s.ConversationDetail:
-    if conversation_id != DEMO_CONVERSATION_ID:
+async def conversation(conversation_id: UUID, user: User, request: Request) -> s.ConversationDetail:
+    store = _store(request)
+    if store is None:
+        if conversation_id != DEMO_CONVERSATION_ID:
+            raise not_found("Conversation")
+        return _demo_conversation()
+    detail = await store.conversation(user.user_id, conversation_id)
+    if detail is None:
         raise not_found("Conversation")
-    return _demo_conversation()
+    return detail
