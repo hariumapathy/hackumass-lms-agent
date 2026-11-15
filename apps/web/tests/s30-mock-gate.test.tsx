@@ -48,3 +48,19 @@ describe("S30 mock mode gate", () => {
     expect(start).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("real mode cleans up a leftover mock worker", () => {
+  it("unregisters only the MSW service worker", async () => {
+    const { unregisterMockWorker } = await import("@/components/states/mock-gate");
+    const gone: string[] = [];
+    const reg = (url: string) => ({ active: { scriptURL: url }, unregister: async () => { gone.push(url); return true; } });
+    const nav = {
+      serviceWorker: {
+        controller: null,
+        getRegistrations: async () => [reg("http://localhost:3000/mockServiceWorker.js"), reg("http://localhost:3000/other-sw.js")],
+      },
+    } as unknown as Navigator;
+    expect(await unregisterMockWorker(nav)).toBe(true);
+    expect(gone).toEqual(["http://localhost:3000/mockServiceWorker.js"]);
+  });
+});

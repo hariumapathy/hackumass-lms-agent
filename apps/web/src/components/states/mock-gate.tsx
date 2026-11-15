@@ -15,6 +15,17 @@ type Phase = "starting" | "ready" | "failed";
  * (service workers blocked, private window, embedded browser), say so with one action instead of
  * spinning forever.
  */
+/** Unregister a leftover MSW worker; reload once so the page is no longer controlled by it. */
+export async function unregisterMockWorker(nav: Navigator | undefined = globalThis.navigator): Promise<boolean> {
+  if (!nav?.serviceWorker?.getRegistrations) return false;
+  const regs = await nav.serviceWorker.getRegistrations();
+  const mock = regs.filter((r) => (r.active ?? r.waiting ?? r.installing)?.scriptURL.includes("mockServiceWorker"));
+  if (mock.length === 0) return false;
+  await Promise.all(mock.map((r) => r.unregister()));
+  if (nav.serviceWorker.controller?.scriptURL.includes("mockServiceWorker")) window.location.reload();
+  return true;
+}
+
 export function MockGate({
   enabled = config.apiMocks,
   start = defaultStart,
@@ -28,7 +39,12 @@ export function MockGate({
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      // Real mode: a browser that once ran mock mode on this origin still has the MSW service
+      // worker installed, and it keeps answering API calls with fake data. Remove it.
+      void unregisterMockWorker();
+      return;
+    }
     let active = true;
     start().then(
       () => active && setPhase("ready"),
