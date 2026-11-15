@@ -76,19 +76,39 @@ async def _seed_async(args: argparse.Namespace) -> int:
     return 0
 
 
+def _worker(argv: list[str]) -> int:
+    """S10: run the Procrastinate worker (queues `sync` + `process`) with the periodic schedule."""
+    from app.core.crypto import CryptoError
+    from app.sync.jobs import app as queue_app
+    from app.sync.jobs import check_worker_config
+
+    try:
+        check_worker_config()  # refuses to start without ENCRYPTION_KEY
+    except CryptoError as exc:
+        print(f"worker: {exc}", file=sys.stderr)
+        return 1
+    import app.connectors.registry  # noqa: F401  (registers available connectors)
+
+    async def run() -> None:
+        async with queue_app.open_async():
+            await queue_app.run_worker_async(queues=["sync", "process"], concurrency=4)
+
+    return _run_async(run())
+
+
 def _run_async(coro) -> int:  # noqa: ANN001
     if sys.platform == "win32":  # psycopg async needs a selector loop on Windows
         return asyncio.run(coro, loop_factory=asyncio.SelectorEventLoop)
     return asyncio.run(coro)
 
 
-COMMANDS = {"openapi": lambda _argv: _openapi(), "seed": _seed}
+COMMANDS = {"openapi": lambda _argv: _openapi(), "seed": _seed, "worker": _worker}
 
 
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if not args or args[0] in {"-h", "--help"}:
-        print("usage: app <command>\n\ncommands: openapi (S02), seed (S03); worker, evals later")
+        print("usage: app <command>\n\ncommands: openapi (S02), seed (S03), worker (S10); evals later")
         return 0
     command = COMMANDS.get(args[0])
     if command is None:

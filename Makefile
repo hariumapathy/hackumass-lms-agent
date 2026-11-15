@@ -28,7 +28,7 @@ api:
 	cd backend && uv run uvicorn app.main:app --reload --port 8000
 
 worker:
-	@echo "The sync worker arrives with S10."
+	cd backend && uv run app worker
 
 web:
 	cd apps/web && $(PNPM) dev
