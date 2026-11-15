@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): built + fixture-tested on `neal/s13-s14-gradescope`; live spike (rule 1) pending a real login |
 | **Stage** | 2 |
 | **Role** | A |
 | **Depends on** | S13 |
@@ -86,9 +86,9 @@ flowchart LR
 
 ## Acceptance criteria
 - [ ] Spike result recorded (cookie injection works, or Playwright fallback chosen)
-- [ ] Fixture tests pass for course list and student assignment pages (scrubbed)
+- [x] Fixture tests pass for course list and student assignment pages (hand-written fixtures, fake names/IDs)
 - [ ] Real sync with a saved session yields courses + items with correct due dates (spot-check 5)
-- [ ] Vendored files have headers + license; THIRD_PARTY_NOTICES and Devpost credits updated
+- [x] Vendored files have headers + license; THIRD_PARTY_NOTICES and Devpost credits updated
 
 ## Test plan
 | ID | Test | Type |
@@ -105,3 +105,13 @@ flowchart LR
 
 ## Out of scope
 Submitting anything, downloading submissions, rubric details, grades UI (stretch), running gradescope-mcp as a server.
+
+## Implementation notes (2026-11-14, Neal)
+- Code: `backend/app/connectors/gradescope/` — `client.py` (`connection_from_storage_state`, `set_csrf_from_html`, `GradescopeClient`: GET-only, ≤ 1 req/s, every response + redirect checked with the vendored `_expiry_reason` → `AuthExpired`; non-200/network → `PlatformError`), `parsers.py` (pure functions), `connector.py` (`GradescopeConnector`, registered in `connectors/registry.py`), `login.py` (`GRADESCOPE_LOGIN` for S13).
+- **Vendored** from gradescope-mcp @ `f8a46c8` (fetched from GitHub, MIT): `_vendored/courses.py` (`_parse_account_courses`, `_role_for_heading` + helpers) and `_vendored/auth_checks.py` (`_is_logged_out_page`, `_has_login_form`, `_expiry_reason` + helpers), with headers and `_vendored/LICENSE-gradescope-mcp`. One change: a "Your Courses" heading on a page without the Create Course button counts as `student` (upstream says `other`, which would drop every course of a student-only account). Date helpers not copied: Gradescope's `datetime` attributes carry offsets; naive ones are localized to America/New_York in `parsers.aware`.
+- **gradescopeapi 1.8.1** (pinned): we use `GSConnection` (session container), `Account`, and `get_assignments_student_view` directly on the course page HTML (we fetch `/courses/{id}` ourselves instead of `Account.get_assignments`, which first tries the staff-only `/assignments` page). Two guards around its parser: unparseable dates are blanked first (→ `due_at=null` + warning, never guessed), and an empty tail row is added when a page has no dropzone template row (its parser always drops the last row).
+- Mapping: `NCourse.name` = full name, `code` = short name, `term` from the account page. `NItem.platform_id` = Gradescope assignment id; rows with no id (not submittable, nothing submitted) get a stable `name-<sha1(title)>` id and the course page as `source_url`. `points` = max score when shown. `raw` = `{released_at, late_due_at, submission_status, score, max_score}`. Type = S11 rule 2 title regexes plus `quiz` by title (no quiz flag on Gradescope); duplicated in `parsers.item_type` (Canvas connector is built in parallel).
+- Scopes: `full` (account → student courses → each course page), `course`, `item` (course page filtered), `material` (nothing).
+- `layout_changed` saves the page to `backend/tests/fixtures/_debug/gradescope_<name>.html` (git-ignored).
+- **Spike (rule 1) not run yet** (needs a real UMass login). Cookie injection was verified offline (only gradescope.com cookies are sent to `www.gradescope.com`). If Gradescope rejects the requests-session, fall back to Playwright `open_with_state` + the same parsers.
+- Tests: `tests/connector/test_s14_gradescope.py` (S14-T01…T09 + scope, throttle, tail-row, login detection) using a fake `requests` adapter serving `tests/fixtures/gradescope/*.html` (hand-written, fake names/IDs).

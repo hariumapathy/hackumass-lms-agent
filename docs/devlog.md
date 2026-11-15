@@ -84,6 +84,56 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **State of the hosted DB:** Supabase project `hackumass-lms-agent`, ref `eahciwnufpjuzqlxqdni`, us-east-1, free plan, org ParkTheBus (Hari), created 17:30 ET. URL `https://eahciwnufpjuzqlxqdni.supabase.co`; auth uses **JWKS** (`/auth/v1/.well-known/jwks.json`), so S20 needs no JWT secret. Public URL + publishable key are in Hari's `.env`; **service role key, DB connection string, GEMINI_API_KEY are secrets** (Hari fills them in and shares via a password manager, never git/chat). No migrations applied yet (S01).
 **Next steps (in order):** 1. Finish step 0. 2. S20 real JWT auth (JWKS). 3. S21 agent tools (needs S01 schema from Neal for DB queries; build against seed fixtures meanwhile).
 
+## 2026-11-14 18:10 ET · Soumith's laptop · Claude Code (Opus 5.5) + Codex in parallel · branch dev/soumith
+**Hour:** ~H22.5. Devpost draft due 23:59 tonight (Hari); final submission Sun 09:00, code freeze 08:00.
+
+**Done:**
+- Synced `dev/soumith` with `main` (`478380a`). Earlier Stage 1 work from before PR #1 was ported onto main's scaffold; the old local branch is kept only as a local backup (not pushed).
+- **S02 reviewed from the frontend side: approved.** Generated types cover what the UI needs; remaining gaps are Stage 2/3 follow-ups (P6–P9 in [progress/soumith.md](progress/soumith.md)), not blockers.
+- **S30 / S32 / S33 (chat part), mock mode** (`653d134`, pushed to `dev/soumith`): Supabase sign-in + demo sign-in, protected shell (sidebar / bottom tabs), typed API client on `schema.d.ts`, SSE parser + `streamChat` (S02-T05/T06 done here), MSW handlers + fixtures, Today view + course page, streaming chat with status list, citation chips/cards, final_text, Try again, Stop, past chats. **30 web tests green; lint, typecheck, `next build` clean.** E2E specs written (S30-T07, S32-T08), not yet run.
+- **Three agents in parallel on role C** (Claude Code, Codex, Cursor): shared brief [handoff/soumith-agents-brief.md](handoff/soumith-agents-brief.md). One worktree + branch each: `../hackumass-lms-agent-claude` (`soumith/claude`), `../hackumass-lms-agent-codex` (`soumith/codex`), `../hackumass-lms-agent-cursor` (`soumith/cursor`); the main checkout stays on `dev/soumith` as merge target. Overlap allowed, merged afterwards. Lanes: **Codex** = S33 study sets + approvals; **Cursor** = S31 onboarding → S34 settings; **Claude** = shell/Today/course QA, merges, docs.
+- **E2E green** (`e266eb5`): S30-T07 and S32-T08 pass in mock mode (Playwright Chromium installed). Next 16 dev-only instant-navigation checks limited to opted-in segments (`manual-warning`), since every screen waits for the browser-side sign-in.
+
+**In progress (not finished):** Codex: S33 Stage 2. Cursor: S31 → S34. Claude: merging agent branches as they go green.
+- Claude (done since): mock mode now shows “We couldn’t start the demo in this browser” + Try again instead of an endless skeleton (S30-T08, `dd6e581`); screenshot QA at 1280 and 375 px of landing, Today, course, chat, citation card: fixed course-page item colors (S32-T09); phone chat composer handed to Codex (brief §3.A item 9).
+**Codex update (soumith/codex):** S33 streamed study-set cards and Add/Skip approval actions implemented tests-first; 34 web tests passing. Study-mode mocks added. Study detail/list pages next. Contract change proposal P7 pending: reloaded approvals cannot show their outcome. Cross-lane change: SSE test expects the study-mode stream for exam prep; no dependencies or contract changes.
+
+- Claude (20:40): merged Cursor's S31 (`b54a81b`, Cursor stopped after it) and fixed its e2e: the mock worker started twice under React Strict Mode, so live logins “expired” mid-flow (`startMockWorker` now idempotent, S30-T09); UMass step says “Echo360 connected”. All 4 e2e + 57 unit tests green. Canvas-expiry banner on every signed-in screen (S34-T06). **S34 settings page handed to Codex** (brief §3.B update).
+**Codex study-page update (soumith/codex):** Checkpoint 3fb81e0 committed before fetching/merging origin/dev/soumith (already current, no conflicts). Read the three-agent brief; only section 3.A owned. Finished /study list and plan/quiz/flashcard detail pages, local plan progress, keyboard controls, resolved-map/fallback citation lookup, malformed-payload and fetch-error states. Study REST handlers isolated in handlers-study.ts. Tests-first: missing study-screen import failed before implementation; now 41 unit/component tests + all 3 Chromium e2e tests pass (S33-T11 at 375 px), lint/typecheck/production build pass. Build via node node_modules/next/dist/bin/next build: npm wrapper hit a Turbopack subprocess error; direct Node succeeded. Installed pinned Playwright Chromium locally. No dependencies/contracts changed. P7 approval outcomes on conversation reload still pending. Ready for Claude to merge and update spec/pitch/progress status per the shared brief.
+
+- Claude (21:10): **Codex stopped too, so Claude built S34 Settings**: accounts (status, Refresh, Reconnect, Disconnect with confirm), profile (name, time zone), calendar (Google/Apple/Outlook buttons, masked link, copy, new link with confirm), privacy (Delete my data, type DELETE), Advanced → AI choice grouped Recommended/Experimental (Gemini default). S34-T01–T05 + banner T06; 69 unit + 5 e2e green, lint/typecheck/build clean. **All role-C MVP screens now exist in mock mode.**
+
+- Claude (21:35): **Codex hit its usage limit; Claude finished its lane.** Codex had completed study cards, approvals and study pages (S33-T07–T11). Done now: phone chat layout (message box at the bottom, stays above the tab bar; e2e S33-T12) and a bug where a new chat showed no suggested questions (disabled query counted as loading; S33-T13). Codex's uncommitted duplicate Settings in its worktree is superseded by `46b03e6`. Spec index statuses for S30/S32/S33 corrected. PR `soumith/claude` → `dev/soumith`.
+
+**Decisions / design changes (Soumith OK'd):**
+- Frontend REST types are re-exports of generated `schema.d.ts`; only SSE event types are hand-written (from CONTRACT.md).
+- Node-20 pins kept: MSW 2.15 (not 3), supabase-js 2.109, `clsx` + `tailwind-merge` instead of shadcn's Node-22 `cn` package.
+- Mock mode without Supabase env shows a demo sign-in ("Continue with demo data"); real Supabase sign-in is used whenever the URL + publishable key are set.
+- Specs S30/S32/S33 implemented while still `Draft`, with Soumith's go-ahead (relay time pressure).
+
+**Roadblocks:**
+- This laptop has no Python / `uv` / `make`: backend tests and `make api` can't run here; web checks run with `pnpm` in `apps/web`. Frontend not yet tried against the real backend stubs.
+- Supabase publishable key isn't on this laptop, so real sign-in is untested (demo sign-in works).
+
+**State of main:** `478380a`; `dev/soumith` is ahead with `653d134` (web green). Not merged to main yet.
+
+**Next steps (in order):**
+1. Codex: S33 study sets + approval card (brief §3.A). Cursor: S31 onboarding → S34 settings (brief §3.B).
+2. Claude: mock-mode service-worker failure message, 375 px QA, merge green agent branches into `dev/soumith`, then PR `dev/soumith` → `main` (brief §3.C).
+3. Hari: S20 auth (then real sign-in can be tested with the publishable key), answer S02 follow-ups P6–P9.
+4. Anyone with Python: run the web app against `make api` (set `NEXT_PUBLIC_API_MOCKS=0`, `NEXT_PUBLIC_API_URL=http://localhost:8000`) to catch mock/backend drift.
+
+**Gotchas for the next agent:** see brief §5 (Node-20 pins, shadcn `cn` imports, MSW 2 option names, jsdom AbortSignal shim in `tests/setup.ts`, module-level react-markdown config, Suspense for `useSearchParams`).
+
+**Cursor (19:35, branch `soumith/cursor`): S31 onboarding built, S34 not started. Handing the rest to Claude.**
+- Done: `src/components/connect/*` (welcome, guided Canvas paste, Gradescope/Echo360 live login with 2 s polling + 409 resume, calendar step with Google/Apple/Outlook links, "Getting your classes" step polling `/sync/status`, resume from `/me` + localStorage, `?reconnect=` → back to `/settings`), `src/app/onboarding/page.tsx`, `src/mocks/handlers-account.ts` (all §3.B endpoints, incl. `/models` with Gemini default, PATCH `/me`, DELETE `/me/data`, calendar rotate), `src/components/ui/dialog.tsx` (hand-written: the shadcn CLI tries to install `cn`). Cross-lane: additive API methods in `client.ts` (+ optional `ApiError.details`), type re-exports in `types.ts`, one spread line in `handlers.ts`.
+- Verified: `tests/s31-onboarding.test.tsx`, 14 passing (T01–T05, T07, T08). **Not yet run:** full `pnpm test`, `lint`, `typecheck`, `build`, and the e2e `tests/e2e/s31-onboarding.spec.ts` (T06 + a T05 reconnect test). Run these before merging.
+- Left to do: (1) run the checks above and fix anything; (2) **S34 settings** (brief §3.B item 2): mocks and the dialog are ready; reuse `CalendarButtons`/`useCalendarFeed` from `connect/calendar-step.tsx` and `canvasReady`/`LiveLogin` as needed; tests S34-T01…T06; (3) Canvas-expiry banner (< 10 days) also on Today/app shell (S34 rule 1); (4) tick S31 acceptance criteria in the spec.
+- Gaps: no UMass Canvas screenshots for the guide yet (text steps only); the S02 409 response doesn't include the existing `login_id` (UI falls back to the id saved in sessionStorage; ask Hari to add `details.login_id`); P6 (no counts, so the last step shows the class count from `/courses`); P8 (no reason for unavailable models).
+- e2e on Windows here: set `PLAYWRIGHT_BROWSERS_PATH=%LOCALAPPDATA%\ms-playwright` (the sandbox points Playwright at an empty cache).
+
+---
+
 ## 2026-11-14 17:55 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF
 **Hour:** ~H21.5 (hacking began Fri 20:30 ET). **~6 h to the Devpost draft deadline (Sat 23:59), ~15 h to final submission (Sun 09:00), code freeze 08:00.** (Earlier docs said 18:15/18:40; the real time at this handoff was 17:55.)
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any, Literal, Protocol
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, SecretStr, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 
 from app.db.models import ItemType, MaterialKind, Platform, PostKind
 
@@ -46,6 +46,10 @@ class ConnectorContext(BaseModel):
     secret: SecretStr  # Canvas token or Playwright storage_state JSON
     last_success_at: datetime | None = None
     clock: Any  # app.core.clock.Clock (a Protocol; pydantic can't isinstance-check it)
+    # Filled by the connector during fetch: (course_platform_id, table) pairs it could NOT list
+    # completely (windowed listings, hidden tabs). Full-scope removal skips them (S10 rule 5).
+    # table is one of "item_sources", "materials", "posts".
+    incomplete: set[tuple[str, str]] = Field(default_factory=set)
 
 
 class AccountInfo(BaseModel):

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): `local` MVP built + tested on `neal/s13-s14-gradescope`; T06 (disconnect) and T07 (manual live login) open |
 | **Stage** | 2 |
 | **Role** | A (backend); C builds the UI in S31 |
 | **Depends on** | S10 |
@@ -90,7 +90,7 @@ sequenceDiagram
 | Session saved but immediately invalid | First sync → `needs_reconnect`; UI shows Reconnect |
 
 ## Acceptance criteria
-- [ ] Local mode: clicking Connect Gradescope opens a window; after login + Duo the UI shows "connected" and a sync starts
+- [ ] Local mode: clicking Connect Gradescope opens a window (backend done + headless smoke-tested; needs the S31 UI + a real login); after login + Duo the UI shows "connected" and a sync starts
 - [ ] Saved state lets a headless sync fetch the course list
 - [ ] Expired state is detected and surfaces as `needs_reconnect`
 
@@ -110,3 +110,15 @@ Hosted live-view implementation (stretch), extension-based login, storing passwo
 
 ## Stretch: one "Connect my UMass account" login (after MVP)
 Goal for non-technical students: no Canvas token at all. One live login to UMass SSO (NetID + Duo) whose single-sign-on session is reused to sign in to Canvas, Gradescope ("School credentials") and Echo360 (launched from Canvas) in the same browser context, saving one storage state per platform. Canvas data would then be read with the session instead of a token. **Spike first** (record results here): does one Duo approval carry over to all three? Does Canvas's API accept the session for GET requests from the worker? Until then the MVP keeps the guided Canvas token (S11, S31).
+
+## Implementation notes (2026-11-14, Neal)
+- Code: `backend/app/connectors/browser/` — `types.py` (`LoginSpec`, `BrowserProvider`, `PageLike`), `local.py` (`LocalPlaywrightProvider`: headed Chromium; Playwright imported lazily), `manager.py` (`LoginManager` + process-wide `get_login_manager()`), `store.py` (`save_storage_state`: Fernet-encrypt → `upsert_connection_secret(kind="storage_state")` → `enqueue_sync(full, trigger="connect")`), `session.py` (`check_session`).
+- `LoginSpec` is a dataclass (holds a callable) with an extra `check_url` used by `check_session`. Gradescope's spec lives in `connectors/gradescope/login.py`; `manager._LOGIN_SPECS` maps platform → spec (only `gradescope` today; others → 422 `validation_error`).
+- The manager runs one background `asyncio` task per login: polls the provider every 1 s; `succeeded` → storage state handed to `on_success`, then dropped; window closed → `failed` ("The login window was closed…"); `timeout_s` (300) → `expired`; any save error → `failed` with a plain message (exception text never logged: could contain cookies). Browser always closed in `finally`.
+- Routes: only the bodies of `POST /connections/{platform}/login` and `GET /connections/{platform}/login/{login_id}` changed; they take `Depends(get_login_manager)` (tests override it with a fake provider). Response models unchanged. Status is scoped to the user and the platform in the path (404 otherwise).
+- The API process opens the Procrastinate app lazily in `save_login` (`await app.open_async()`, idempotent) because the API lifespan doesn't open it yet.
+- `BROWSER_PROVIDER=hosted` is not built (stretch): logs a warning and uses `local`.
+- Login runs in the **API process** (spec rule 7), so the headed window opens on the machine running `make api`.
+- Not done here: `DELETE /connections/{platform}` (rule 6, S13-T06) is in Hari's route-wiring lane; it should delete the connection (secret cascades) and cancel queued `sync_runs`/jobs. A pending login can be cancelled with `LoginManager.cancel(user_id, login_id)` (no endpoint in the contract).
+- Tests: `tests/unit/test_s13_browser.py` (T01, T02, T03 via TestClient + fake provider, T05, cancel, scoping), `tests/integration/test_s13_browser_db.py` (T04). A headless smoke test of the real `LocalPlaywrightProvider` against a local HTML page passed (login detected, storage state captured, `check_session` true, browser closed).
+- Manual live login (T07): `cd backend && uv run playwright install chromium` once, `make db`, `make api`, `make worker`, then from the web app (S31) or `curl -X POST localhost:8000/connections/gradescope/login -H "Authorization: Bearer <supabase jwt>"`; a Chromium window opens on Gradescope's login page → "School Credentials" → UMass Amherst → NetID + Duo; poll `GET /connections/gradescope/login/<login_id>` until `succeeded`.

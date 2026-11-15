@@ -34,7 +34,14 @@ from app.sync.diff import changed_fields, classify, meaningful_fields, record_ha
 log = logging.getLogger("app.sync")
 
 SOURCE_TABLES = ("course_links", "item_sources", "materials", "posts")
-ProcessMaterial = Callable[[UUID, UUID], Awaitable[None]]
+# S16: once courses are merged, only Canvas (or a course with no Canvas link) renames it.
+_RENAME_GUARD = (
+    "and (%s = 'canvas' or not exists (select 1 from course_links l "
+    "where l.user_id = courses.user_id and l.course_id = courses.id and l.platform = 'canvas'))"
+)
+# (user_id, material_id, source): source = the record's download/text/cues for S12 (not in the DB)
+ProcessMaterial = Callable[[UUID, UUID, dict[str, Any]], Awaitable[None]]
+ProcessPost = Callable[[UUID, UUID], Awaitable[None]]
 
 
 @dataclass
@@ -45,6 +52,8 @@ class SyncOutcome:
     )
     skipped: int = 0
     materials_to_process: list[UUID] = field(default_factory=list)
+    material_sources: dict[UUID, dict[str, Any]] = field(default_factory=dict)
+    posts_to_process: list[UUID] = field(default_factory=list)
     error: str | None = None
 
 
@@ -144,8 +153,9 @@ class _Store:
             if ex is not None:  # placeholder link created by an earlier child record
                 await self.one(
                     "update courses set name = %s, code = %s, term = %s "
-                    "where user_id = %s and id = %s returning id",
-                    (rec.name, rec.code, rec.term, self.user_id, cid),
+                    "where user_id = %s and id = %s "
+                    f"{_RENAME_GUARD} returning id",
+                    (rec.name, rec.code, rec.term, self.user_id, cid, self.platform),
                 )
             return "new", row["id"]
         self.course_ids[rec.platform_id] = ex["course_id"]
@@ -154,8 +164,9 @@ class _Store:
             await self.touch("course_links", ex["id"], ", content_hash = %s", (h,))
             await self.one(
                 "update courses set name = %s, code = coalesce(%s, code), "
-                "term = coalesce(%s, term) where user_id = %s and id = %s returning id",
-                (rec.name, rec.code, rec.term, self.user_id, ex["course_id"]),
+                "term = coalesce(%s, term) where user_id = %s and id = %s "
+                f"{_RENAME_GUARD} returning id",
+                (rec.name, rec.code, rec.term, self.user_id, ex["course_id"], self.platform),
             )
         else:
             await self.touch("course_links", ex["id"], ", status = 'active'")
@@ -191,7 +202,6 @@ class _Store:
         if outcome == "unchanged":
             await self.touch("item_sources", ex["id"])
             return outcome, ex["id"]
-        old_fields = (ex["raw"] or {}).get("_normalized", {})
         await self.one(
             "update item_sources set raw_title = %s, raw_due_at = %s, raw = %s, source_url = %s, "
             "content_hash = %s, source_updated_at = %s, last_synced_at = %s, status = 'changed' "
@@ -208,9 +218,8 @@ class _Store:
                 ex["id"],
             ),
         )
-        await self.change_rows(
-            "item", ex["item_id"] or ex["id"], cid, old_fields, _jsonable(new_fields)
-        )
+        # No `changes` row here: S16 `merge_user` compares canonical items and writes one row per
+        # canonical field change (a non-canonical source moving must not alert the student).
         return outcome, ex["id"]
 
     async def post(self, rec: NPost) -> tuple[str, UUID]:
@@ -320,17 +329,26 @@ class _Store:
         )
         return outcome, ex["id"]
 
-    async def mark_removed(self, seen: dict[str, set[UUID]]) -> int:
-        """Full scope only: rows of this platform not seen in this run -> removed (+ change)."""
+    async def mark_removed(
+        self, seen: dict[str, set[UUID]], incomplete: set[tuple[str, str]] | None = None
+    ) -> int:
+        """Full scope only: rows of this platform not seen in this run -> removed (+ change).
+        Courses/tables the connector reported as incompletely listed are left alone."""
         removed = 0
-        entity = {"item_sources": "item", "materials": "material", "posts": "post"}
+        # Removed item sources get no change row here: S16 marks the canonical item removed (and
+        # writes its change) once all of its sources are gone.
+        entity = {"materials": "material", "posts": "post"}
+        skip: dict[str, list[UUID]] = {}
+        for course_pid, table in incomplete or set():
+            cid = await self.course_id(course_pid)
+            skip.setdefault(table, []).append(cid)
         for table in SOURCE_TABLES:
             ids = list(seen.get(table, set()))
             cur = await self.conn.execute(
                 f"update {table} set status = 'removed' where user_id = %s "  # noqa: S608
                 "and platform = %s and status <> 'removed' and not (id = any(%s)) "
-                "returning id, course_id",
-                (self.user_id, self.platform, ids),
+                "and not (course_id = any(%s)) returning id, course_id",
+                (self.user_id, self.platform, ids, skip.get(table, [])),
             )
             rows = await cur.fetchall()
             removed += len(rows)
@@ -377,6 +395,7 @@ async def run_sync(
     clock: Clock,
     final_attempt: bool = True,
     process_material: ProcessMaterial | None = None,
+    process_post: ProcessPost | None = None,
 ) -> SyncOutcome:
     """Run one sync. Never raises for platform problems: returns the outcome (`retry` means the
     caller should re-raise so the queue retries; only returned when `final_attempt` is False)."""
@@ -410,9 +429,14 @@ async def run_sync(
             out.stats[outcome] += 1
             if isinstance(rec, NMaterial) and outcome in {"new", "changed"}:
                 out.materials_to_process.append(row_id)
+                out.material_sources[row_id] = rec.model_dump(
+                    mode="json", include={"download", "text", "cues"}
+                )
+            if isinstance(rec, NPost) and outcome in {"new", "changed"}:
+                out.posts_to_process.append(row_id)
         if scope.kind == "full":
             async with conn.transaction():
-                out.stats["removed"] = await store.mark_removed(seen)
+                out.stats["removed"] = await store.mark_removed(seen, ctx.incomplete)
     except AuthExpired:
         out.status, out.error = "needs_reconnect", "Your sign-in for this site expired."
         await repo.set_connection_status(
@@ -434,6 +458,9 @@ async def run_sync(
         await repo.set_connection_status(conn, user_id, platform, "active", synced_at=finished)
         if process_material:
             for material_id in out.materials_to_process:
-                await process_material(user_id, material_id)
+                await process_material(user_id, material_id, out.material_sources[material_id])
+        if process_post:
+            for post_id in out.posts_to_process:
+                await process_post(user_id, post_id)
     await repo.mark_run(conn, user_id, run_id, out.status, finished, out.stats, out.error)
     return out

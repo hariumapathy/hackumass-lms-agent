@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Soumith): built in mock mode (Cursor `b54a81b`, fixes `626bead`); S31-T01–T08 incl. e2e T05/T06 green. Manual criteria need the real backend |
 | **Stage** | 2 |
 | **Role** | C |
 | **Depends on** | S30, S11 (Canvas endpoint), S13 (login endpoints) |
@@ -50,7 +50,7 @@ flowchart LR
 
 ## Acceptance criteria
 - [ ] New account → Today with real Canvas data in under 3 minutes (manual, timed)
-- [ ] All error codes have friendly messages
+- [x] All error codes have friendly messages (Canvas step maps invalid_token / validation_error / platform_unavailable / network / unauthorized + fallback; live login handles 409, expired, failed)
 - [ ] Usable on mobile (except local-mode live login, which needs the laptop)
 
 ## Test plan

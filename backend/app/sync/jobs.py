@@ -103,6 +103,7 @@ async def execute_sync(
         clock=clock,
         final_attempt=final_attempt,
         process_material=_defer_process_material,
+        process_post=_defer_process_post,
     )
     if outcome.status == "retry":
         raise PlatformError(outcome.error or "platform error")
@@ -111,20 +112,40 @@ async def execute_sync(
     return outcome.status
 
 
-@app.task(name="process_material", queue="process")
-async def process_material(user_id: str, material_id: str) -> None:
-    """S12 implements extraction + chunking + embeddings. Until then: leave `pending`."""
-    log.info("process_material queued for %s (S12 pending)", material_id)
+@app.task(
+    name="process_material",
+    queue="process",
+    retry=RetryStrategy(
+        max_attempts=MAX_RETRIES, exponential_wait=5, retry_exceptions={PlatformError}
+    ),
+)
+async def process_material(
+    user_id: str, material_id: str, source: dict[str, Any] | None = None
+) -> None:
+    """S12: download/extract/chunk/embed (`app.sync.processing`). `source` = download/text/cues."""
+    from app.sync.processing.worker import run_process_material
+
+    async with await _connect() as conn:
+        await run_process_material(conn, UUID(user_id), UUID(material_id), source)
+
+
+@app.task(name="process_post", queue="process")
+async def process_post(user_id: str, post_id: str) -> None:
+    """S12: chunk + embed a new/changed post (announcement, Piazza, email)."""
+    from app.sync.processing.worker import run_process_post
+
+    async with await _connect() as conn:
+        await run_process_post(conn, UUID(user_id), UUID(post_id))
 
 
 @app.task(name="merge_user", queue="sync")
 async def merge_user(user_id: str) -> None:
-    """S16 implements cross-platform merge. Until then: 1:1 item per unmerged source (S16-lite),
-    so synced assignments show up on the Today view."""
-    from app.sync.merge import merge_one_to_one
+    """S16: merge courses/items across platforms and write canonical item changes."""
+    from app.sync import merge
 
     async with await _connect() as conn:
-        await merge_one_to_one(conn, UUID(user_id))
+        stats = await merge.merge_user(conn, UUID(user_id))
+    log.info("merge_user %s: %s", user_id, stats.model_dump())
 
 
 async def _defer(task: Any, kwargs: dict[str, Any], lock: str | None = None, priority: int = 0):
@@ -134,11 +155,17 @@ async def _defer(task: Any, kwargs: dict[str, Any], lock: str | None = None, pri
         pass
 
 
-async def _defer_process_material(user_id: UUID, material_id: UUID) -> None:
+async def _defer_process_material(user_id: UUID, material_id: UUID, source: dict[str, Any]) -> None:
     await _defer(
         process_material,
-        {"user_id": str(user_id), "material_id": str(material_id)},
+        {"user_id": str(user_id), "material_id": str(material_id), "source": source},
         lock=f"process:{material_id}",
+    )
+
+
+async def _defer_process_post(user_id: UUID, post_id: UUID) -> None:
+    await _defer(
+        process_post, {"user_id": str(user_id), "post_id": str(post_id)}, lock=f"post:{post_id}"
     )
 
 

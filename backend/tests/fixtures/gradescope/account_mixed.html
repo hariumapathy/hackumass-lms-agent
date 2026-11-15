@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!-- Hand-written fixture modeled on Gradescope's /account page. Fake names and IDs. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="csrf-token" content="fake-csrf-token-123">
+  <title>Your Courses | Gradescope</title>
+</head>
+<body>
+<nav class="sidebar">
+  <a class="sidebar--menuItem" href="https://example.gradescope.com/account/edit">Account Settings</a>
+  <a class="sidebar--menuItem" href="/logout">Log Out</a>
+</nav>
+<main>
+<div id="account-show">
+  <h1 class="pageHeading">Course Staff</h1>
+  <div class="courseList">
+    <div class="courseList--term">Fall 2026</div>
+    <div class="courseList--coursesForTerm">
+      <a class="courseBox" href="/courses/900001">
+        <h3 class="courseBox--shortname">COMPSCI 121</h3>
+        <div class="courseBox--name">Intro to Problem Solving with Computers</div>
+        <div class="courseBox--assignments">12 assignments</div>
+      </a>
+    </div>
+  </div>
+  <h1 class="pageHeading">Student Courses</h1>
+  <div class="courseList">
+    <div class="courseList--term">Fall 2026</div>
+    <div class="courseList--coursesForTerm">
+      <a class="courseBox" href="/courses/100001">
+        <h3 class="courseBox--shortname">COMPSCI 311</h3>
+        <div class="courseBox--name">Introduction to Algorithms</div>
+        <div class="courseBox--assignments">6 assignments<div class="courseBox--noGradesPublished">No Published Grades</div></div>
+      </a>
+      <a class="courseBox" href="/courses/100002">
+        <h3 class="courseBox--shortname">MATH 235</h3>
+        <div class="courseBox--name">Introduction to Linear Algebra</div>
+        <div class="courseBox--assignments">0 assignments</div>
+      </a>
+    </div>
+    <div class="courseList--term">Spring 2026</div>
+    <div class="courseList--coursesForTerm">
+      <a class="courseBox" href="/courses/100003">
+        <h3 class="courseBox--shortname">COMPSCI 220</h3>
+        <div class="courseBox--name">Programming Methodology</div>
+        <div class="courseBox--assignments">9 assignments</div>
+      </a>
+    </div>
+  </div>
+</div>
+</main>
+</body>
+</html>

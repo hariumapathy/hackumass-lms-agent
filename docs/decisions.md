@@ -41,4 +41,5 @@
 | 2026-11-14 | Agent "live pulls" = high-priority narrow sync jobs (`fetch_latest`), same worker code as scheduled sync | Keeps credentials out of the agent, results stay citable and reusable, one code path |
 | 2026-11-14 | Email is a nice-to-have: try Microsoft sign-in first, fall back to manual forward + seeded demo emails | Tenant may block app consent and external forwarding; Canvas announcements already cover most course email |
 
+| 2026-11-14 | **Merge steward:** one Claude session merges each `dev/*` branch into `main` every 15 min when CI + local checks are green, resolving conflicts on a `merge/<name>` branch (never pushes to `dev/*`); rules in [handoff/merge-steward.md](handoff/merge-steward.md) | Three people + many agents push constantly; one owner for integration avoids drift and stale `main` |
 _Still in planning — stack, roles and final MVP scope not yet locked. See [06-open-questions.md](06-open-questions.md)._

@@ -25,7 +25,7 @@ from app.core.clock import FixedClock
 from app.core.settings import get_settings
 from app.db.repositories import sync as repo
 from app.sync import jobs
-from app.sync.merge import merge_one_to_one
+from app.sync.merge import merge_user
 from app.sync.pipeline import run_sync
 from tests.integration.db import conn_fixture, create_auth_user, delete_auth_user
 
@@ -156,11 +156,15 @@ async def test_s10_fake_connector_end_to_end_then_rerun_unchanged(conn, user) ->
 
 
 async def test_s10_t03_changed_due_at_writes_one_change_row(conn, user) -> None:  # noqa: ANN001
+    """Since S16 the pipeline stores the changed source and `merge_user` writes the one canonical
+    change row (see S16 implementation notes)."""
     await _sync(conn, user, FakeConnector([course(), item()]))
-    await merge_one_to_one(conn, user)
+    await merge_user(conn, user, clock=FixedClock(NOW))
     moved = NOW + timedelta(days=6)
     out, _ = await _sync(conn, user, FakeConnector([course(), item(due_at=moved)]))
     assert out.stats["changed"] == 1
+    assert await _count(conn, "changes where user_id = %s", user) == 0
+    await merge_user(conn, user, clock=FixedClock(NOW))
     cur = await conn.execute(
         "select field, old_value, new_value, entity_type, entity_id from changes "
         "where user_id = %s",
@@ -172,7 +176,6 @@ async def test_s10_t03_changed_due_at_writes_one_change_row(conn, user) -> None:
     assert rows[0]["old_value"] == (NOW + timedelta(days=4)).isoformat()
     assert rows[0]["new_value"] == moved.isoformat()
     # Change points at the canonical item, which follows its source after merge.
-    await merge_one_to_one(conn, user)
     cur = await conn.execute("select id, due_at from items where user_id = %s", (user,))
     it = await cur.fetchone()
     assert it["id"] == rows[0]["entity_id"] and it["due_at"] == moved
@@ -280,7 +283,7 @@ async def test_s10_t11_one_malformed_record_is_skipped(conn, user) -> None:  # n
 async def test_s10_t12_new_or_changed_material_queues_processing(conn, user) -> None:  # noqa: ANN001
     queued: list[UUID] = []
 
-    async def pm(uid: UUID, material_id: UUID) -> None:
+    async def pm(uid: UUID, material_id: UUID, source: dict) -> None:
         queued.append(material_id)
 
     await _sync(conn, user, FakeConnector([course(), material()]), process_material=pm)
@@ -301,3 +304,21 @@ async def test_s10_secret_stored_encrypted_and_scheduler_finds_due(conn, user) -
     await repo.mark_run(conn, user, run_id, "succeeded", NOW - timedelta(minutes=5))
     assert (user, "canvas") not in await jobs.due_connections(conn, NOW)
     assert (user, "canvas") in await jobs.due_connections(conn, NOW + timedelta(minutes=30))
+
+
+class WindowedConnector(FakeConnector):
+    """Like Canvas: posts are listed for a time window only, so unseen posts aren't removed."""
+
+    async def fetch(
+        self, ctx: ConnectorContext, scope: SyncScope
+    ) -> AsyncIterator[NormalizedRecord]:
+        ctx.incomplete.add(("12345", "posts"))
+        async for r in super().fetch(ctx, scope):
+            yield r
+
+
+async def test_s10_t04b_incomplete_listing_is_never_removed(conn, user) -> None:  # noqa: ANN001
+    await _sync(conn, user, FakeConnector([course(), item(), post()]))
+    out, _ = await _sync(conn, user, WindowedConnector([course()]))
+    assert await _count(conn, "posts where user_id = %s and status = 'removed'", user) == 0
+    assert out.stats["removed"] == 1  # the unseen item is still removed (its listing was complete)

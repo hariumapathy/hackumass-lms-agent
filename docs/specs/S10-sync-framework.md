@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Neal): framework built + tested on `dev/neal` |
+| **Status** | Done (Neal) |
 | **Stage** | 1 |
 | **Role** | A |
 | **Depends on** | S01 |
@@ -144,6 +144,8 @@ Platform-specific fetching (S11, S14, S15), file parsing (S12), cross-platform m
 - Code: `connectors/base.py` (interface + registry), `core/crypto.py`, `sync/diff.py`, `sync/pipeline.py` (`run_sync`), `sync/jobs.py` (Procrastinate app, `enqueue_sync`, `wait_for_sync`, periodic `schedule_syncs` every 5 min), `db/repositories/sync.py`, `uv run app worker` / `make worker`.
 - Queue schema: `supabase/migrations/0002_procrastinate.sql` (procrastinate 3.11.0 schema verbatim + lockdown: RLS on, no client grants, function EXECUTE revoked from anon/authenticated).
 - Queueing lock is done on **our** `sync_runs` (advisory lock + "open run with same scope" lookup), so duplicate callers get the same `sync_run_id`. Priority: agent/manual 10, schedule/connect 0.
-- Records are stored one transaction each (bad record skipped, rule 10). Item changes point at the canonical item when merged (`item_sources.item_id`), else the source row.
-- **S16-lite** (`sync/merge.py`, run by `merge_user` after each successful sync): one canonical item per unmerged source so synced assignments reach the Today view. S16 replaces it.
+- Records are stored one transaction each (bad record skipped, rule 10). Item-field change rows: see S16 below.
+- `merge_user` (after each successful sync) now runs the real **S16** merge (`sync/merge.py`). **S16 owns item change rows**: the pipeline writes change rows only for posts and materials; canonical item changes (title/due/points, all-sources-removed) come from S16. Once courses merge, only Canvas (or a course with no Canvas link) renames the canonical course.
 - `process_material` is a stub until S12. `GET /sync/status` / `POST /sync` route wiring happens with the API DB wiring (B lane).
+- **Incomplete listings** (found while building S11): connectors add `(course_platform_id, table)` to `ctx.incomplete` for windowed or hidden sections (Canvas: announcements are a 60-day window; a 403 tab). Full-scope removal skips those course/table pairs, so old announcements and hidden tabs are never marked `removed`. Test S10-T04b.
+- S12 extended the pipeline: new/changed materials carry their `download`/`text`/`cues` payload to `process_material`, and new/changed posts are queued for `process_post`.
