@@ -23,6 +23,14 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-14 22:55 ET · Soumith's laptop · Claude Code (Opus 5.5) · branch dev/soumith
+**Hour:** ~H26.5 (Devpost draft due 23:59 tonight; final Sun 09:00, freeze 08:00; judging 12:30).
+**Start check:** fast-forwarded `dev/soumith` to `origin/main` `0176e57` (Neal's PR #22 is in; `dev/neal` has nothing beyond main), then to Neal's review branch `codex/calendar-piazza-ui` `bfdf10f` (S25 calendar) to retest it. `neal/s17-piazza` (3 commits) not merged. This laptop still has no Python/uv/make/Docker: backend + DB tests not run here.
+**Done:** S25 calendar retest from the UI side: web 73 tests, lint, typecheck, production build green. Browser (mock mode): Settings → Calendar shows Google/Apple/Outlook links for an HTTPS feed, masked link, copy, "Get a new link" rotates (`demo-feed` → `demo-feed-1`). **Fix:** onboarding calendar step with a local (laptop) feed only offered Download, and downloading never counted as "Added", so the student could only Skip; Download now marks it added (test-first, `s25-calendar.test.tsx`). Added `.claude/launch.json` (`web-mock`, needs `NEXT_PUBLIC_API_MOCKS=1`).
+**Not verified (still pending, per S25):** backend S25 tests on this laptop; real Google/Apple import of the downloaded `.ics`; Add/Skip against the real DB.
+**State:** `dev/soumith` contains Neal's unreviewed calendar commits: **do not merge dev/soumith into main until Neal's branch is reviewed/merged** (his rule in feature-work-plan.md).
+**Next steps (in order):** 1. Someone with the demo stack: download the feed from Settings, import into a test Google Calendar, compare one due time (calendar-runbook.md). 2. Neal reviews/merges `codex/calendar-piazza-ui` (now incl. this fix if he pulls dev/soumith) → then dev/soumith → main. 3. Soumith: S35 UMass UI polish only after Neal's plan; demo rehearsal at 375 px.
+
 ## 2026-11-14 22:38 ET · Neal's laptop · Codex · branch codex/calendar-piazza-ui
 **Workflow / review:** latest user instruction replaces main-only work: design plan → implementation plan → failing feature tests → code → checks → separate feature commit, all on one review branch. No merge before user review. Planning/handoff checkpoint `f00a00f` pushed. Keep this entry current before approaching any usage limit.
 **Done:** prior main `0176e57` includes live Gradescope verification and polished Devpost copy (`16c906b`) plus teammate queue-isolation fixes. Gradescope imported 20 courses / 238 assignments / 186 dated; independent five source-page date checks remain. S25 implemented: private ICS, approval persistence, actual agent tool, owner/overlap guards, DST validation, token rotation, log redaction, honest local-download UI. No schema/API shape changes. See S25 and calendar-runbook.md.

@@ -17,7 +17,7 @@ export function CalendarButtons({ feedUrl, onAdded }: { feedUrl: string; onAdded
   const links = calendarLinks(feedUrl);
   if (!canSubscribeRemotely(feedUrl)) return (
     <div className="flex flex-col gap-3">
-      <Button asChild size="lg" className="w-fit"><a href={feedUrl} download="class-calendar.ics">Download calendar</a></Button>
+      <Button asChild size="lg" className="w-fit"><a href={feedUrl} download="class-calendar.ics" onClick={onAdded}>Download calendar</a></Button>
       <p className="text-sm text-muted-foreground">This demo runs on your laptop. Download the file, then import it into Google Calendar under Settings → Import &amp; export. Download it again after changes.</p>
     </div>
   );

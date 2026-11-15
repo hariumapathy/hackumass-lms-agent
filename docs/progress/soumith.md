@@ -11,7 +11,7 @@ _Only Soumith (or Soumith's agent) edits this file. Keep it short; replace stale
 - ~20:20 sync with `main` @ `a081914` (S01–S03, S10–S14, S16, S20–S24, S26 landed): UI unchanged and green; UMass login endpoints are now live (S13). One fix since: the Canvas guide step rendered one word per line on phones.
 
 ## In progress
-- Nothing half-built. The parallel-agent setup (Codex, Cursor) is finished; their branches are fully merged.
+- ~22:55: retested Neal's S25 calendar (`codex/calendar-piazza-ui`, merged into `dev/soumith` for testing) from the UI: green; fixed onboarding Download not counting as "Added". Real Google import + backend tests not run on this laptop (no Python/Docker). `dev/soumith` now carries Neal's unreviewed commits: don't merge it to main before his branch.
 
 ## Next (frontend, in order)
 1. **Run the UI against the real API** (`make api`) on a laptop with Python + keys: walk the demo script, fix any drift. Steps in `apps/web/README.md` § B. Can't be done on Soumith's laptop (no Python).
