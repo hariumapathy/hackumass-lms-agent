@@ -90,6 +90,13 @@ async def login_status(
 
 @router.delete("/connections/{platform}", status_code=204)
 async def disconnect(platform: s.Platform, user: User) -> Response:
+    """S13 rule 6: delete the connection + its secret and cancel queued syncs. Synced course
+    data stays (Delete my data removes it). Idempotent: 204 even if not connected."""
+    if _db_mode():
+        from app.sync.disconnect import disconnect_platform
+
+        async with connection() as conn:
+            await disconnect_platform(conn, user.user_id, platform)
     return Response(status_code=204)
 
 

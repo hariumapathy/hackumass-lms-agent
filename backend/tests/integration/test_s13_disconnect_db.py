@@ -66,3 +66,28 @@ async def test_s13_t06_disconnect_deletes_secret_and_cancels_jobs(conn) -> None:
         )
         await delete_auth_user(conn, uid)
         await delete_auth_user(conn, other)
+
+
+async def test_s13_t06_disconnect_route_db_mode(conn, monkeypatch) -> None:  # noqa: ANN001
+    import httpx
+
+    from app.db.pool import close_pool
+    from app.main import create_app
+    from tests.helpers import auth_header
+
+    monkeypatch.setenv("DATA_SOURCE", "db")
+    get_settings.cache_clear()
+    uid = await create_auth_user(conn)
+    try:
+        await repo.upsert_connection_secret(conn, uid, "canvas", b"ct", "canvas_token")
+        transport = httpx.ASGITransport(app=create_app())
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            r = await client.delete("/connections/canvas", headers=auth_header(uid))
+            assert r.status_code == 204
+            assert await repo.get_connection(conn, uid, "canvas") is None
+            again = await client.delete("/connections/canvas", headers=auth_header(uid))
+            assert again.status_code == 204
+            assert (await client.delete("/connections/canvas")).status_code == 401
+    finally:
+        await close_pool()
+        await delete_auth_user(conn, uid)

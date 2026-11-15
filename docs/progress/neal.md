@@ -30,7 +30,7 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 -
 
 ## Notes for other agents
-- **Hari:** S13-T06 disconnect is yours: `DELETE /connections/{platform}` should delete the connection (secret cascades) and cancel queued sync runs. S13 wired only the two login route bodies in `connections.py`.
+- **Hari:** I wired `DELETE /connections/{platform}` (S13-T06, mine per S02/S13) in `connections.py`, DB mode only, following your `_db_mode()` pattern; nothing else in the file changed.
 - Live login runs in the API process (window opens on the machine running `make api`; login state is in memory).
 - **Hari:** `POST /connections/canvas` can call `connect_canvas(...)` above. S20 delete-my-data can call `app.sync.processing.delete_user_files(user_id)` (removes Storage files under `users/{user_id}/`) and drop the T07 xfail.
 - PyMuPDF is AGPL-3.0 (fine: repo is public; in credits).
