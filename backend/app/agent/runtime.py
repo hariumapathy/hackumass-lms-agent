@@ -8,7 +8,7 @@ import asyncio
 import json
 import logging
 import time
-from collections.abc import AsyncGenerator, Callable, Sequence
+from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import uuid4
@@ -211,6 +211,7 @@ def map_stream_event(ev: StreamEvent, state: RunState) -> list[s.ChatEvent]:
 # --- the run ----------------------------------------------------------------------------------
 
 ModelFactory = Callable[[str | None], tuple[Model, str]]
+ProfileLoader = Callable[[UserCtx], Awaitable[tuple[str, str | None]]]
 DataFactory = Callable[[UserCtx], ToolData]
 
 
@@ -223,16 +224,21 @@ class ChatRuntime:
         model_factory: ModelFactory,
         clock: Clock,
         tools: list[ToolSpec] | None = None,
+        profile_loader: ProfileLoader | None = None,
     ) -> None:
         self.store = store
         self.data_factory = data_factory
         self.model_factory = model_factory
         self.clock = clock
+        self.profile_loader = profile_loader
         self.tools = tools if tools is not None else list(AGENT_TOOLS)
+        self.last_run: Any = None
 
     async def run(self, user: UserCtx, req: s.ChatRequest) -> AsyncGenerator[s.ChatEvent, None]:
         now = self.clock.now()
-        tz = DEFAULT_TIMEZONE  # profiles.timezone once S01 lands
+        tz, model_choice = DEFAULT_TIMEZONE, None
+        if self.profile_loader is not None:  # DB mode: the student's timezone + model (S20)
+            tz, model_choice = await self.profile_loader(user)
         data = self.data_factory(user)
         store = self.store
         conv_id = await store.ensure_conversation(
@@ -241,7 +247,10 @@ class ChatRuntime:
         history = await store.history(user.user_id, conv_id)
         user_msg = s.Message(id=uuid4(), role="user", text=req.message, created_at=now)
         await store.add_message(user.user_id, conv_id, user_msg)
-        model, model_id = self.model_factory(None)  # profiles.model_choice once S01 lands
+        try:
+            model, model_id = self.model_factory(model_choice)
+        except ModelUnavailable:
+            model, model_id = self.model_factory(None)  # chosen model has no key: default
         run_log = await store.start_run(user.user_id, conv_id, model_id)
         yield s.RunStartedEvent(
             run_id=run_log.id, conversation_id=conv_id, user_message_id=user_msg.id
@@ -297,6 +306,11 @@ class ChatRuntime:
                     retryable=True,
                 )
             run_log.tool_calls = state.tool_log
+            usage = result.context_wrapper.usage
+            run_log.input_tokens = usage.input_tokens
+            run_log.output_tokens = usage.output_tokens
+            run_log.model_requests = usage.requests
+            self.last_run = run_log  # read by the eval runner (S26); not used by the API
             run_log.allowed_chunk_ids = set(ctx.allowed_chunk_ids)
             if error is not None:
                 partial = "".join(state.text_parts)

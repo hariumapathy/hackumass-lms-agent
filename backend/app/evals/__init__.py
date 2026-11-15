@@ -57,6 +57,9 @@ class Outcome:
     blocks: int = 0
     error: str | None = None
     latency_s: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    model_requests: int = 0
 
 
 @dataclass
@@ -133,10 +136,11 @@ def score(case: GoldenCase, out: Outcome) -> list[Check]:
     return checks
 
 
-async def run_case(runtime: Any, case: GoldenCase) -> Outcome:
+async def run_case(runtime: Any, case: GoldenCase, user: UserCtx = EVAL_USER) -> Outcome:
     out = Outcome()
     start = time.perf_counter()
-    async for ev in runtime.run(EVAL_USER, s.ChatRequest(message=case.question)):
+    runtime.last_run = None
+    async for ev in runtime.run(user, s.ChatRequest(message=case.question)):
         if isinstance(ev, s.StatusEvent) and ev.state != "started":
             out.tools.append(ev.tool)
             if ev.state == "failed":
@@ -153,11 +157,20 @@ async def run_case(runtime: Any, case: GoldenCase) -> Outcome:
         elif isinstance(ev, s.ErrorEvent):
             out.error = ev.code
     out.latency_s = round(time.perf_counter() - start, 2)
+    run = getattr(runtime, "last_run", None)
+    if run is not None:
+        out.input_tokens = run.input_tokens
+        out.output_tokens = run.output_tokens
+        out.model_requests = run.model_requests
     return out
 
 
 async def run_all(
-    runtime: Any, cases: list[GoldenCase], delay_s: float = 0.0, sleep: Any = None
+    runtime: Any,
+    cases: list[GoldenCase],
+    delay_s: float = 0.0,
+    sleep: Any = None,
+    user: UserCtx = EVAL_USER,
 ) -> list[CaseResult]:
     import asyncio
 
@@ -180,7 +193,7 @@ async def run_all(
             continue
         if i and delay_s:
             await sleep(delay_s)  # stay under free-tier requests-per-minute limits
-        outcome = await run_case(runtime, case)
+        outcome = await run_case(runtime, case, user)
         checks = score(case, outcome)
         status = "pass" if all(c.ok for c in checks) else "fail"
         results.append(CaseResult(case.id, case.topic, case.question, status, checks, outcome))
@@ -208,7 +221,16 @@ def summarize(results: list[CaseResult], model: str) -> dict[str, Any]:
         "citation_cases_with_citations": sum(1 for r in cite_cases if r.outcome.citation_ids),
         "citation_cases": len(cite_cases),
         "dropped_citations": sum(len(r.outcome.dropped_ids) for r in ran),
+        "input_tokens": sum(r.outcome.input_tokens for r in ran),
+        "output_tokens": sum(r.outcome.output_tokens for r in ran),
+        "model_requests": sum(r.outcome.model_requests for r in ran),
+        "avg_input_tokens_per_question": _avg([r.outcome.input_tokens for r in ran]),
+        "avg_output_tokens_per_question": _avg([r.outcome.output_tokens for r in ran]),
     }
+
+
+def _avg(values: list[int]) -> int:
+    return round(sum(values) / len(values)) if values else 0
 
 
 def format_table(results: list[CaseResult], summary: dict[str, Any]) -> str:
@@ -218,19 +240,24 @@ def format_table(results: list[CaseResult], summary: dict[str, Any]) -> str:
         f"**Pass rate {summary['passed']}/{summary['ran']} ({summary['pass_rate']:.0%})**, "
         f"skipped {summary['skipped']}, avg latency {summary['avg_latency_s']} s "
         f"(max {summary['max_latency_s']} s), avg tool calls {summary['avg_tool_calls']}, "
-        f"errors {summary['errors']}, dropped citations {summary['dropped_citations']}.",
+        f"errors {summary['errors']}, dropped citations {summary['dropped_citations']}. "
+        f"Tokens: {summary['input_tokens']} in / {summary['output_tokens']} out over "
+        f"{summary['model_requests']} model calls (avg per question "
+        f"{summary['avg_input_tokens_per_question']} in / "
+        f"{summary['avg_output_tokens_per_question']} out).",
         "",
-        "| ID | Topic | Result | Tools | Latency | Failed checks |",
-        "|---|---|---|---|---|---|",
+        "| ID | Topic | Result | Tools | Latency | Tokens in/out | Failed checks |",
+        "|---|---|---|---|---|---|---|",
     ]
     for r in results:
         failed = "; ".join(
             f"{c.name} ({c.detail})" if c.detail else c.name for c in r.checks if not c.ok
         )
         tools = ", ".join(r.outcome.tools) or "-"
+        tokens = f"{r.outcome.input_tokens}/{r.outcome.output_tokens}"
         lines.append(
-            f"| {r.id} | {r.topic} | {r.status} | {tools} | "
-            f"{r.outcome.latency_s:.1f}s | {failed or '-'} |"
+            f"| {r.id} | {r.topic} | {r.status} | {tools} | {r.outcome.latency_s:.1f}s | "
+            f"{tokens} | {failed or '-'} |"
         )
     return "\n".join(lines) + "\n"
 

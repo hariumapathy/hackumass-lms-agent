@@ -13,6 +13,7 @@ from app.agent.store import MemoryChatStore
 from app.agent.tools.db_source import DbToolData
 from app.agent.tools.mock_source import MockToolData
 from app.api.routes import api_router
+from app.core.auth import UserCtx
 from app.core.clock import Clock, SystemClock
 from app.core.embeddings import EmbeddingProvider, EmbeddingsConfigError, get_embeddings
 from app.core.errors import install_error_handlers
@@ -20,6 +21,7 @@ from app.core.logging import RequestLogMiddleware
 from app.core.ratelimit import TokenBucket
 from app.core.settings import Settings, get_settings
 from app.db.pool import close_pool, connection
+from app.db.repositories import profiles
 
 CHAT_REQUESTS_PER_MINUTE = 10
 log = logging.getLogger(__name__)
@@ -58,6 +60,7 @@ def default_chat_runtime(settings: Settings, clock: Clock) -> ChatRuntime | None
             ),
             model_factory=lambda choice: model_for(choice, settings),
             clock=clock,
+            profile_loader=_load_profile,
         )
     return ChatRuntime(
         store=MemoryChatStore(),
@@ -65,6 +68,12 @@ def default_chat_runtime(settings: Settings, clock: Clock) -> ChatRuntime | None
         model_factory=lambda choice: model_for(choice, settings),
         clock=clock,
     )
+
+
+async def _load_profile(user: UserCtx) -> tuple[str, str | None]:
+    async with connection() as conn:
+        profile = await profiles.ensure_profile(conn, user.user_id, user.email)
+    return profile.timezone, profile.model_choice
 
 
 def _embedder(settings: Settings) -> EmbeddingProvider | None:

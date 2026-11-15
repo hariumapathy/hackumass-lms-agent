@@ -1,4 +1,5 @@
-"""Account endpoints: /me, /me/data, /models (S02 stubs; real logic in S20, S26, S34)."""
+"""Account endpoints: /me, /me/data, /models (S20; picker S26). DB mode (DATA_SOURCE=db) uses
+the S01 tables; mock mode returns the S02 demo student."""
 
 from typing import Annotated
 from zoneinfo import available_timezones
@@ -10,13 +11,46 @@ from app.api import schemas as s
 from app.api.deps import UserCtx, current_user
 from app.core.errors import AppError
 from app.core.settings import get_settings
+from app.db.pool import connection
+from app.db.repositories import profiles
+from app.db.repositories import sync as sync_repo
 
 router = APIRouter(tags=["account"])
 User = Annotated[UserCtx, Depends(current_user)]
 
 
+def _db_mode() -> bool:
+    return get_settings().data_source == "db"
+
+
+async def _me_from_db(user: UserCtx) -> s.Me:
+    async with connection() as conn:
+        profile = await profiles.ensure_profile(conn, user.user_id, user.email)  # S20 rule
+        rows = await sync_repo.list_connections(conn, user.user_id)
+    return s.Me(
+        user_id=user.user_id,
+        display_name=profile.display_name,
+        timezone=profile.timezone,
+        model_choice=profile.model_choice or _models().default,
+        connections=[
+            s.Connection(
+                platform=c.platform,
+                status=c.status,
+                expires_at=c.expires_at,
+                last_sync_at=c.last_sync_at,
+                last_error=c.last_error,
+                account_label=c.account_label,
+            )
+            for c in rows
+        ],
+    )
+
+
 @router.get("/me", response_model=s.Me)
 async def get_me(user: User) -> s.Me:
+    """DB mode: profile created with defaults on first call. Mock mode: the S02 demo student."""
+    if _db_mode():
+        return await _me_from_db(user)
     return s.Me(
         user_id=user.user_id,
         display_name="Demo Student",
@@ -37,13 +71,22 @@ async def patch_me(body: s.MePatch, user: User) -> s.Me:
         raise _invalid("timezone", "Pick a timezone from the list.")
     if body.model_choice is not None and body.model_choice not in {m.id for m in _models().models}:
         raise _invalid("model_choice", "Pick a model from the list.")
-    # Profile persistence lands with S01 (repositories/profiles.update_profile).
+    if _db_mode():
+        async with connection() as conn:
+            await profiles.ensure_profile(conn, user.user_id, user.email)
+            await profiles.update_profile(conn, user.user_id, **body.model_dump(exclude_none=True))
+        return await _me_from_db(user)
     me = await get_me(user)
     return me.model_copy(update=body.model_dump(exclude_none=True))
 
 
 @router.delete("/me/data", status_code=204)
 async def delete_my_data(user: User) -> Response:
+    """Deletes every row the student owns (S20 rule 9). Storage objects (S12) and queued jobs
+    (S10) are not removed yet. The sign-in account itself stays."""
+    if _db_mode():
+        async with connection() as conn:
+            await profiles.delete_user_data(conn, user.user_id)
     return Response(status_code=204)
 
 
