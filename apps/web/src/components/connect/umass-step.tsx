@@ -42,7 +42,7 @@ export function UmassStep({ me, pollMs, onConnected, onNext }: Props) {
             </div>
             {isConnected(me, p) ? (
               <p className="inline-flex items-center gap-2 font-medium text-green-700 dark:text-green-400">
-                <CheckCircle2 className="size-4" aria-hidden /> Connected
+                <CheckCircle2 className="size-4" aria-hidden /> {PLATFORM_LABEL[p]} connected
               </p>
             ) : (
               <LiveLogin platform={p} pollMs={pollMs} onConnected={() => onConnected(p)} />
