@@ -23,6 +23,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-15 01:50 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/gradescope-live
+**Done:** PR #26 (UMass UI) merged. **Gradescope live-verified on Windows** with Hari's account: login window → 258 imported, 238 assignments merged across 18 courses, shown on Today and answered in chat (S14 "Live verification on Windows"). Fix: courses with no upcoming work fold under "Show other courses (N)" (sidebar + Today) so years of past terms don't clutter navigation. 79 web tests.
+**Gotcha:** don't run `pnpm build` while `pnpm dev` is running in the same folder: the dev server keeps working but loses its CSS (no maroon/yellow). Restart the dev server, or use `make demo-web` (production).
+**State:** demo account now mixes seeded demo data and Hari's real Canvas-less Piazza/Gradescope data (two "COMPSCI 311" courses). For a clean real-data demo, sign in with a different email (runbook §5).
+
 ## 2026-11-15 01:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/umass-ui
 **Done:** PR #25 merged (Piazza live-verified, Windows live-login fixes). **S35 UMass UI** on `hari/umass-ui`: official palette (maroon `#840028`, black `#212721`, yellow `#FFC72C` highlight only), Fraunces + Geist, new sign-in, app frame, Today, Chat (follow-scroll + Jump to latest), Study/Settings polish; light/dark; 375 px + laptop checked in the browser; live Gemini chat with citation popovers works in the new UI. Prompt: plain-text math (no LaTeX). 78 web + 322 backend unit/runtime tests; lint, types, production build green. Details + pitfalls: S35 "Implementation".
 **Next:** merge `hari/umass-ui`; rehearse the 3-minute demo with `docs/demo-runbook.md`; final Devpost text before 09:00 (code freeze 08:00).

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import Home from "@/app/page";
 import { TodayView } from "@/components/today/today-view";
 import type { Change } from "@/lib/api/types";
+import { splitCourses } from "@/lib/courses";
 import { buildFixtures } from "@/mocks/fixtures";
 import { renderWithProviders } from "./utils";
 
@@ -40,5 +41,19 @@ describe("S35 UMass UI", () => {
     expect(screen.getByRole("heading", { level: 1, name: /hackumass lms agent/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: /sign in/i })).toBeInTheDocument();
     expect(screen.getByText(/not an official university of massachusetts service/i)).toBeInTheDocument();
+  });
+
+  it("S35-T09 courses without upcoming work fold under 'Other courses' (old terms from imports)", async () => {
+    const f = buildFixtures(NOW);
+    const quiet = f.courses.map((c, i) => ({ ...c, id: `old${i}`, code: `OLD ${i}`, upcoming_count: 0 }));
+    const all = [...f.courses.filter((c) => c.upcoming_count > 0), ...quiet];
+    const split = splitCourses(all);
+    expect(split.other.every((c) => c.upcoming_count === 0)).toBe(true);
+    expect(split.active.length + split.other.length).toBe(all.length);
+    renderWithProviders(<TodayView today={f.today} courses={all} now={NOW} onMarkSeen={noop} onSyncNow={noop} />);
+    const toggle = screen.getByText(`Other courses (${split.other.length})`);
+    expect(screen.getByText("OLD 0")).not.toBeVisible();
+    await userEvent.click(toggle);
+    expect(screen.getByText("OLD 0")).toBeVisible();
   });
 });
