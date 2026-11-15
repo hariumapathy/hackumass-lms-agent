@@ -21,6 +21,39 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 18:10 ET · Soumith's laptop · Claude Code (Opus 5.5) + Codex in parallel · branch dev/soumith
+**Hour:** ~H22.5. Devpost draft due 23:59 tonight (Hari); final submission Sun 09:00, code freeze 08:00.
+
+**Done:**
+- Synced `dev/soumith` with `main` (`478380a`). Earlier Stage 1 work from before PR #1 was ported onto main's scaffold; the old local branch is kept only as a local backup (not pushed).
+- **S02 reviewed from the frontend side: approved.** Generated types cover what the UI needs; remaining gaps are Stage 2/3 follow-ups (P6–P9 in [progress/soumith.md](progress/soumith.md)), not blockers.
+- **S30 / S32 / S33 (chat part), mock mode** (`653d134`, pushed to `dev/soumith`): Supabase sign-in + demo sign-in, protected shell (sidebar / bottom tabs), typed API client on `schema.d.ts`, SSE parser + `streamChat` (S02-T05/T06 done here), MSW handlers + fixtures, Today view + course page, streaming chat with status list, citation chips/cards, final_text, Try again, Stop, past chats. **30 web tests green; lint, typecheck, `next build` clean.** E2E specs written (S30-T07, S32-T08), not yet run.
+- **Codex brought in** for the rest of role C: brief at [handoff/codex-brief-soumith.md](handoff/codex-brief-soumith.md). Codex works in its own worktree `../hackumass-lms-agent-codex` on `soumith/codex`; overlap allowed, merged into `dev/soumith` afterwards. Split: Codex = S33 study cards + approvals, S31 onboarding, then S34 (+ `src/mocks/**`); Claude = shell/Today/course, e2e + browser checks, docs.
+
+**In progress (not finished):** Claude: Playwright e2e + browser check at desktop/375 px. Codex: S33 Stage 2 → S31 → S34.
+
+**Decisions / design changes (Soumith OK'd):**
+- Frontend REST types are re-exports of generated `schema.d.ts`; only SSE event types are hand-written (from CONTRACT.md).
+- Node-20 pins kept: MSW 2.15 (not 3), supabase-js 2.109, `clsx` + `tailwind-merge` instead of shadcn's Node-22 `cn` package.
+- Mock mode without Supabase env shows a demo sign-in ("Continue with demo data"); real Supabase sign-in is used whenever the URL + publishable key are set.
+- Specs S30/S32/S33 implemented while still `Draft`, with Soumith's go-ahead (relay time pressure).
+
+**Roadblocks:**
+- This laptop has no Python / `uv` / `make`: backend tests and `make api` can't run here; web checks run with `pnpm` in `apps/web`. Frontend not yet tried against the real backend stubs.
+- Supabase publishable key isn't on this laptop, so real sign-in is untested (demo sign-in works).
+
+**State of main:** `478380a`; `dev/soumith` is ahead with `653d134` (web green). Not merged to main yet.
+
+**Next steps (in order):**
+1. Claude: run e2e (`pnpm test:e2e`), check desktop + 375 px, fix issues; then PR `dev/soumith` → `main` when green.
+2. Codex: S33 study sets + approval card → S31 onboarding → S34 settings (brief §3).
+3. Hari: S20 auth (then real sign-in can be tested with the publishable key), answer S02 follow-ups P6–P9.
+4. Anyone with Python: run the web app against `make api` (set `NEXT_PUBLIC_API_MOCKS=0`, `NEXT_PUBLIC_API_URL=http://localhost:8000`) to catch mock/backend drift.
+
+**Gotchas for the next agent:** see brief §5 (Node-20 pins, shadcn `cn` imports, MSW 2 option names, jsdom AbortSignal shim in `tests/setup.ts`, module-level react-markdown config, Suspense for `useSearchParams`).
+
+---
+
 ## 2026-11-14 17:55 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF
 **Hour:** ~H21.5 (hacking began Fri 20:30 ET). **~6 h to the Devpost draft deadline (Sat 23:59), ~15 h to final submission (Sun 09:00), code freeze 08:00.** (Earlier docs said 18:15/18:40; the real time at this handoff was 17:55.)
 
