@@ -102,10 +102,14 @@ def _evals(argv: list[str]) -> int:
     parser.add_argument("--only", help="comma-separated golden ids, e.g. G01,G05")
     parser.add_argument("--model", help="Gemini model id (overrides GEMINI_MODEL)")
     parser.add_argument("--delay", type=float, default=4.0, help="seconds between questions")
+    parser.add_argument("--db", action="store_true", help="run on DATABASE_URL (the seed)")
+    parser.add_argument("--user-email", default="demo@example.com", help="seeded account")
     opts = parser.parse_args(argv)
     if opts.model:
         os.environ["GEMINI_MODEL"] = opts.model
     os.environ["CHAT_MODE"] = "agent"
+    if opts.db:
+        os.environ["DATA_SOURCE"] = "db"
 
     from app.core.settings import get_settings
     from app.evals import EVALS_DIR, format_table, load_cases, run_all, summarize, write_report
@@ -124,10 +128,26 @@ def _evals(argv: list[str]) -> int:
     results: list = []
 
     async def go() -> None:
-        results.extend(await run_all(runtime, cases, delay_s=opts.delay))
+        from app.core.auth import UserCtx
+        from app.evals import EVAL_USER
+
+        user = EVAL_USER
+        if opts.db:
+            import psycopg
+
+            async with await psycopg.AsyncConnection.connect(settings.database_url) as conn:
+                cur = await conn.execute(
+                    "select id from auth.users where email = %s", (opts.user_email,)
+                )
+                row = await cur.fetchone()
+            if row is None:
+                raise SystemExit(f"no account {opts.user_email}: run `uv run app seed` first")
+            user = UserCtx(user_id=row[0], email=opts.user_email)
+        results.extend(await run_all(runtime, cases, delay_s=opts.delay, user=user))
 
     _run_async(go())
-    summary = summarize(results, f"gemini/{settings.gemini_model}")
+    source = "seed DB" if opts.db else "mock semester"
+    summary = summarize(results, f"gemini/{settings.gemini_model} on {source}")
     print(format_table(results, summary))
     print(f"report: {write_report(results, summary, EVALS_DIR / 'reports')}.json/.md")
     return 0

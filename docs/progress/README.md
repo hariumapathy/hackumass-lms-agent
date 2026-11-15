@@ -32,6 +32,9 @@ Feature-by-feature status lives in the spec index: [specs/README.md](../specs/RE
 
 ## Merged to main
 _Newest first. One line per merged PR: what it adds and who._
+- PR #17: devlog for lane A merges (S11-S14, S16) and merge steward. (Neal)
+- PR #15: S16 cross-platform merge + change detection, S13 local live login, S14 Gradescope connector. (Neal)
+- PR #14: S30-S34 frontend (mock mode): shell + auth, onboarding/connect, Today + course pages, chat + study UI, Settings (merge steward integration of dev/soumith). (Soumith)
 - PR #13: S24 study sets tool + routes (in-memory), S26 golden-question evals (merge steward integration of dev/hari). (Hari)
 - PR #12: S11 Canvas connector, S12 file processing + embeddings; S10 skips removal for incomplete listings. (Neal)
 - PR #8: S01 schema + RLS, S03 seed semester (`make db-reset`, demo login `demo@example.com` / `demo-password-311` locally), S10 sync framework + Procrastinate queue (`make worker`). (Neal)

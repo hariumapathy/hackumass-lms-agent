@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): all six read tools done against `ToolData` (mock semester); SQL `DbToolData` + seed-based integration tests wait for S01/S03 |
+| **Status** | In progress (Hari): six read tools on mock data AND the DB (`DbToolData`, hybrid search); only seed-quality checks of hybrid vs vector-only remain |
 | **Stage** | 1 (read tools + `fetch_latest`); `create_study_set` in S24, `add_study_block` in S25 |
 | **Role** | B |
 | **Depends on** | S01, S03, S20 (and S10 for `fetch_latest`) |
@@ -113,4 +113,6 @@ Built so far (`backend/app/agent/tools/`, tests in `tests/unit/test_s21_tools.py
 
 **Read tools** (`read.py`, registry `READ_TOOLS` in `tools/__init__.py`): all six tools are implemented against a `ToolData` interface (`data.py`), one student's data. `MockToolData` (`mock_source.py`, keyword search) backs them until S01. Tests on mock data: `tests/unit/test_s21_read_tools.py`. Arg models also treat `null` as "not given" (Gemini sends nulls).
 
-**Next (needs S01 schema + S03 seed):** `DbToolData` (SQL: hybrid search with RRF, misses rows, user scoping), `fetch_latest` via S10's `enqueue_sync`/`wait_for_sync`, and the seed-based integration versions of T02, T04–T06, T09–T11.
+**DB (done 2026-11-14):** `DbToolData` (`tools/db_source.py`) + `app/db/repositories/agent.py`: user-scoped SQL, hybrid search (vector top 30 with a 0.2 similarity floor + full-text top 30 → RRF k=60), misses rows, `fetch_latest` via S10 `enqueue_sync(trigger="agent")` + `wait_for_sync(15 s)`. Integration tests on a freshly seeded student: `tests/integration/test_s21_s22_db.py` (T02–T06, T09–T11). Turned on with `DATA_SOURCE=db`.
+
+**Old next list (kept for history):** `DbToolData` (SQL: hybrid search with RRF, misses rows, user scoping), `fetch_latest` via S10's `enqueue_sync`/`wait_for_sync`, and the seed-based integration versions of T02, T04–T06, T09–T11.
