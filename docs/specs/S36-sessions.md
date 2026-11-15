@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari's Session A, 2026-11-15) |
+| **Status** | Done (Hari's Session A, 2026-11-15) |
 | **Stage** | 3 |
 | **Role** | B + C |
 | **Depends on** | S22, S24, S33, S35 |

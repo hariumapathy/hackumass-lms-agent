@@ -1,19 +1,18 @@
 # Hari: progress
 
-**Branch:** `dev/hari` · **Role:** B (agent and API) · **Last updated:** 2026-11-14 20:30 ET (handoff)
+**Branch:** `hari/sessions` (Session A, parallel with Session B) · **Role:** B (agent and API), helping C · **Last updated:** 2026-11-15 03:00 ET (handoff)
 
 _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines._
 
 ## Done
-- S00, S02 (on main). **S20** auth + DB-backed `/me` routes. **S21** six read tools (mock + DB, hybrid search). **S22** agent runtime on Gemini (`gemini-3.5-flash`, stream fix, CHAT_MODE). **S23** citation validation + DB resolution. **S24** `create_study_set`. **S26** eval runner + 15 goldens: **13/14 on the seed**.
-- `DATA_SOURCE=mock|db` switch; DB chat store. **Connect Canvas route** (S11-T12), `POST /sync`, `/sync/status` on the DB. 432 backend tests with the local DB. Verified end to end on a real server with real Gemini.
+- S00, S02, S20–S26 (agent, tools, citations, study sets, evals), DB mode, Connect Canvas, real-data demo mode, Gradescope/Piazza live-verified, S35 UMass UI (all on main).
+- **S36 Sessions** (2026-11-15): Study tab → Sessions, chats with their study-set chips, rename/delete chats, New chat, Chat/Sessions polish at 375 px. PR from `hari/sessions`.
 
 ## In progress
-- PR #16 (DB mode, Connect Canvas, evals) waiting for Hari's merge.
+- Nothing open after the S36 PR merges.
 
 ## Next
-- Dashboard endpoints on the DB (`/today`, `/courses`, `/items`, `/changes`, `/citations`), S25 study blocks + ICS feed.
-- Real-data run when S11/S12 are on main (Hari connects Canvas in the app with a fresh token).
+- Merge Session B's PR, re-run tests on main; rehearse the demo with Sessions; Devpost + video before 09:00 (freeze 08:00).
 
 ## Blocked on / needs from others
 - **Neal:** S11/S12 on main for real Canvas data; the hosted DB needs migrations + seed if the demo uses it.
