@@ -9,7 +9,7 @@ from datetime import date, datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 Platform = Literal["canvas", "gradescope", "echo360", "piazza"]
 ConnectionStatus = Literal["active", "needs_reconnect", "error", "disconnected"]
@@ -227,23 +227,37 @@ class Message(BaseModel):
     created_at: datetime
 
 
-class ConversationSummary(BaseModel):
-    id: UUID
-    title: str
-    updated_at: datetime
-
-
-class ConversationDetail(BaseModel):
-    conversation: ConversationSummary
-    messages: list[Message]
-
-
 class StudySetSummary(BaseModel):
     id: UUID
     type: StudySetType
     title: str
     course_id: UUID | None = None
+    conversation_id: UUID | None = None  # S36: the chat it was made in (null once deleted)
     created_at: datetime
+
+
+class ConversationSummary(BaseModel):
+    id: UUID
+    title: str
+    updated_at: datetime
+    study_sets: list[StudySetSummary] = []  # S36: filled by GET /conversations
+
+
+class ConversationRename(BaseModel):
+    title: str = Field(min_length=1, max_length=80)
+
+    @field_validator("title")
+    @classmethod
+    def _strip(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if not v:
+            raise ValueError("title must not be blank")
+        return v
+
+
+class ConversationDetail(BaseModel):
+    conversation: ConversationSummary
+    messages: list[Message]
 
 
 class StudySet(StudySetSummary):

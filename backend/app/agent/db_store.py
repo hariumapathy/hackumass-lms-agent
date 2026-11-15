@@ -87,7 +87,25 @@ class DbChatStore:
     async def conversations(self, user_id: UUID) -> list[s.ConversationSummary]:
         async with self._connection() as conn:
             rows = await repo.list_conversations(conn, user_id)
-        return [s.ConversationSummary.model_validate(r) for r in rows]
+            set_rows = await repo.list_conversation_study_sets(conn, user_id)
+        by_conv: dict[UUID, list[s.StudySetSummary]] = {}
+        for r in set_rows:
+            by_conv.setdefault(r["conversation_id"], []).append(s.StudySetSummary.model_validate(r))
+        return [
+            s.ConversationSummary.model_validate({**r, "study_sets": by_conv.get(r["id"], [])})
+            for r in rows
+        ]
+
+    async def rename_conversation(
+        self, user_id: UUID, conversation_id: UUID, title: str
+    ) -> s.ConversationSummary | None:
+        async with self._connection() as conn:
+            row = await repo.rename_conversation(conn, user_id, conversation_id, title)
+        return s.ConversationSummary.model_validate(row) if row else None
+
+    async def delete_conversation(self, user_id: UUID, conversation_id: UUID) -> bool:
+        async with self._connection() as conn:
+            return await repo.delete_conversation(conn, user_id, conversation_id)
 
     async def conversation(
         self, user_id: UUID, conversation_id: UUID
@@ -103,9 +121,14 @@ class DbChatStore:
             conversation=s.ConversationSummary.model_validate(row), messages=messages
         )
 
-    async def save_study_set(self, user_id: UUID, study_set: s.StudySet) -> None:
+    async def save_study_set(
+        self, user_id: UUID, study_set: s.StudySet, conversation_id: UUID | None = None
+    ) -> None:
+        row = study_set.model_dump(mode="json")
+        if conversation_id is not None:
+            row["conversation_id"] = str(conversation_id)
         async with self._connection() as conn:
-            await repo.insert_study_set(conn, user_id, study_set.model_dump(mode="json"))
+            await repo.insert_study_set(conn, user_id, row)
 
     async def study_sets(self, user_id: UUID) -> list[s.StudySet]:
         async with self._connection() as conn:
