@@ -167,7 +167,8 @@ function Instruction({ n, children }: { n: number; children: ReactNode }) {
       >
         {n}
       </span>
-      <div className="flex flex-col justify-center gap-2 pt-0.5">{children}</div>
+      {/* Plain block (not flex): a flex column would put every inline word/em/strong on its own line. */}
+      <div className="min-w-0 pt-0.5 leading-relaxed">{children}</div>
     </li>
   );
 }

@@ -55,4 +55,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Verified citations: made-up or unreturned sources are dropped, quotes checked (S23) | ✅ |
 | Flashcards / quizzes / study plans where every item cites a real source (S24) | ✅ backend (UI cards: S33) |
 | Agent evals: 15 golden student questions incl. a prompt-injection test (S26) | ✅ runner; first run 4/4 before credits ran out |
+| Student app on phone + laptop: sign-in, Today view (deadlines, "moved" alerts, source links), course pages, chat with streaming progress and clickable citations, study plan / quiz / flashcards, Add/Skip study sessions, guided onboarding, Settings incl. Delete my data (S30–S34) | ✅ complete on the demo semester; screens show live data as each backend endpoint is wired (chat + study sets already live) |
+| Demo mode with no backend at all ("Continue with demo data"): the backup demo always works | ✅ |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |
