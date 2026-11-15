@@ -22,6 +22,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 ---
 
 
+
+## 2026-11-14 22:11 ET · Neal's laptop · Codex · branch main · live-test inventory
+**Done:** User requested a compiled bug list rather than a video. Added `docs/live-test-bugs.md`: ten resolved demo issues and six remaining findings, with live observations separated from code-confirmed gaps and the unproven account-switch cache risk. Replacement Canvas token accepted through the UI; refresh finished and Today showed the fresh timestamp. No credentials recorded in files or logs.
+**Next:** P1 complete Storage/job cleanup in Delete my data; reproduce account-switch cache retention. Then S25 calendar/approval persistence and hide the unimplemented Echo360 connector. See the report for priorities/evidence. No implementation changes in this follow-up; previous green test/build results remain applicable.
+
 ## 2026-11-14 22:00 ET · Neal's laptop · Codex · branch main (explicit user request)
 **Hour:** ~H25; Devpost draft due 23:59 tonight, final Sun 09:00, code freeze 08:00.
 **Done:** S32/S23 database dashboard integration; S13-T06 disconnect; S10 merge priority/readiness and unreadable-credential recovery; UI refresh on import completion; production demo server; Google button opt-in. Live Canvas → eight courses → real Today/course pages → Gemini deadline answer and a cited midterm-scope answer (syllabus page + announcement), verified in the browser. No real data or credentials added to fixtures/git. Tests were written failing-first for the DB dashboard, disconnect, cache refresh, merge readiness/priority and unreadable credential fixes.

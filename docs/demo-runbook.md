@@ -62,3 +62,5 @@ For real-quality search on real data, run steps 2–3 with `EMBEDDINGS_PROVIDER=
 Stop everything: Ctrl+C in each terminal, then `make db-stop`.
 
 Remaining demo limits: calendar feed and study-block approval persistence (S25) are still stubs; skip calendar onboarding for the live Canvas demo. The seeded/MSW backup remains available.
+
+Live rehearsal issues, fixed and outstanding: [live-test-bugs.md](live-test-bugs.md).

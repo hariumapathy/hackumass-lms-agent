@@ -15,7 +15,7 @@
 - None. Production stack left running; manual Refresh completed (323 unchanged records, 125 canonical deadlines), and Today updated its freshness indicator without a page reload.
 
 ## Next
-1. Rehearse the local live-data demo using `docs/demo-runbook.md`; keep API, worker and production web running.
+1. Review `docs/live-test-bugs.md`: prioritize complete data deletion and reproduce account-switch cache behavior. Replacement Canvas token accepted and refresh completed; keep the local demo stack running.
 2. S25 calendar feed + approval persistence are still stubs; skip those demo steps until implemented under their spec.
 3. Manual Gradescope NetID/Duo check remains for a teammate with that account.
 
