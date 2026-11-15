@@ -18,6 +18,7 @@ from agents import (
     FunctionTool,
     MaxTurnsExceeded,
     Model,
+    ModelSettings,
     OpenAIChatCompletionsModel,
     RunContextWrapper,
     Runner,
@@ -142,7 +143,14 @@ def to_function_tool(spec: ToolSpec) -> FunctionTool:
 
 
 def build_agent(model: Model | str, tools: Sequence[Tool], instructions: str) -> Agent[Any]:
-    return Agent(name="Study assistant", instructions=instructions, tools=list(tools), model=model)
+    # include_usage: Gemini only reports token counts on streamed calls when asked (S26 costs).
+    return Agent(
+        name="Study assistant",
+        instructions=instructions,
+        tools=list(tools),
+        model=model,
+        model_settings=ModelSettings(include_usage=True),
+    )
 
 
 # --- history + event mapping (pure) -----------------------------------------------------------
