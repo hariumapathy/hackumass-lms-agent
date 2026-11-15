@@ -19,6 +19,7 @@ class RunLog:
     turns: int = 0
     tool_calls: list[dict[str, Any]] = field(default_factory=list)  # name + duration, no content
     dropped_citations: list[int] = field(default_factory=list)
+    allowed_chunk_ids: set[int] = field(default_factory=set)
     error: str | None = None
 
 

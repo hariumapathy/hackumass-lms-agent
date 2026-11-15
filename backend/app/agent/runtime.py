@@ -297,6 +297,7 @@ class ChatRuntime:
                     retryable=True,
                 )
             run_log.tool_calls = state.tool_log
+            run_log.allowed_chunk_ids = set(ctx.allowed_chunk_ids)
             if error is not None:
                 partial = "".join(state.text_parts)
                 if partial:
