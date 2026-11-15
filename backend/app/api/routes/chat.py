@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import StreamingResponse
 
 from app.api import mock_data as mock
@@ -103,6 +103,14 @@ async def chat(
     )
 
 
+def _demo_set_summary() -> s.StudySetSummary:
+    st = mock.study_set()
+    return s.StudySetSummary(
+        **st.model_dump(exclude={"payload", "conversation_id"}),
+        conversation_id=DEMO_CONVERSATION_ID,
+    )
+
+
 def _demo_conversation() -> s.ConversationDetail:
     now = datetime.now(UTC).replace(microsecond=0)
     return s.ConversationDetail(
@@ -110,6 +118,7 @@ def _demo_conversation() -> s.ConversationDetail:
             id=DEMO_CONVERSATION_ID,
             title="CS 311 midterm prep",
             updated_at=now - timedelta(hours=1),
+            study_sets=[_demo_set_summary()],
         ),
         messages=[
             s.Message(
@@ -155,3 +164,32 @@ async def conversation(conversation_id: UUID, user: User, request: Request) -> s
     if detail is None:
         raise not_found("Conversation")
     return detail
+
+
+@router.patch("/conversations/{conversation_id}", response_model=s.ConversationSummary)
+async def rename_conversation(
+    conversation_id: UUID, body: s.ConversationRename, user: User, request: Request
+) -> s.ConversationSummary:
+    """S36: rename a chat (user-scoped; someone else's id is a 404)."""
+    store = _store(request)
+    if store is None:
+        if conversation_id != DEMO_CONVERSATION_ID:
+            raise not_found("Conversation")
+        return _demo_conversation().conversation.model_copy(update={"title": body.title})
+    renamed = await store.rename_conversation(user.user_id, conversation_id, body.title)
+    if renamed is None:
+        raise not_found("Conversation")
+    return renamed
+
+
+@router.delete("/conversations/{conversation_id}", status_code=204, response_class=Response)
+async def delete_conversation(conversation_id: UUID, user: User, request: Request) -> Response:
+    """S36: delete a chat and its messages; its study sets stay (conversation_id -> null)."""
+    store = _store(request)
+    if store is None:
+        if conversation_id != DEMO_CONVERSATION_ID:
+            raise not_found("Conversation")
+        return Response(status_code=204)
+    if not await store.delete_conversation(user.user_id, conversation_id):
+        raise not_found("Conversation")
+    return Response(status_code=204)

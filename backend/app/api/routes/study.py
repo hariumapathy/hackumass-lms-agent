@@ -22,7 +22,12 @@ def _store(request: Request):  # noqa: ANN202
 
 async def _sets(request: Request, user: UserCtx) -> list[s.StudySet]:
     store = _store(request)
-    return [mock.study_set()] if store is None else await store.study_sets(user.user_id)
+    if store is None:  # scripted mode: the demo set belongs to the demo conversation (S36)
+        demo = mock.study_set().model_copy(
+            update={"conversation_id": mock.mid("conversation/demo")}
+        )
+        return [demo]
+    return await store.study_sets(user.user_id)
 
 
 @router.get("/study-sets", response_model=list[s.StudySetSummary])

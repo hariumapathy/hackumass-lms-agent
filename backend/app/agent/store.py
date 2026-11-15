@@ -40,7 +40,13 @@ class ChatStore(Protocol):
     async def conversation(
         self, user_id: UUID, conversation_id: UUID
     ) -> s.ConversationDetail | None: ...
-    async def save_study_set(self, user_id: UUID, study_set: s.StudySet) -> None: ...
+    async def rename_conversation(
+        self, user_id: UUID, conversation_id: UUID, title: str
+    ) -> s.ConversationSummary | None: ...
+    async def delete_conversation(self, user_id: UUID, conversation_id: UUID) -> bool: ...
+    async def save_study_set(
+        self, user_id: UUID, study_set: s.StudySet, conversation_id: UUID | None = None
+    ) -> None: ...
     async def study_sets(self, user_id: UUID) -> list[s.StudySet]: ...
     async def save_blocks(self, user_id: UUID, blocks: list[s.StudyBlock]) -> None: ...
     async def blocks(self, user_id: UUID) -> list[s.StudyBlock]: ...
@@ -100,7 +106,39 @@ class MemoryChatStore:
 
     async def conversations(self, user_id: UUID) -> list[s.ConversationSummary]:
         mine = [summary for owner, summary in self._convs.values() if owner == user_id]
-        return sorted(mine, key=lambda c: c.updated_at, reverse=True)
+        sets = await self.study_sets(user_id)
+        return [
+            c.model_copy(
+                update={
+                    "study_sets": [
+                        s.StudySetSummary(**x.model_dump(exclude={"payload"}))
+                        for x in sets
+                        if x.conversation_id == c.id
+                    ]
+                }
+            )
+            for c in sorted(mine, key=lambda c: c.updated_at, reverse=True)
+        ]
+
+    async def rename_conversation(
+        self, user_id: UUID, conversation_id: UUID, title: str
+    ) -> s.ConversationSummary | None:
+        if not self._owned(user_id, conversation_id):
+            return None
+        owner, summary = self._convs[conversation_id]
+        renamed = summary.model_copy(update={"title": title})
+        self._convs[conversation_id] = (owner, renamed)
+        return renamed
+
+    async def delete_conversation(self, user_id: UUID, conversation_id: UUID) -> bool:
+        if not self._owned(user_id, conversation_id):
+            return False
+        del self._convs[conversation_id]
+        self._messages.pop(conversation_id, None)
+        for sid, (owner, st) in list(self._sets.items()):
+            if st.conversation_id == conversation_id:
+                self._sets[sid] = (owner, st.model_copy(update={"conversation_id": None}))
+        return True
 
     async def conversation(
         self, user_id: UUID, conversation_id: UUID
@@ -111,7 +149,11 @@ class MemoryChatStore:
             conversation=self._convs[conversation_id][1], messages=self._messages[conversation_id]
         )
 
-    async def save_study_set(self, user_id: UUID, study_set: s.StudySet) -> None:
+    async def save_study_set(
+        self, user_id: UUID, study_set: s.StudySet, conversation_id: UUID | None = None
+    ) -> None:
+        if conversation_id is not None:
+            study_set = study_set.model_copy(update={"conversation_id": conversation_id})
         self._sets[study_set.id] = (user_id, study_set)
 
     async def study_sets(self, user_id: UUID) -> list[s.StudySet]:

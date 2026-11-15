@@ -28,7 +28,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Me */
+        /**
+         * Get Me
+         * @description DB mode: profile created with defaults on first call. Mock mode: the S02 demo student.
+         */
         get: operations["get_me_me_get"];
         put?: never;
         post?: never;
@@ -52,7 +55,11 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete My Data */
+        /**
+         * Delete My Data
+         * @description Deletes every row the student owns (S20 rule 9). Storage objects (S12) and queued jobs
+         *     (S10) are not removed yet. The sign-in account itself stays.
+         */
         delete: operations["delete_my_data_me_data_delete"];
         options?: never;
         head?: never;
@@ -85,7 +92,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Connect Canvas */
+        /**
+         * Connect Canvas
+         * @description S11: validate the token with Canvas, store it encrypted, queue the first sync.
+         *     The token is never logged or returned.
+         */
         post: operations["connect_canvas_connections_canvas_post"];
         delete?: never;
         options?: never;
@@ -153,7 +164,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Start Sync */
+        /**
+         * Start Sync
+         * @description Manual "Refresh" (S10, trigger=manual): every usable connection, or one platform.
+         */
         post: operations["start_sync_sync_post"];
         delete?: never;
         options?: never;
@@ -342,10 +356,18 @@ export interface paths {
         get: operations["conversation_conversations__conversation_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Conversation
+         * @description S36: delete a chat and its messages; its study sets stay (conversation_id -> null).
+         */
+        delete: operations["delete_conversation_conversations__conversation_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Rename Conversation
+         * @description S36: rename a chat (user-scoped; someone else's id is a 404).
+         */
+        patch: operations["rename_conversation_conversations__conversation_id__patch"];
         trace?: never;
     };
     "/study-sets": {
@@ -581,6 +603,11 @@ export interface components {
             /** Messages */
             messages: components["schemas"]["Message"][];
         };
+        /** ConversationRename */
+        ConversationRename: {
+            /** Title */
+            title: string;
+        };
         /** ConversationSummary */
         ConversationSummary: {
             /**
@@ -595,6 +622,11 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Study Sets
+             * @default []
+             */
+            study_sets: components["schemas"]["StudySetSummary"][];
         };
         /** CourseDetail */
         CourseDetail: {
@@ -948,6 +980,8 @@ export interface components {
             title: string;
             /** Course Id */
             course_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -974,6 +1008,8 @@ export interface components {
             title: string;
             /** Course Id */
             course_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -1712,6 +1748,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_conversation_conversations__conversation_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationRename"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationSummary"];
                 };
             };
             /** @description Validation Error */

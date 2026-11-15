@@ -224,7 +224,7 @@ export function buildFixtures(now: Date = new Date()) {
   ];
 
   const conversations: ConversationSummary[] = [
-    { id: "d0000000-0000-4000-8000-000000000001", title: "What's on the CS 311 midterm?", updated_at: iso(at(now, -DAY)) },
+    { id: "d0000000-0000-4000-8000-000000000001", title: "What's on the CS 311 midterm?", updated_at: iso(at(now, -DAY)), study_sets: [] },
   ];
 
   const conversationMessages: Record<string, Message[]> = {
@@ -243,7 +243,7 @@ export function buildFixtures(now: Date = new Date()) {
         role: "assistant",
         text: "Midterm 1 covers everything through **dynamic programming**, not graphs [cite:chunk_4410]. Review memoization [cite:chunk_8812].",
         citations: [citations[2], citations[0]],
-        study_set_ids: [],
+        study_set_ids: ["e0000000-0000-4000-8000-000000000001", "e0000000-0000-4000-8000-000000000002"],
         block_ids: [],
         created_at: iso(at(now, -DAY + 30_000)),
       },

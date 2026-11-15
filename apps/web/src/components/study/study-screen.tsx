@@ -8,22 +8,18 @@ import type { Citation, StudySet } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CitationCard } from "@/components/chat/citation-card";
-import { Empty, ErrorState, Loading } from "@/components/states/states";
-import { StudySetCard } from "./study-set-card";
+import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ErrorState, Loading } from "@/components/states/states";
 import { parsePayload, type Payload, type Day, type Question, type Card } from "./payload";
-
-export function StudyList() {
-  const query = useQuery({ queryKey: ["study-sets"], queryFn: () => api().studySets() });
-  return <div className="space-y-5"><h1 className="text-3xl font-semibold tracking-tight">Study sets</h1>
-    {query.isPending ? <Loading /> : query.isError ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : query.data.length ? <div className="grid gap-3 sm:grid-cols-2">{query.data.map(set => <StudySetCard key={set.id} set={set} />)}</div> : <Empty title="No study sets yet" action={<Link href="/chat" className="underline">Ask for a study set</Link>} />}
-  </div>;
-}
 
 export function StudyDetail({ id }: { id: string }) {
   const query = useQuery({ queryKey: ["study-set", id], queryFn: () => api().studySet(id) });
   const payload = query.data ? parsePayload(query.data.type, query.data.payload) : null;
   return <div className="mx-auto max-w-3xl space-y-5">
-    <Link href="/study" className="text-sm underline">All study sets</Link>
+    <nav aria-label="Study set" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+      <Link href="/sessions" className="inline-flex items-center gap-1 rounded text-muted-foreground hover:text-foreground focus-visible:outline-2"><ArrowLeft className="size-4" aria-hidden /> Back to Sessions</Link>
+      {query.data?.conversation_id && <Link href={`/chat/${encodeURIComponent(query.data.conversation_id)}`} className="inline-flex items-center gap-1 rounded text-primary hover:underline focus-visible:outline-2"><MessageSquare className="size-4" aria-hidden /> Open the chat</Link>}
+    </nav>
     {query.isPending ? <Loading /> : query.isError ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : <><h1 className="text-3xl font-semibold tracking-tight">{query.data.title}</h1>{payload ? <StudyContent key={id} set={query.data} payload={payload} /> : <ErrorState error={new Error("This study set couldn't be opened.")} />}</>}
   </div>;
 }

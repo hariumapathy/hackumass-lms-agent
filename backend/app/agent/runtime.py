@@ -345,7 +345,8 @@ class ChatRuntime:
                 else []
             )
             for study_set in ctx.study_sets:
-                await store.save_study_set(user.user_id, study_set)
+                study_set = study_set.model_copy(update={"conversation_id": conv_id})
+                await store.save_study_set(user.user_id, study_set, conv_id)
                 yield s.StudySetEvent(study_set=study_set)
             if ctx.proposed_blocks:
                 yield s.ApprovalRequiredEvent(

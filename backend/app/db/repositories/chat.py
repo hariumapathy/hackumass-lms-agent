@@ -49,6 +49,41 @@ async def list_conversations(conn: AsyncConnection[Any], user_id: UUID) -> list[
     return list(await cur.fetchall())
 
 
+async def rename_conversation(
+    conn: AsyncConnection[Any], user_id: UUID, conversation_id: UUID, title: str
+) -> dict[str, Any] | None:
+    cur = await conn.execute(
+        "update conversations set title = %s where user_id = %s and id = %s "
+        "returning id, title, updated_at",
+        (title, user_id, conversation_id),
+    )
+    return await cur.fetchone()
+
+
+async def delete_conversation(
+    conn: AsyncConnection[Any], user_id: UUID, conversation_id: UUID
+) -> bool:
+    """Messages cascade; study_sets.conversation_id is set null by the FK (S01)."""
+    cur = await conn.execute(
+        "delete from conversations where user_id = %s and id = %s returning id",
+        (user_id, conversation_id),
+    )
+    return await cur.fetchone() is not None
+
+
+async def list_conversation_study_sets(
+    conn: AsyncConnection[Any], user_id: UUID
+) -> list[dict[str, Any]]:
+    """Study-set summaries (no payload) that belong to one of the student's conversations."""
+    cur = await conn.execute(
+        "select id, type::text as type, title, course_id, conversation_id, created_at "
+        "from study_sets where user_id = %s and conversation_id is not null "
+        "order by created_at desc limit 500",
+        (user_id,),
+    )
+    return list(await cur.fetchall())
+
+
 async def list_messages(
     conn: AsyncConnection[Any], user_id: UUID, conversation_id: UUID
 ) -> list[dict[str, Any]]:
@@ -123,7 +158,8 @@ async def insert_study_set(
 
 async def list_study_sets(conn: AsyncConnection[Any], user_id: UUID) -> list[dict[str, Any]]:
     cur = await conn.execute(
-        "select id, type::text as type, title, course_id, created_at, payload from study_sets "
+        "select id, type::text as type, title, course_id, conversation_id, created_at, payload "
+        "from study_sets "
         "where user_id = %s order by created_at desc limit 200",
         (user_id,),
     )
