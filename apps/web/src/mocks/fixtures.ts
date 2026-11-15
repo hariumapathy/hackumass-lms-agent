@@ -1,3 +1,4 @@
+import { buildStudyFixtures } from "./study-fixtures";
 // Mock data shaped like S03 seed data ("Fall 2026"), with dates relative to `now`
 // so the mock app always looks current. Used by MSW handlers (dev mock mode + tests).
 import type {
@@ -277,7 +278,7 @@ export function buildFixtures(now: Date = new Date()) {
     ]),
   );
 
-  return { now, me, items, courses, courseDetails, changes, posts, sources, today, citations, conversations, conversationMessages };
+  return { ...buildStudyFixtures(now), now, me, items, courses, courseDetails, changes, posts, sources, today, citations, conversations, conversationMessages };
 }
 
 export type Fixtures = ReturnType<typeof buildFixtures>;
@@ -325,4 +326,15 @@ export function scriptedChat(conversationId: string, f: Fixtures): ChatEvent[] {
       },
     },
   ];
+}
+
+/** Study-mode variant keeps S02 ordering: cards after text, before citations. */
+export function scriptedStudyChat(conversationId: string, f: Fixtures): ChatEvent[] {
+  const events = scriptedChat(conversationId, f);
+  const additions: ChatEvent[] = [
+    ...f.studySets.map((study_set): ChatEvent => ({ type: "study_set", data: { study_set } })),
+    { type: "approval_required", data: { blocks: f.studyBlocks, summary: "Add 5 study sessions to your calendar?" } },
+  ];
+  events.splice(events.findIndex((e) => e.type === "citations"), 0, ...additions);
+  return events;
 }

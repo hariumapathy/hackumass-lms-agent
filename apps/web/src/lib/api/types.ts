@@ -20,6 +20,7 @@ export type Citation = S["Citation"];
 export type Message = S["Message"];
 export type ConversationSummary = S["ConversationSummary"];
 export type ConversationDetail = S["ConversationDetail"];
+export type StudySetSummary = S["StudySetSummary"];
 export type StudySet = S["StudySet"];
 export type StudyBlock = S["StudyBlock"];
 export type ChatRequest = S["ChatRequest"];
