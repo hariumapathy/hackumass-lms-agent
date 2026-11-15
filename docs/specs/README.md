@@ -35,7 +35,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S15 | [Echo360 connector](S15-echo360-connector.md) | A | S11, S13 | **Stretch** (moved out of MVP 2026-11-14) |
 | S24 | [Study sets](S24-study-sets.md) | B | S22, S23 | Draft |
 | S25 | [Study blocks, approvals and calendar feed](S25-approvals-and-calendar.md) | B | S22 | Draft |
-| S31 | [Onboarding and connect flow](S31-onboarding-and-connect.md) | C | S30, S13 | Draft |
+| S31 | [Onboarding and connect flow](S31-onboarding-and-connect.md) | C | S30, S13 | In progress (Soumith): mock mode, e2e green |
 | S33 | [Chat and study UI](S33-chat-and-study-ui.md) (study cards, approvals) | C | S24, S25 | Draft |
 
 ## Stage 3: Completeness (hours 18–24) → checkpoint H24 (feature freeze)
@@ -43,7 +43,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 |---|---|---|---|---|
 | S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Draft |
 | S26 | [Model picker and model evals](S26-model-picker-and-evals.md) | B | S22 | Draft |
-| S34 | [Settings](S34-settings.md) | C | S30, S26 | Draft |
+| S34 | [Settings](S34-settings.md) | C | S30, S26 | In progress (Soumith/Codex): banner done, page in progress |
 
 ## Stage 4: Stretch (only after H24, in order)
 [S17 Piazza connector](S17-piazza-connector.md) (A, Draft) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.

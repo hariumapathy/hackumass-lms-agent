@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Soumith): S34-T06 expiry banner done app-wide (Claude); settings page S34-T01–T05 with Codex |
 | **Stage** | 3 |
 | **Role** | C |
 | **Depends on** | S30, S26 (models), S25 (calendar), S20 (`/me`, `/me/data`) |

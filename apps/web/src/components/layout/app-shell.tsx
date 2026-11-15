@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { cn } from "@/lib/utils";
+import { ExpiryBanner } from "./expiry-banner";
 import { DESKTOP_QUERY, useMediaQuery } from "./use-media-query";
 
 interface NavItem {
@@ -36,11 +37,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   return isDesktop ? (
     <div className="flex min-h-dvh">
       <Sidebar />
-      <main className="min-w-0 flex-1 px-6 py-8">{children}</main>
+      <main className="min-w-0 flex-1 px-6 py-8">
+        <ExpiryBanner />
+        {children}
+      </main>
     </div>
   ) : (
     <div className="flex min-h-dvh flex-col">
-      <main className="min-w-0 flex-1 px-4 pt-6 pb-24">{children}</main>
+      <main className="min-w-0 flex-1 px-4 pt-6 pb-24">
+        <ExpiryBanner />
+        {children}
+      </main>
       <BottomTabs />
     </div>
   );

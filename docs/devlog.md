@@ -35,6 +35,8 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 - Claude (done since): mock mode now shows “We couldn’t start the demo in this browser” + Try again instead of an endless skeleton (S30-T08, `dd6e581`); screenshot QA at 1280 and 375 px of landing, Today, course, chat, citation card: fixed course-page item colors (S32-T09); phone chat composer handed to Codex (brief §3.A item 9).
 **Codex update (soumith/codex):** S33 streamed study-set cards and Add/Skip approval actions implemented tests-first; 34 web tests passing. Study-mode mocks added. Study detail/list pages next. Contract change proposal P7 pending: reloaded approvals cannot show their outcome. Cross-lane change: SSE test expects the study-mode stream for exam prep; no dependencies or contract changes.
 
+- Claude (20:40): merged Cursor's S31 (`b54a81b`, Cursor stopped after it) and fixed its e2e: the mock worker started twice under React Strict Mode, so live logins “expired” mid-flow (`startMockWorker` now idempotent, S30-T09); UMass step says “Echo360 connected”. All 4 e2e + 57 unit tests green. Canvas-expiry banner on every signed-in screen (S34-T06). **S34 settings page handed to Codex** (brief §3.B update).
+
 **Decisions / design changes (Soumith OK'd):**
 - Frontend REST types are re-exports of generated `schema.d.ts`; only SSE event types are hand-written (from CONTRACT.md).
 - Node-20 pins kept: MSW 2.15 (not 3), supabase-js 2.109, `clsx` + `tailwind-merge` instead of shadcn's Node-22 `cn` package.
