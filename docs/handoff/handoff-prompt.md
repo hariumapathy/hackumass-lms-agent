@@ -1,5 +1,7 @@
 # Handoff prompt
 
+> **Current user override (2026-11-14):** all new features stay on `codex/calendar-piazza-ui`, one verified commit per feature. Push checkpoints; do **not** merge until the user reviews the branch. This overrides the default self-merge instruction below. See [current work plan](../feature-work-plan.md).
+
 Paste this when the session is about to end (usage running low, switching laptops). Works in **Codex** and **Claude Code** (or `/handoff` in Claude Code). Do it **early**: an agent cut off mid-handoff loses the log.
 
 ```text

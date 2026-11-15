@@ -17,7 +17,7 @@ from app.core.auth import UserCtx
 from app.core.clock import Clock, SystemClock
 from app.core.embeddings import EmbeddingProvider, EmbeddingsConfigError, get_embeddings
 from app.core.errors import install_error_handlers
-from app.core.logging import RequestLogMiddleware
+from app.core.logging import RequestLogMiddleware, protect_calendar_access_logs
 from app.core.ratelimit import TokenBucket
 from app.core.settings import Settings, get_settings
 from app.db.pool import close_pool, connection
@@ -84,6 +84,7 @@ def _embedder(settings: Settings) -> EmbeddingProvider | None:
 
 
 def create_app(clock: Clock | None = None) -> FastAPI:
+    protect_calendar_access_logs()
     settings = get_settings()
     clock = clock or SystemClock()
     app = FastAPI(title="HackUMass LMS Agent API", version="0.1.0", lifespan=_lifespan)

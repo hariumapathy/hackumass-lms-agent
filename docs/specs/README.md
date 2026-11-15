@@ -34,7 +34,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S14 | [Gradescope connector](S14-gradescope-connector.md) | A | S13 | In progress (Neal): live login/import verified; five source-page date checks pending |
 | S15 | [Echo360 connector](S15-echo360-connector.md) | A | S11, S13 | **Stretch** (moved out of MVP 2026-11-14) |
 | S24 | [Study sets](S24-study-sets.md) | B | S22, S23 | In progress (Hari): mock + DB done |
-| S25 | [Study blocks, approvals and calendar feed](S25-approvals-and-calendar.md) | B | S22 | Draft |
+| S25 | [Study blocks, approvals and calendar feed](S25-approvals-and-calendar.md) | B | S22 | Done (live-verified 2026-11-14); manual Google/Apple import pending |
 | S31 | [Onboarding and connect flow](S31-onboarding-and-connect.md) | C | S30, S13 | In progress (Soumith): mock mode, e2e green |
 | S33 | [Chat and study UI](S33-chat-and-study-ui.md) (study cards, approvals) | C | S24, S25 | In progress (Soumith): mock mode, T07–T13 green |
 

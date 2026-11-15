@@ -17,6 +17,7 @@ Copied files live in `backend/app/connectors/<platform>/_vendored/`, each with a
 | [Playwright for Python](https://github.com/microsoft/playwright-python) | Apache-2.0 | Live login window + saved browser session (S13) |
 | beautifulsoup4, requests, python-dateutil (via gradescopeapi) | MIT / Apache-2.0 / BSD-or-Apache-2.0 | HTML parsing, HTTP, date parsing (S14) |
 | [piazza-api](https://github.com/hfaran/piazza-api) 0.16.x | MIT | Piazza read access (S17, stretch) |
+| [icalendar](https://github.com/collective/icalendar) | BSD-2-Clause | Escaped, standards-based deadline and approved-session feeds (S25) |
 | FastAPI, Pydantic, httpx, uvicorn, OpenAI Agents SDK, Procrastinate, Playwright | MIT / Apache-2.0 / BSD | Backend |
 | [PyJWT](https://github.com/jpadilla/pyjwt) + [cryptography](https://github.com/pyca/cryptography) | MIT / Apache-2.0 or BSD | Verifying Supabase sign-in tokens (S20) |
 | [psycopg 3](https://www.psycopg.org/) + psycopg-pool | LGPL-3.0 (used unmodified as a library) | Postgres access (S20) |
