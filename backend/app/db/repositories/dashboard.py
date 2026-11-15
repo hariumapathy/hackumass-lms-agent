@@ -7,6 +7,7 @@ from uuid import UUID
 from psycopg import AsyncConnection
 
 from app.api import schemas as s
+from app.core.change_text import change_summary
 
 
 async def items(
@@ -147,8 +148,9 @@ async def changes(
     )
     out = []
     for row in await cur.fetchall():
-        field = {"due_at": "due date", "body": "text"}.get(row["field"], row["field"])
-        row["summary"] = f"{row['course_code']} {row.pop('title')}: {field} changed".strip()
+        row["summary"] = change_summary(
+            row["course_code"], row.pop("title"), row["field"], row["new_value"]
+        )
         out.append(s.Change.model_validate(row))
     return out
 
