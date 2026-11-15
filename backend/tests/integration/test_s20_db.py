@@ -45,6 +45,7 @@ async def conn():
 
 async def _create_auth_user(conn, email: str):  # noqa: ANN001, ANN202
     user_id = uuid4()
+    email = f"{user_id.hex[:8]}-{email}"  # unique: tests re-run against the same local DB
     await conn.execute(
         "insert into auth.users (id, email, aud, role) values (%s, %s, 'authenticated', "
         "'authenticated')",

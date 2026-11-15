@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): framework built + tested on `dev/neal` |
 | **Stage** | 1 |
 | **Role** | A |
 | **Depends on** | S01 |
@@ -115,10 +115,10 @@ flowchart LR
 | Encryption key missing | Worker refuses to start |
 
 ## Acceptance criteria
-- [ ] A fake connector (test double) can be synced end to end into the DB
-- [ ] Re-running the same sync produces only `unchanged` stats
-- [ ] Changing one field produces exactly one `changes` row
-- [ ] `wait_for_sync` returns within timeout with final status
+- [x] A fake connector (test double) can be synced end to end into the DB
+- [x] Re-running the same sync produces only `unchanged` stats
+- [x] Changing one field produces exactly one `changes` row
+- [x] `wait_for_sync` returns within timeout with final status
 - [ ] `/sync/status` reflects running and finished runs
 
 ## Test plan
@@ -139,3 +139,11 @@ flowchart LR
 
 ## Out of scope
 Platform-specific fetching (S11, S14, S15), file parsing (S12), cross-platform merge (S16).
+
+## Implementation notes (2026-11-14, Neal)
+- Code: `connectors/base.py` (interface + registry), `core/crypto.py`, `sync/diff.py`, `sync/pipeline.py` (`run_sync`), `sync/jobs.py` (Procrastinate app, `enqueue_sync`, `wait_for_sync`, periodic `schedule_syncs` every 5 min), `db/repositories/sync.py`, `uv run app worker` / `make worker`.
+- Queue schema: `supabase/migrations/0002_procrastinate.sql` (procrastinate 3.11.0 schema verbatim + lockdown: RLS on, no client grants, function EXECUTE revoked from anon/authenticated).
+- Queueing lock is done on **our** `sync_runs` (advisory lock + "open run with same scope" lookup), so duplicate callers get the same `sync_run_id`. Priority: agent/manual 10, schedule/connect 0.
+- Records are stored one transaction each (bad record skipped, rule 10). Item changes point at the canonical item when merged (`item_sources.item_id`), else the source row.
+- **S16-lite** (`sync/merge.py`, run by `merge_user` after each successful sync): one canonical item per unmerged source so synced assignments reach the Today view. S16 replaces it.
+- `process_material` is a stub until S12. `GET /sync/status` / `POST /sync` route wiring happens with the API DB wiring (B lane).

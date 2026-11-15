@@ -1,0 +1,39 @@
+{
+  "course": "stats315",
+  "items": [
+    {"key": "hw4s", "type": "assignment", "title": "HW 4", "due": "-15d 23:59", "points": 20, "sources": ["canvas"]},
+    {"key": "hw5s", "type": "assignment", "title": "HW 5", "due": "-8d 23:59", "points": 20, "sources": ["canvas"]},
+    {"key": "hw6", "type": "assignment", "title": "HW 6", "due": "-20h", "points": 20, "sources": ["canvas"],
+     "description": "Problems 6.2, 6.8, 6.14 and 6.21 on the normal distribution and the central limit theorem. Show your z-score work."},
+    {"key": "quiz3s", "type": "quiz", "title": "Quiz 3 (cancelled)", "due": "-1d 23:59", "points": 10, "sources": ["canvas"], "status": "removed"},
+    {"key": "hw7s", "type": "assignment", "title": "HW 7: Confidence Intervals", "due": "+6d 23:59", "points": 20, "sources": ["canvas"]},
+    {"key": "proj315", "type": "project", "title": "Data Analysis Project", "due": "+16d 23:59", "points": 60, "sources": ["canvas"]},
+    {"key": "mid2s", "type": "exam", "title": "Midterm 2", "due": "+9d 10:00", "points": 100, "sources": ["canvas"]},
+    {"key": "final315", "type": "exam", "title": "Final Exam", "due": "+27d 08:00", "points": 150, "sources": ["canvas"]}
+  ],
+  "posts": [
+    {"key": "s1", "kind": "announcement", "title": "Quiz 3 cancelled", "posted": "-2d", "author": "Prof. Lindqvist",
+     "body": "Quiz 3 is cancelled because of the Canvas outage on Monday. Its weight moves to the final exam."},
+    {"key": "s2", "kind": "announcement", "title": "Project groups", "posted": "-5d", "author": "Prof. Lindqvist",
+     "body": "Form groups of three for the data analysis project by Friday. Choose a public dataset and post a one-paragraph proposal in the Project discussion."}
+  ],
+  "materials": [
+    {"key": "syllabus", "kind": "syllabus", "title": "STATS 315 Syllabus", "mime_type": "application/pdf", "pages": [
+      "STATS 315: Statistics I, Fall 2026. Probability, random variables, common distributions, sampling distributions, the central limit theorem, confidence intervals and hypothesis tests.",
+      "Grading: homework 20%, quizzes 10%, data analysis project 15%, Midterm 1 15%, Midterm 2 15%, final exam 25%.",
+      "Homework is due Mondays at 11:59 PM on Canvas. Late homework is not accepted, but the lowest homework score is dropped."
+    ]},
+    {"key": "ch6", "kind": "file", "title": "Chapter 6 slides: Normal Distribution and CLT", "mime_type": "application/pdf", "pages": [
+      "The normal distribution is symmetric and bell-shaped, described by its mean mu and standard deviation sigma.",
+      "Standardize with z = (x - mu) / sigma to use the standard normal table.",
+      "The central limit theorem: for a large sample size n, the sample mean is approximately normal with mean mu and standard deviation sigma / sqrt(n), whatever the shape of the population.",
+      "Rule of thumb: n >= 30 is usually enough for the CLT approximation unless the population is very skewed."
+    ]},
+    {"key": "ch7", "kind": "file", "title": "Chapter 7 slides: Confidence Intervals", "mime_type": "application/pdf", "pages": [
+      "A confidence interval gives a range of plausible values for a population parameter: estimate plus or minus margin of error.",
+      "For a mean with known sigma: x-bar plus or minus z* times sigma / sqrt(n). For 95% confidence, z* = 1.96.",
+      "A 95% confidence level means that 95% of intervals built this way would contain the true mean; it is not the probability that this particular interval contains it.",
+      "Larger samples give narrower intervals; higher confidence gives wider intervals."
+    ]}
+  ]
+}
