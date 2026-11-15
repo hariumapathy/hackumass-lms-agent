@@ -20,6 +20,9 @@ Copied files live in `backend/app/connectors/<platform>/_vendored/`, each with a
 | [psycopg 3](https://www.psycopg.org/) + psycopg-pool | LGPL-3.0 (used unmodified as a library) | Postgres access (S20) |
 | [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) (`openai-agents`) + `openai` | MIT / Apache-2.0 | Agent harness + Gemini via its OpenAI-compatible API (S22) |
 | [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz) | MIT | Citation quote check (S23) |
+| [PyMuPDF](https://github.com/pymupdf/PyMuPDF) | AGPL-3.0 (used unmodified as a library; our repo is public) | PDF text extraction per page (S12) |
+| [python-pptx](https://github.com/scanny/python-pptx) | MIT | Slide text + speaker notes extraction (S12) |
+| [tiktoken](https://github.com/openai/tiktoken) | MIT | Token counting for chunking (`cl100k_base`, S12) |
 | pytest, pytest-asyncio, respx, ruff, pyright | MIT / Apache-2.0 / BSD | Backend tests and linting (dev only) |
 | Next.js (create-next-app template), React, Tailwind, Vitest, Testing Library | MIT | Frontend |
 | Supabase CLI | MIT | Local database |

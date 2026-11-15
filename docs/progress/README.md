@@ -15,9 +15,9 @@ Roles are defaults; anyone may claim a `Ready` spec in the current stage ([AGENT
 ## Contracts
 | Contract | Location | Status |
 |---|---|---|
-| Database schema ([S01](../specs/S01-database-schema.md)) | `supabase/migrations/` | Spec drafted |
+| Database schema ([S01](../specs/S01-database-schema.md)) | `supabase/migrations/` | **Merged** (PR #8, Neal) |
 | API + SSE event format ([S02](../specs/S02-api-contract.md)) | `backend/app/api/` + `CONTRACT.md` | Built (mock data); approved by C; follow-ups P6–P9 pending |
-| Seed data ([S03](../specs/S03-seed-data.md)) | `supabase/seed/` | Spec drafted |
+| Seed data ([S03](../specs/S03-seed-data.md)) | `supabase/seed/` | **Merged** (PR #8, Neal): `make db-reset` |
 
 Feature-by-feature status lives in the spec index: [specs/README.md](../specs/README.md).
 
@@ -32,6 +32,7 @@ Feature-by-feature status lives in the spec index: [specs/README.md](../specs/RE
 
 ## Merged to main
 _Newest first. One line per merged PR: what it adds and who._
+- PR #8: S01 schema + RLS, S03 seed semester (`make db-reset`, demo login `demo@example.com` / `demo-password-311` locally), S10 sync framework + Procrastinate queue (`make worker`). (Neal)
 - S21 agent-tool plumbing (no DB yet) + handoff docs. (Hari, final dev/hari PR)
 - PR #5: S20 real Supabase JWT auth, route/repo scans, chat rate limit, private logs. (Hari)
 - PRs #2–#4: Echo360 → stretch, Gemini as default model. (Hari)
