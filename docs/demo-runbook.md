@@ -1,6 +1,6 @@
 # Demo runbook: run the whole app on any laptop
 
-Tested end to end on Hari's laptop (Windows, Git Bash) on 2026-11-14 ~20:45 ET: sign in by email link → Today view → chat answer from real Gemini with citation chips. Everything runs locally against the **local** Supabase stack; the hosted project is never touched.
+Verified on Neal's laptop on 2026-11-14: email-link sign-in → fresh account → real Canvas connection → eight imported courses → Today with actual deadlines → real Gemini answers with syllabus and announcement citations. The production web server avoids compilation on page switches. Everything uses **local** Supabase; the hosted project is not needed.
 
 ## 0. One-time prerequisites (about 10 min, most of it downloads)
 | Need | How |
@@ -31,7 +31,9 @@ make demo-api       # terminal 2: API + AI agent on http://localhost:8000
 make demo-worker    # terminal 3: sync worker (only needed for "Connect Canvas" with real data)
 make demo-web       # terminal 4: website on http://localhost:3000
 ```
-`demo-web` writes `apps/web/.env.local` for the local stack (delete that file to go back to the frontend's mock mode).
+`demo-web` writes `apps/web/.env.local`, builds the app, then serves the production build. Wait for "Ready" before opening it. Use `make web` for development. Node must be 20.9+; on Neal's laptop run `nvm use 26` first (`NODE_OPTIONS=--no-experimental-webstorage` for frontend tests on Node 26).
+
+Google sign-in is hidden locally because its provider is not configured. Email links work. Deployments with Google configured can set `NEXT_PUBLIC_GOOGLE_SIGN_IN_ENABLED=1` in the web environment before building.
 
 ## 4. Use it
 1. Open **http://localhost:3000**, type `demo@example.com`, click **Email me a link**.
@@ -39,7 +41,9 @@ make demo-web       # terminal 4: website on http://localhost:3000
 3. Click **Chat** and ask: "Does my CS 311 midterm cover graphs?", "What's due this week?", "Make me 5 flashcards on dynamic programming for CS 311."
 
 ## 5. Real Canvas data (optional)
-Keep `make demo-worker` running. In the app's Connect Canvas step (Settings / onboarding), paste a **fresh** Canvas token (Canvas → Account → Settings → **+ New Access Token**). The token is checked with Canvas, stored encrypted, and the worker pulls your courses; then ask the chat. Delete the token in Canvas after the event.
+Keep `make demo-worker` running. Sign in with a **different email from `demo@example.com`** for live data so the seeded backup stays separate. Local email links arrive in Mailpit regardless of the address. In onboarding (or Settings → Connect Canvas), paste a fresh code from [UMass Canvas settings](https://umamherst.instructure.com/profile/settings). The code is checked, stored encrypted, and the worker imports courses. Today and course pages read that student's database rows. Imports refresh open views automatically; normal background Canvas updates run about every 20 minutes, and Refresh queues an immediate update. This is polling, not Canvas Live Events.
+
+The dashboard merge runs ahead of file processing; deadlines can be ready while files continue becoming searchable. Large first imports can take several minutes. Never run `make demo-db` after importing live data unless you intend to reset the entire local database.
 For real-quality search on real data, run steps 2–3 with `EMBEDDINGS_PROVIDER=gemini` (e.g. `EMBEDDINGS_PROVIDER=gemini make demo-api`). The demo seed uses fake embeddings, so leave the default for the seed.
 
 ## If something goes wrong
@@ -49,7 +53,12 @@ For real-quality search on real data, run steps 2–3 with `EMBEDDINGS_PROVIDER=
 | Chat answers with the same canned text every time | `GEMINI_API_KEY` is empty in `.env` (the scripted backup answer is used); add it and restart `make demo-api` |
 | Chat error "The AI service had a problem" | Gemini credits/quota (402/429 in the API terminal). Top up in AI Studio, or for a guaranteed demo set `CHAT_MODE=scripted make demo-api` |
 | Sign-in link opens but you stay on the sign-in page | Use `http://localhost:3000` (not 127.0.0.1); request a new link |
+| Old stack ignores the callback URL | `make db-stop && make db` reloads `supabase/config.toml` without resetting data; restart `make demo-api`, then request a fresh email link |
+| Canvas connect returns 404 | Check `.env`: `CANVAS_BASE_URL=https://umamherst.instructure.com`; restart API and worker. `umass.instructure.com` is the wrong host |
+| Canvas linked but classes never appear | Keep `make demo-worker` running with the same `.env`/encryption key as the API. An unreadable old credential needs Reconnect |
 | Port already in use (8000/3000/54321) | Close the old terminal running it, or `make db-stop` then `make demo-db` |
 | Want the frontend with no backend at all | Delete `apps/web/.env.local`, set `NEXT_PUBLIC_API_MOCKS=1`, `make web` |
 
 Stop everything: Ctrl+C in each terminal, then `make db-stop`.
+
+Remaining demo limits: calendar feed and study-block approval persistence (S25) are still stubs; skip calendar onboarding for the live Canvas demo. The seeded/MSW backup remains available.

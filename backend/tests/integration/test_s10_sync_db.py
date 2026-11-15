@@ -306,6 +306,28 @@ async def test_s10_secret_stored_encrypted_and_scheduler_finds_due(conn, user) -
     assert (user, "canvas") in await jobs.due_connections(conn, NOW + timedelta(minutes=30))
 
 
+async def test_S10_unreadable_credential_finishes_run_with_reconnect(conn, user, monkeypatch):  # noqa: ANN001, ANN201
+    from cryptography.fernet import Fernet
+
+    monkeypatch.setenv("ENCRYPTION_KEY", Fernet.generate_key().decode())
+    get_settings.cache_clear()
+    await repo.upsert_connection_secret(
+        conn, user, "canvas", b"old-unreadable-secret", "canvas_token"
+    )
+    run_id = await repo.create_run(conn, user, "canvas", {}, "manual", NOW)
+    job = jobs.SyncJob(
+        user_id=user, platform="canvas", scope=SyncScope(), trigger="manual", sync_run_id=run_id
+    )
+    assert (
+        await jobs.execute_sync(conn, job, final_attempt=True, clock=FixedClock(NOW))
+        == "needs_reconnect"
+    )
+    run = await repo.get_run(conn, user, run_id)
+    connection = await repo.get_connection(conn, user, "canvas")
+    assert run and run.status == "needs_reconnect" and run.finished_at == NOW
+    assert connection and connection.status == "needs_reconnect"
+
+
 class WindowedConnector(FakeConnector):
     """Like Canvas: posts are listed for a time window only, so unseen posts aren't removed."""
 

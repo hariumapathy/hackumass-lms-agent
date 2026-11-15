@@ -60,7 +60,7 @@ describe("S31 onboarding", () => {
 
     expect(screen.getByRole("heading", { name: /link your canvas/i })).toBeInTheDocument();
     const settings = screen.getByRole("link", { name: /open my canvas settings/i });
-    expect(settings).toHaveAttribute("href", "https://umass.instructure.com/profile/settings");
+    expect(settings).toHaveAttribute("href", "https://umamherst.instructure.com/profile/settings");
     expect(settings).toHaveAttribute("target", "_blank");
 
     await paste(screen.getByLabelText(/paste your canvas code/i), "  1234~abcdefghijklmnop  ");

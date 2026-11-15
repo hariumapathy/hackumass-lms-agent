@@ -1,47 +1,33 @@
 # Neal: progress
 
-**Branch:** `dev/neal` · **Role:** A (data and sync) · **Last updated:** 2026-11-14 ~19:55 ET
-
-_Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines._
+**Branch:** `main` (explicit user request for this fix session) · **Role:** demo integration across A/B/C · **Last updated:** 2026-11-14 22:00 ET
 
 ## Done
-- **S01 schema** on `dev/neal`: `supabase/migrations/0001_init.sql`, all row models in `backend/app/db/models.py`, S01-T01–T08 pass on local Supabase. Hari's S20-T05/T07 now run (no longer skipped).
-
-- **S03 seed** on `dev/neal`: `make db-reset` loads the demo semester (fake embeddings, 0.5 s). Local login `demo@example.com` / `demo-password-311`. IDs match `mock_data.py`.
-
-- **S10 sync framework** (`a97ab4a`): connector interface, diff, pipeline, Procrastinate queue (`0002_procrastinate.sql`), crypto, `make worker`, S16-lite 1:1 merge.
-
-- **S11 Canvas connector** + **S12 file processing** merged into `dev/neal` (321 tests green). Canvas connect: `app.connectors.canvas.service.connect_canvas(conn, user_id, token)` → `CanvasConnectResult`; raises `InvalidCanvasToken` (`code="invalid_token"` → 400) or `PlatformError` (→ 503).
-- **S16 merge + change detection** merged into `dev/neal` (369 tests green): one item per real deadline across Canvas/Gradescope; only S16 writes item change rows.
-- **S13 live login + S14 Gradescope** merged into `dev/neal` (423 tests green). Manual run: `make api` + `make worker` on the laptop, Connect Gradescope → Chromium window → School Credentials → UMass → Duo.
-- **Merge steward** rules + check script (`docs/handoff/merge-steward.md`, `scripts/merge-steward-check.sh`).
+- Updated local main from remote `1b882c7`; read relay notes/specs and traced the Canvas → worker → DB → UI path.
+- S32/S23: DB-backed Today, courses/details, items, changes/mark-seen and citations; user scoping, timezone/DST windows, empty-account and isolation regressions.
+- S13-T06: disconnect deletes credentials + connection and cancels queued platform jobs. S10: unreadable credentials surface Reconnect, merges run ahead of bulk files, readiness includes pending merge.
+- UI import completion refreshes caches automatically; production `make demo-web` removes dev compilation on navigation. Google sign-in hidden until configured.
+- Corrected the original wrong Canvas host to `umamherst.instructure.com` (official UMass IT link).
+- Live local check: fresh account → Canvas token accepted → eight courses, actual Today/course data → real Gemini answers with syllabus-page and announcement citations. Seeded backup kept separate.
+- Checks: 440 backend passed, 1 skipped, 1 expected failure; 71 frontend; 6 browser tests; lint/format/types and production build green.
 
 ## In progress
-- Nothing half-built. Live checks need a human: paste a real Canvas token (S11), NetID + Duo Gradescope login (S13/S14).
+- Final production restart and manual Refresh check; saving verified work on main as requested.
 
 ## Next
-- S11 Canvas → S12 file processing (tiktoken chunker; the Gemini embedding provider is already in `app/core/embeddings.py`).
+1. Rehearse the local live-data demo using `docs/demo-runbook.md`; keep API, worker and production web running.
+2. S25 calendar feed + approval persistence are still stubs; skip those demo steps until implemented under their spec.
+3. Manual Gradescope NetID/Duo check remains for a teammate with that account.
 
 ## Blocked on / needs from others
-- **B and C: review S01** (schema is the contract) so it can be marked `Ready`/`Done`.
-- For seeding the **hosted** demo account: hosted `DATABASE_URL` (pooler connection string) and `GEMINI_API_KEY` (Hari). Local work doesn't need them.
+- None for the Canvas/Today/chat demo. Hosted Supabase is not required locally.
 
 ## Contract change proposals
--
+- None; schema and API response shapes unchanged.
 
 ## Notes for other agents
-- **Hari:** S13-T06 disconnect is yours: `DELETE /connections/{platform}` should delete the connection (secret cascades) and cancel queued sync runs. S13 wired only the two login route bodies in `connections.py`.
-- Live login runs in the API process (window opens on the machine running `make api`; login state is in memory).
-- **Hari:** `POST /connections/canvas` can call `connect_canvas(...)` above. S20 delete-my-data can call `app.sync.processing.delete_user_files(user_id)` (removes Storage files under `users/{user_id}/`) and drop the T07 xfail.
-- PyMuPDF is AGPL-3.0 (fine: repo is public; in credits).
-- **Hari: heads-up on `api/routes/connections.py`.** S13 (role A) wires ONLY the bodies of `POST /connections/{platform}/login` and `GET /connections/{platform}/login/{login_id}`; schemas unchanged. If you're wiring other routes in that file, expect a small merge there.
-- **Hari:** seed connections are canvas active (12 min ago), gradescope active (40 min), echo360 needs_reconnect (3 days). There are Piazza posts but **no Piazza connection** (S17 is stretch), so `compute_coverage` lists piazza under `not_connected` while search can still return Piazza posts. Want an `active` Piazza connection in the seed? Say so.
-- **Hari (S26 evals):** seed has an injection post for the "must not follow" golden: Piazza `p411` in COMPSCI 311.
-- **Hari (S20/S10 wiring):** `POST /sync` / `GET /sync/status` can call `app.sync.jobs.enqueue_sync(conn, user_id, platform, SyncScope, trigger)` and `app.db.repositories.sync` (`list_connections`, `running_platforms`, `last_success_at`). `fetch_latest` = `enqueue_sync(..., trigger="agent")` + `wait_for_sync(conn, user_id, run_id, timeout_s=15)`.
-- **Hari:** seeded message text uses `[cite:chunk_<id>]` markers; `content.citations` holds resolved S02 `Citation` dicts.
-- **Soumith (re P9):** seeded study-set payloads follow S24: `chunk_ids` per card/question plus a resolved `citations` map `{"<chunk_id>": Citation}`.
-- Local DB: `make db` (Docker must be running) then `make db-reset` (migrations + seed). Integration tests use the local DB only.
-- Seed lookups: `seed_id("hackumass-mock", "item/hw5")` == `mock_data.mid("item/hw5")`.
-- pgvector lives in schema `extensions`: write `%s::extensions.vector` when casting a parameter; `<=>` works as-is.
-- Clients (`authenticated`) can only SELECT their own rows; `anon` gets nothing. All writes go through the backend.
-- Integration tests: `tests/integration/db.py` has `AsUser(conn, user_id)` (run SQL as a signed-in student), `create_auth_user`, `insert_minimal_rows`. Use unique emails: tests re-run against the same DB.
+- User explicitly authorized work on main this session; changes span shared backend and frontend folders.
+- Runtime credentials live only in ignored local files / encrypted local DB. Never copy real account content or secrets into fixtures or docs.
+- Existing local Supabase needed `make db-stop && make db` to pick up callback URL changes; no database reset was used. Use `nvm use 26` on this laptop (default shell Node 18 cannot build Next 16).
+- Default demo embeddings remain fake (keyword retrieval); real Gemini chat and real material citations were verified. Re-embedding/provider changes require care; see S12.
+- Pause the live worker before full integration tests: existing S10 tests manipulate the local sync queue. Resume with `make demo-worker` afterward.

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): validation + DB resolution done; `GET /citations` route still on mock data |
+| **Status** | In progress (Hari): validation + DB resolution done; `GET /citations` DB route wired by Neal (T09 green) |
 | **Stage** | 1 (validation + resolution); deep links completed in Stage 2 with S15 |
 | **Role** | B |
 | **Depends on** | S21, S22 |
@@ -74,3 +74,6 @@ Click-time live link checking (optional, stretch), rendering (S33).
 - **Malformed markers** (`[cite:abc]`, `[cite: chunk_1]`, `[CITE:…]`) are **removed**, along with one space before them, so students never see raw markers.
 - **Echo360 deep link:** `source_url` + `?time=<start_s>` (matches the S02 mock). The S15 spike confirms the real format; until then, no timestamp falls back to `source_url`.
 - **Resolution** goes through `ToolData.chunks_by_id` (one student's data), so another student's chunk ID never resolves. Today that's `MockToolData`; the DB version (join chunks → materials/posts → courses, status rules 4) arrives with S01. **Still to do after S01:** T02, T05, T06, T09 (integration) and wiring `GET /citations` to real data.
+
+## Dashboard integration (2026-11-14, Neal)
+- `GET /citations` resolves only the caller's stored chunks in DB mode; S23-T09 integration test passes. Live citation card verified against a real syllabus page and canonical Canvas link.

@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth/auth-context";
+import { config } from "@/lib/config";
 
 export function SignInPanel() {
   const auth = useAuth();
@@ -57,10 +58,12 @@ export function SignInPanel() {
 
   return (
     <div className="flex max-w-sm flex-col gap-4">
-      <Button size="lg" disabled={busy} onClick={() => run(auth.signInWithGoogle)}>
-        Continue with Google
-      </Button>
-      <div className="text-center text-xs uppercase text-muted-foreground">or</div>
+      {config.googleSignIn && <>
+        <Button size="lg" disabled={busy} onClick={() => run(auth.signInWithGoogle)}>
+          Continue with Google
+        </Button>
+        <div className="text-center text-xs uppercase text-muted-foreground">or</div>
+      </>}
       {sent ? (
         <p role="status" className="text-sm">
           Check {email} for a sign-in link.

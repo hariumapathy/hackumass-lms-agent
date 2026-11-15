@@ -21,6 +21,17 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+
+## 2026-11-14 22:00 ET · Neal's laptop · Codex · branch main (explicit user request)
+**Hour:** ~H25; Devpost draft due 23:59 tonight, final Sun 09:00, code freeze 08:00.
+**Done:** S32/S23 database dashboard integration; S13-T06 disconnect; S10 merge priority/readiness and unreadable-credential recovery; UI refresh on import completion; production demo server; Google button opt-in. Live Canvas → eight courses → real Today/course pages → Gemini deadline answer and a cited midterm-scope answer (syllabus page + announcement), verified in the browser. No real data or credentials added to fixtures/git. Tests were written failing-first for the DB dashboard, disconnect, cache refresh, merge readiness/priority and unreadable credential fixes.
+**Decisions / corrections:** original repo used the wrong Canvas hostname. Corrected defaults, guide and docs to `umamherst.instructure.com`, confirmed via UMass IT. No schema or API response changes. Details in decisions.md and owning specs.
+**Roadblocks resolved:** old local Supabase callback configuration required a restart without resetting data; an old API was using different auth settings, restarted with `make demo-api`. Large initial file queue delayed the merge, so merges now get manual priority. Old unreadable credentials no longer leave runs queued forever.
+**Validation:** 440 backend pass / 1 skip / 1 expected failure; 71 frontend pass; 6 browser tests; all lint/format/type checks and production build green. Dedicated live account is separate from seeded backup. Demo uses fake embeddings with keyword retrieval and real Gemini chat.
+**State of main:** latest remote at start `1b882c7`; verified demo fixes saved in this session (see git log). Local API + worker + production web are the demo stack. Hosted Supabase not used.
+**Next steps (in order):** 1. Rehearse live Canvas flow via demo-runbook.md. 2. S25 is still stubbed: skip calendar/approval-persistence demo steps until built. 3. Manual Gradescope login/Duo check. Devpost draft deadline still applies.
+**Gotchas:** `make demo-db` resets all local data; do not run it after live imports unless intentional. `nvm use 26` on this laptop (default Node 18 cannot build Next); `NODE_OPTIONS=--no-experimental-webstorage` for frontend tests. Pause the worker during integration tests that manipulate the queue. Frontend public settings require a rebuild.
+
 ## 2026-11-14 21:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF: demo gaps found by Hari (fix these first)
 Hari ran `docs/demo-runbook.md` in a fresh clone: UI loads, but the demo feels stale. Root causes and fixes, **in this order** (Hari's agent hit its usage limit; next laptop please take these):
 1. **Today / course pages always show the S02 mock semester**, even in DB mode: `backend/app/api/routes/dashboard.py` (`/today`, `/courses`, `/courses/{id}`, `/items`, `/changes`, `/changes/seen`, `/citations`) still return `mock_data`. Wire them to the DB when `get_settings().data_source == "db"` (same pattern as `/me` in `routes/account.py`; reuse `app/db/repositories/agent.py` queries: `list_items`, `list_changes`, `list_courses`, `chunks_by_id` + `app.agent.citations.resolve_rows`). Without this, a real Canvas connect only shows up in **chat**, never on Today. Biggest demo gap.

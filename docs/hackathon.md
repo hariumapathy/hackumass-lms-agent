@@ -42,4 +42,4 @@ Source: [hackumass.com](https://www.hackumass.com/), [Devpost](https://hackumass
 
 **Decided (2026-11-14):** our ONE `[HACKUMASS]` category is **Best UMass Hack**. Sponsor opt-ins: still to decide (candidates above). Grand prizes are automatic.
 
-**What "Best UMass Hack" means for the demo:** use UMass-real details everywhere: `umass.instructure.com`, NetID + Duo login, real UMass course codes (COMPSCI 311, MATH 235), Echo360 lectures, and the "official UMass LTI app" adoption path. Judges should feel it was built *for UMass students*.
+**What "Best UMass Hack" means for the demo:** use UMass-real details everywhere: `umamherst.instructure.com`, NetID + Duo login, real UMass course codes (COMPSCI 311, MATH 235), Echo360 lectures, and the "official UMass LTI app" adoption path. Judges should feel it was built *for UMass students*.

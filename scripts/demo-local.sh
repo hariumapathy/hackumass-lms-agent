@@ -66,9 +66,12 @@ NEXT_PUBLIC_SUPABASE_URL=$API_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=$(val PUBLISHABLE_KEY)
 NEXT_PUBLIC_API_URL=$PUBLIC_API_URL
 NEXT_PUBLIC_API_MOCKS=0
+NEXT_PUBLIC_GOOGLE_SIGN_IN_ENABLED=0
 EOF
     echo "Wrote apps/web/.env.local. Sign-in emails arrive at $(val MAILPIT_URL)"
-    cd apps/web && exec $PNPM dev
+    cd apps/web
+    $PNPM build
+    exec $PNPM start
     ;;
   *)
     echo "usage: scripts/demo-local.sh seed|api|worker|web" >&2

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Implemented (branch `neal/s11-canvas`; live-token check pending) |
+| **Status** | Done on main; real token → local DB → UI verified (2026-11-14) |
 | **Stage** | 1 |
 | **Role** | A |
 | **Depends on** | S10 |
@@ -13,7 +13,7 @@ Pull courses, assignments, quizzes, exams (calendar events), announcements, file
 
 ## Inputs
 - `ConnectorContext` with the Canvas token (S10).
-- `CANVAS_BASE_URL` (default `https://umass.instructure.com`).
+- `CANVAS_BASE_URL` (default `https://umamherst.instructure.com`).
 - `SyncScope`: `full`, `course`, `item` (assignment id), `material` (file id).
 
 ## Outputs
@@ -83,7 +83,7 @@ sequenceDiagram
 | Canvas 5xx / timeout | `PlatformError` (retried by S10) |
 
 ## Example
-Canvas assignment `{"id": 99812, "name": "Midterm 1", "due_at": "2026-11-21T00:00:00Z", "html_url": "https://umass.instructure.com/courses/12345/assignments/99812", "points_possible": 100, "is_quiz_assignment": false, "updated_at": "2026-11-10T14:02:00Z"}` →
+Canvas assignment `{"id": 99812, "name": "Midterm 1", "due_at": "2026-11-21T00:00:00Z", "html_url": "https://umamherst.instructure.com/courses/12345/assignments/99812", "points_possible": 100, "is_quiz_assignment": false, "updated_at": "2026-11-10T14:02:00Z"}` →
 `NItem(platform_id="99812", course_platform_id="12345", type="exam", title="Midterm 1", due_at=2026-11-21T00:00Z, points=100, source_url=".../assignments/99812", source_updated_at=2026-11-10T14:02Z)`
 
 ## Acceptance criteria
@@ -122,3 +122,6 @@ Grades/submissions, discussions (non-announcement), Canvas pages, quizzes' quest
 - **Rule 7 (incremental announcements) is implemented but OFF by default** (`CanvasConnector(incremental_announcements=True)` turns it on). Reason: S10 rule 5 marks every record not seen in a `full` run as `removed`, so fetching only the last day of announcements would mark all older ones removed. Needs S10 to skip removal for posts outside the fetch window before it can be enabled.
 - Open issues for S10/S12 (not changed here, outside S11 folders): (1) with the fixed 60-day window, announcements older than 60 days will also be marked `removed` on a full sync; (2) a section skipped because of a 403 (e.g. files + modules both hidden) marks that section's earlier records `removed`; (3) "warning in run stats" is only a log line, because `run_sync` stats are int counters owned by S10; (4) the pipeline doesn't persist `NMaterial.download` or `text` (no columns), so S12 must rebuild the Canvas download URL from `platform_id` and re-fetch syllabus text (or S10 must store them).
 - **Route wired (Hari, 2026-11-14):** `POST /connections/canvas` calls `connect_canvas` in DB mode (`DATA_SOURCE=db`): `InvalidCanvasToken` → 400 `invalid_token`, `PlatformError` → 503 `platform_unavailable` (retryable). Test: `tests/integration/test_s11_connect_route_db.py` (S11-T12).
+
+## Live verification (2026-11-14, Neal)
+- Token accepted; eight real courses imported; Today reads actual deadlines; Gemini answers from those rows and cites a real syllabus/announcement. Correct host is `umamherst.instructure.com`, verified from [UMass IT](https://www.umass.edu/it/canvas); original spec/default used the wrong host. UI guide, settings and `.env.example` now agree.

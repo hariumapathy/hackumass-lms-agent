@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { api, ApiError } from "@/lib/api/client";
 import type { Connection } from "@/lib/api/types";
 
-export const CANVAS_SETTINGS_URL = "https://umass.instructure.com/profile/settings";
+export const CANVAS_SETTINGS_URL = "https://umamherst.instructure.com/profile/settings";
 
 /** Friendly copy for every error POST /connections/canvas can return (S31 errors table, S02 codes). */
 export function canvasErrorMessage(e: unknown): { message: string; retryable: boolean } {
