@@ -21,6 +21,12 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 20:15 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
+**Done (all on main):** PR #12 (S11 Canvas connector, S12 file processing + embeddings, S10 incomplete-listing fix), PR #15 (S16 cross-platform merge, S13 local live login, S14 Gradescope connector). Built by parallel agents in lane A, reviewed and integrated on dev/neal; 423 backend tests green. **Merge steward** running (docs/handoff/merge-steward.md): merged Hari (PR #13) and Soumith (PR #14) into main.
+**Decisions:** merge steward (decisions.md). Only S16 writes item change rows. Connectors report incomplete listings via `ctx.incomplete`.
+**Next steps (in order):** 1. Live checks with real accounts: paste a Canvas token (S11 acceptance), Gradescope NetID+Duo login (S13-T07/S14 spike). 2. Hosted Supabase: apply migrations + seed the demo account (needs hosted DATABASE_URL). 3. Hari: wire `POST /connections/canvas` → `connect_canvas`, `/sync` routes, disconnect (S13-T06), `delete_user_files` in delete-my-data. 4. Stretch: S17 Piazza.
+**Gotchas:** live login opens Chromium on the machine running `make api`; web tests on Node 26 need `NODE_OPTIONS=--no-experimental-webstorage`; PyMuPDF is AGPL (credited).
+
 ## 2026-11-14 19:25 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
 **Hour:** ~H23 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
 **Start check:** main = c9acce2 (fast-forwarded into dev/neal); `make test` green (60 pass, 2 skip pending S01). Local Supabase started (Docker).
