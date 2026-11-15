@@ -41,7 +41,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 ## Stage 3: Completeness (hours 18–24) → checkpoint H24 (feature freeze)
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
-| S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Draft |
+| S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Done (Neal); Echo360 rule 2 waits for S15 |
 | S26 | [Model picker and model evals](S26-model-picker-and-evals.md) | B | S22 | Draft |
 | S34 | [Settings](S34-settings.md) | C | S30, S26 | Draft |
 

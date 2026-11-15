@@ -25,7 +25,7 @@ from app.core.clock import FixedClock
 from app.core.settings import get_settings
 from app.db.repositories import sync as repo
 from app.sync import jobs
-from app.sync.merge import merge_one_to_one
+from app.sync.merge import merge_user
 from app.sync.pipeline import run_sync
 from tests.integration.db import conn_fixture, create_auth_user, delete_auth_user
 
@@ -156,11 +156,15 @@ async def test_s10_fake_connector_end_to_end_then_rerun_unchanged(conn, user) ->
 
 
 async def test_s10_t03_changed_due_at_writes_one_change_row(conn, user) -> None:  # noqa: ANN001
+    """Since S16 the pipeline stores the changed source and `merge_user` writes the one canonical
+    change row (see S16 implementation notes)."""
     await _sync(conn, user, FakeConnector([course(), item()]))
-    await merge_one_to_one(conn, user)
+    await merge_user(conn, user, clock=FixedClock(NOW))
     moved = NOW + timedelta(days=6)
     out, _ = await _sync(conn, user, FakeConnector([course(), item(due_at=moved)]))
     assert out.stats["changed"] == 1
+    assert await _count(conn, "changes where user_id = %s", user) == 0
+    await merge_user(conn, user, clock=FixedClock(NOW))
     cur = await conn.execute(
         "select field, old_value, new_value, entity_type, entity_id from changes "
         "where user_id = %s",
@@ -172,7 +176,6 @@ async def test_s10_t03_changed_due_at_writes_one_change_row(conn, user) -> None:
     assert rows[0]["old_value"] == (NOW + timedelta(days=4)).isoformat()
     assert rows[0]["new_value"] == moved.isoformat()
     # Change points at the canonical item, which follows its source after merge.
-    await merge_one_to_one(conn, user)
     cur = await conn.execute("select id, due_at from items where user_id = %s", (user,))
     it = await cur.fetchone()
     assert it["id"] == rows[0]["entity_id"] and it["due_at"] == moved

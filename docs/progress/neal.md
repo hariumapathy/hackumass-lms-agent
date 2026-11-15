@@ -12,10 +12,11 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 - **S10 sync framework** (`a97ab4a`): connector interface, diff, pipeline, Procrastinate queue (`0002_procrastinate.sql`), crypto, `make worker`, S16-lite 1:1 merge.
 
 - **S11 Canvas connector** + **S12 file processing** merged into `dev/neal` (321 tests green). Canvas connect: `app.connectors.canvas.service.connect_canvas(conn, user_id, token)` → `CanvasConnectResult`; raises `InvalidCanvasToken` (`code="invalid_token"` → 400) or `PlatformError` (→ 503).
+- **S16 merge + change detection** merged into `dev/neal` (369 tests green): one item per real deadline across Canvas/Gradescope; only S16 writes item change rows.
 - **Merge steward** rules + check script (`docs/handoff/merge-steward.md`, `scripts/merge-steward-check.sh`).
 
 ## In progress
-- Parallel agents in my lane (each on its own branch; I review and merge into `dev/neal`): **S16** merge (`neal/s16-merge`), **S13 + S14** browser login + Gradescope (`neal/s13-s14-gradescope`).
+- Parallel agents in my lane (each on its own branch; I review and merge into `dev/neal`): **S13 + S14** browser login + Gradescope (`neal/s13-s14-gradescope`).
 
 ## Next
 - S11 Canvas → S12 file processing (tiktoken chunker; the Gemini embedding provider is already in `app/core/embeddings.py`).
