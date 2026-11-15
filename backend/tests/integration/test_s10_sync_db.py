@@ -4,7 +4,7 @@
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from procrastinate import PsycopgConnector
@@ -209,18 +209,35 @@ async def test_s10_t05_duplicate_enqueue_returns_same_run(conn, user) -> None:  
 
 
 async def test_s10_t06_agent_job_runs_before_queued_schedule_job(conn, user) -> None:  # noqa: ANN001
+    # Own queue name: a live `make worker` (queues sync/process) never sees these jobs, and we
+    # never touch anyone else's queued jobs.
+    queue = f"test-s10-{uuid4().hex[:8]}"
+
+    async def defer(job: Any, priority: int) -> None:
+        await jobs.sync_platform.configure(queue=queue, priority=priority).defer_async(
+            job=job.model_dump(mode="json")
+        )
+
     jobs.app.replace_connector(PsycopgConnector(conninfo=get_settings().database_url))
     async with jobs.app.open_async():
-        await conn.execute("delete from procrastinate_jobs where queue_name = 'sync'")
-        sched = await jobs.enqueue_sync(conn, user, "canvas", SyncScope(), "schedule")
-        agent = await jobs.enqueue_sync(
-            conn, user, "canvas", SyncScope(kind="course", course_platform_id="12345"), "agent"
-        )
-        job = await jobs.app.job_manager.fetch_job(queues=["sync"], worker_id=None)
-        assert job is not None
-        assert job.task_kwargs["job"]["sync_run_id"] == str(agent)
-        assert sched != agent
-        await conn.execute("delete from procrastinate_jobs where queue_name = 'sync'")
+        try:
+            sched = await jobs.enqueue_sync(
+                conn, user, "canvas", SyncScope(), "schedule", defer=defer
+            )
+            agent = await jobs.enqueue_sync(
+                conn,
+                user,
+                "canvas",
+                SyncScope(kind="course", course_platform_id="12345"),
+                "agent",
+                defer=defer,
+            )
+            job = await jobs.app.job_manager.fetch_job(queues=[queue], worker_id=None)
+            assert job is not None
+            assert job.task_kwargs["job"]["sync_run_id"] == str(agent)
+            assert sched != agent
+        finally:
+            await conn.execute("delete from procrastinate_jobs where queue_name = %s", (queue,))
 
 
 async def test_s10_t07_auth_expired_needs_reconnect_no_retry(conn, user) -> None:  # noqa: ANN001
