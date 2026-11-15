@@ -23,6 +23,7 @@ from zoneinfo import ZoneInfo
 from psycopg import AsyncConnection
 from psycopg.types.json import Jsonb
 
+from app.core.clock import Clock, SystemClock
 from app.core.embeddings import EmbeddingProvider, to_pgvector
 from app.core.hashing import content_hash
 from app.db.repositories.profiles import delete_user_data
@@ -673,14 +674,14 @@ async def seed_user(
     embedder: EmbeddingProvider,
     *,
     reset: bool = False,
-    now: datetime | None = None,
+    clock: Clock | None = None,
     namespace: str = DEFAULT_NAMESPACE,
     seed_dir: Path = SEED_DIR,
 ) -> SeedResult:
     """Load the seed semester for `user_id` in one transaction. Embeddings are computed first,
     so a provider failure writes nothing."""
     fx = load_fixtures(seed_dir)
-    now = now or datetime.now(UTC)
+    now = (clock or SystemClock()).now()
     if await user_has_data(conn, user_id) and not reset:
         raise SeedExistsError(
             "This account already has course data. Re-run with --reset to replace it."

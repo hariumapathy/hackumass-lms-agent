@@ -49,4 +49,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Repo, scaffolding, CI (S00) | ✅ |
 | API + streaming contract with mock data (S02) | ✅ |
 | Real sign-in checks on every API call: Supabase tokens, chat rate limit, private logs (S20) | ✅ (profile storage waits for the DB schema) |
+| Database with per-student privacy rules (S01) | ✅ on `dev/neal` (PR #8) |
+| Backup demo semester: 4 UMass courses, deadlines, announcements, slides, lecture transcripts, a moved midterm (S03) | ✅ on `dev/neal` (PR #8), loads in ~1 s |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |
