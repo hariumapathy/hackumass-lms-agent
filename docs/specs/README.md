@@ -16,9 +16,9 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 ## Stage 1: Vertical slice (hours 2–10) → checkpoint H10
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
-| S10 | [Sync framework](S10-sync-framework.md) | A | S01 | Draft |
-| S11 | [Canvas connector](S11-canvas-connector.md) | A | S10 | Draft |
-| S12 | [File processing and embeddings](S12-file-processing.md) | A | S10 | Draft |
+| S10 | [Sync framework](S10-sync-framework.md) | A | S01 | Done (Neal) |
+| S11 | [Canvas connector](S11-canvas-connector.md) | A | S10 | Done (Neal); live-token check pending; API route wiring = B |
+| S12 | [File processing and embeddings](S12-file-processing.md) | A | S10 | Done (Neal); real-course file check pending |
 | S20 | [Backend API skeleton and auth](S20-api-skeleton-and-auth.md) | B | S01, S02 | In progress (Hari): auth done; DB parts wait for S01 |
 | S21 | [Agent tools](S21-agent-tools.md) | B | S01, S03, S20 | In progress (Hari): 6 read tools on mock data; SQL waits for S01/S03 |
 | S22 | [Agent runtime and chat streaming](S22-agent-runtime-and-chat.md) | B | S02, S21 | In progress (Hari): live on Gemini over mock data; DB persistence waits for S01 |
