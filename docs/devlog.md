@@ -21,6 +21,25 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 20:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF (Hari's backend is done for the MVP)
+**Done since 20:25:** `POST /connections/canvas` wired to Neal's `connect_canvas` (DB mode): bad token → 400 `invalid_token` with a plain message; good token → stored **encrypted**, first `connect` sync queued (S11-T12, `tests/integration/test_s11_connect_route_db.py`). `POST /sync` + `GET /sync/status` real in DB mode. `ENCRYPTION_KEY` generated in Hari's local `.env` (API and worker must share it). Tests never get the hosted secret key. **432 backend tests pass with the local DB; lint clean.**
+**Verified on a real server** (uvicorn `--reload`, `DATA_SOURCE=db`, local Supabase, real Gemini): local-Supabase JWT accepted, `/me` + `/sync/status` from the DB, `POST /chat` streamed run_started → 4 status → text → citations → done, conversation saved.
+**State of main:** PR #16 (dev/hari) green locally, waiting for Hari's merge. Everything else from Hari is on main.
+
+### Run it yourself on real data (Hari's laptop, Git Bash, Docker Desktop running)
+1. `make setup` then `make db` (local Supabase; first run downloads images).
+2. Seed the demo student into the LOCAL DB:
+   `cd backend && DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY= uv run app seed --embeddings fake --reset`
+3. API in DB mode against the local stack (one terminal):
+   `eval "$(npx -y supabase@3.1.0 status -o env | grep '^JWT_SECRET=')"; cd backend && DATA_SOURCE=db EMBEDDINGS_PROVIDER=fake DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_JWKS_URL=http://127.0.0.1:54321/auth/v1/.well-known/jwks.json SUPABASE_JWT_SECRET="$JWT_SECRET" uv run uvicorn app.main:app --reload --port 8000`
+4. Sync worker (second terminal, same env vars as step 3): `uv run app worker`. Needed for Canvas connect to actually pull data.
+5. Web app: `apps/web/.env.local` with `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`, `NEXT_PUBLIC_SUPABASE_ANON_KEY=<PUBLISHABLE_KEY from npx -y supabase@3.1.0 status>`, `NEXT_PUBLIC_API_URL=http://localhost:8000`; then `make web`. Sign in as `demo@example.com` / `demo-password-311` (seeded) or a new account.
+6. Real Canvas: in the app's Connect Canvas step, paste a **fresh** Canvas token (Canvas → Account → Settings → New Access Token). The worker syncs your real courses; then ask the chat. (For real embeddings use `EMBEDDINGS_PROVIDER=gemini` in steps 2–4, without `--embeddings fake`.)
+7. Evals on the seed: `cd backend && EMBEDDINGS_PROVIDER=fake DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres uv run app evals --db`.
+
+**Not done (deliberately, not MVP-critical):** dashboard endpoints on the DB (`/today`, `/courses`, `/items`, `/changes`, `/citations` still return the S02 mock semester; Soumith's Today view shows mock data until they're wired), S25 `add_study_block` + ICS feed, `models.yaml` picker, Storage/job cleanup in `DELETE /me/data`, wrapping pre-stream DB errors on `/chat` into an `error` event.
+**Next steps (in order):** 1. Hari: merge PR #16; Devpost draft before 23:59; revoke the Canvas token pasted in chat. 2. Whoever has budget: wire `/today` + `/courses` + `/items` + `/changes` to the DB (same `DATA_SOURCE` pattern as `/me`, queries like `app/db/repositories/agent.py`) so the Today view shows real data. 3. Decide the demo DB: hosted needs Neal's migrations + seed applied there and `DATA_SOURCE=db` in that environment; local works today (steps above). 4. Real-data rehearsal with a fresh Canvas token.
+
 ## 2026-11-14 20:25 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
 **Hour:** ~H24 (Devpost draft due 23:59; final submission Sun 09:00, freeze 08:00; judging 12:30)
 **Done (PRs #9, #11 merged; newer commits on dev/hari → next PR):**
