@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): auth, scans, errors, rate limit, logging done; DB parts wait for S01 |
+| **Status** | In progress (Hari): all done in DB mode except Storage cleanup (S12) and job cancellation (S10) in DELETE /me/data |
 | **Stage** | 1 |
 | **Role** | B |
 | **Depends on** | S01, S02 |
@@ -86,4 +86,5 @@ Multi-instance rate limiting, admin roles, account deletion of the auth user.
 - **DB:** `app/db/pool.py` (psycopg 3 async pool, opened lazily, `dict_row`, outage → 503 retryable). `app/db/repositories/profiles.py`: `get_profile`, `ensure_profile`, `update_profile`, `delete_user_data`, all `(conn, user_id, ...)` (enforced by S20-T04). **Not wired into routes yet:** `/me`, `PATCH /me` and `DELETE /me/data` still return S02 mock data (with the real `user_id`) until S01's `profiles` table exists, so the frontend never sees 503s. Wiring them up and auto-creating the profile on first request is the first thing to do after S01 merges.
 - **PATCH /me validation** is live now (IANA timezone, `model_choice` must be in `/models`) → 422 `validation_error`.
 - **Tests:** `tests/unit/test_s20_auth.py` covers T01–T04, T06, T08–T10 and DB-down. `tests/integration/test_s20_db.py` (T05, T07) **skip with "pending S01"** until a local DB with the schema is running. The Storage half of T07 is skipped pending S12's storage helper, and job cancellation is pending S10. T06 runs as a unit test (no DB needed). Tests force `DATABASE_URL` to the local DB (or `TEST_DATABASE_URL`), so they can never touch the hosted project.
+- **Update (2026-11-14, after S01):** with `DATA_SOURCE=db`, `/me` creates the profile on first call, `PATCH /me` persists, and `DELETE /me/data` deletes all of the student's rows (`tests/integration/test_s20_me_db.py`, `test_s20_db.py`). The agent uses the profile's timezone + model. Mock mode keeps the S02 demo student.
 - **Windows gotcha:** psycopg async can't run on Windows' default Proactor event loop. `make api` uses `--reload`, which makes uvicorn pick a selector loop, so it works. Tests get a selector loop from the `pytest_asyncio_loop_factories` hook in `tests/conftest.py`. Running uvicorn on Windows **without** `--reload` would break DB calls.

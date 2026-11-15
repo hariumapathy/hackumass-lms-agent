@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # auto: real agent when a model key is set, else the scripted S02 stream. scripted: always
     # the scripted stream (demo backup). agent: always the real agent.
     chat_mode: Literal["auto", "agent", "scripted"] = "auto"
+    # Where the agent's tools and chat history live: "mock" (S02 mock semester, in-memory chats)
+    # or "db" (S01 database via DATABASE_URL, e.g. the S03 seed).
+    data_source: Literal["mock", "db"] = "mock"
     embeddings_provider: Literal["gemini", "openai", "fake"] = "gemini"
     web_origin: str = "http://localhost:3000"
     public_api_url: str = "http://localhost:8000"  # used to build calendar feed URLs (S25)
