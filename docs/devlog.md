@@ -21,6 +21,15 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 19:25 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
+**Hour:** ~H23 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
+**Start check:** main = c9acce2 (fast-forwarded into dev/neal); `make test` green (60 pass, 2 skip pending S01). Local Supabase started (Docker).
+**Done:** **S01 schema**: `0001_init.sql` (enums, 19 tables, indexes incl. HNSW + GIN, RLS select-own for `authenticated`, no client writes, `connection_secrets` locked). Row models for every table (`TABLE_MODELS`). S01-T01–T08 + model/column check pass; S20-T05/T07 un-skipped and pass (made their emails unique so they re-run).
+**In progress:** S03 seed.
+**Decisions / design changes:** none (clarifications only, listed in S01 implementation notes).
+**Roadblocks:** none. Hosted Supabase secret key received (kept in git-ignored `.env.hosted`); hosted `DATABASE_URL` + `GEMINI_API_KEY` still needed to seed the hosted demo.
+**Next steps (in order):** 1. S03 seed. 2. PR S01+S03 → main (B/C review). 3. S10 → S11 → S12.
+
 ## 2026-11-14 18:57 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
 **Hour:** ~H22.5 (Devpost draft due 23:59 tonight, ~5 h; final submission Sun 09:00, freeze 08:00)
 **Start check:** main = fb07fb2 (merged into dev/hari, fast-forward); no commits from Neal/Soumith yet; `make setup` ok; `make test` green (27 backend + 1 web).

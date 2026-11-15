@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): built + tested on `dev/neal`; awaiting B/C review |
 | **Stage** | 0 |
 | **Role** | A (writes), reviewed by B and C |
 | **Depends on** | S00 |
@@ -118,9 +118,9 @@ Every table has `user_id uuid not null references auth.users on delete cascade` 
 | Embedding with wrong dimension | Rejected by column type |
 
 ## Acceptance criteria
-- [ ] `supabase db reset` applies migrations cleanly
-- [ ] Pydantic models exist for every table
-- [ ] RLS tests pass (below)
+- [x] `supabase db reset` applies migrations cleanly
+- [x] Pydantic models exist for every table
+- [x] RLS tests pass (below)
 - [ ] Reviewed and approved by B and C before Stage 1
 
 ## Test plan
@@ -137,3 +137,9 @@ Every table has `user_id uuid not null references auth.users on delete cascade` 
 
 ## Out of scope
 Piazza/email-specific fields beyond `posts` (stretch). Grades table (stretch).
+
+## Implementation notes (2026-11-14, Neal)
+- Migration: `supabase/migrations/0001_init.sql`. Models: `backend/app/db/models.py` (`TABLE_MODELS` maps table → model; a test checks columns match). Tests: `backend/tests/integration/test_s01_schema.py` (T01–T08 + model/column check), helpers in `tests/integration/db.py` (`AsUser` runs SQL as `authenticated`/`anon` with JWT claims, like PostgREST).
+- Clarifications (no contract change): extensions live in schema `extensions` (Supabase default), so vector SQL uses `extensions.vector` / `<=>` (on the default search path). Clients get **only** `select` on user tables (`revoke all` from anon/authenticated, then `grant select` to authenticated) plus the RLS policy; `anon` can read nothing. Default privileges revoke client writes on future tables. `connection_secrets` has no grants and no policies.
+- Small additions inside the spec's intent: check constraints on `connection_secrets.kind`, `changes.entity_type`, `messages.role`, `agent_runs.status`, `study_blocks.end_at > start_at`; `created_at` on every table; defaults for `sync_runs.stats/scope`; a few extra indexes (`item_sources.item_id`, `chunks.material_id/post_id`, `messages(conversation_id, created_at)`, `study_blocks(user_id, start_at)`).
+- `chunks.embedding` is `not null` (every chunk is embedded before insert, S12).
