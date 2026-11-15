@@ -3,7 +3,7 @@ import { CalendarRange, Layers, ListChecks, type LucideIcon } from "lucide-react
 import type { StudySet, StudySetSummary } from "@/lib/api/types";
 
 export const STUDY_LABELS = { plan: "Study plan", quiz: "Practice quiz", flashcards: "Flashcards" };
-const STUDY_ICONS: Record<keyof typeof STUDY_LABELS, LucideIcon> = {
+export const STUDY_ICONS: Record<keyof typeof STUDY_LABELS, LucideIcon> = {
   plan: CalendarRange,
   quiz: ListChecks,
   flashcards: Layers,
@@ -18,13 +18,13 @@ export function StudySetCard({ set }: { set: StudySet | StudySetSummary }) {
   return (
     <Link
       href={`/study/${encodeURIComponent(set.id)}`}
-      className="group flex items-center gap-3 rounded-xl border bg-card p-4 shadow-xs transition-all hover:border-primary/30 hover:shadow-md focus-visible:outline-2"
+      className="group flex min-w-0 items-center gap-3 rounded-xl border bg-card p-4 shadow-xs transition-all hover:border-primary/30 hover:shadow-md focus-visible:outline-2"
     >
       <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-accent text-primary" aria-hidden>
         <Icon className="size-5" />
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="block text-sm font-semibold">
+        <span className="block truncate text-sm font-semibold">
           {STUDY_LABELS[set.type]}
           {count !== null && ` · ${count}${units}`}
         </span>

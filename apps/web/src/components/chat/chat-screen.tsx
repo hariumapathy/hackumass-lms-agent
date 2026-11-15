@@ -1,23 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowDown, GraduationCap, Plus, RotateCcw, Send, Square } from "lucide-react";
 import { DESKTOP_QUERY, useMediaQuery } from "@/components/layout/use-media-query";
-import { ErrorState, Loading } from "@/components/states/states";
+import { ErrorState } from "@/components/states/states";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { api, ApiError, isAbortError } from "@/lib/api/client";
 import { streamChat } from "@/lib/api/sse";
-import type { Message } from "@/lib/api/types";
+import type { Message, StudySetSummary } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { AssistantText } from "./assistant-text";
 import { applyEvent, newTurn, settleStatus, type Turn } from "./chat-state";
 import { StudySetCard } from "@/components/study/study-set-card";
 import { ApprovalCard } from "./approval-card";
 import { StatusList } from "./status-list";
+import { SessionRow } from "./session-row";
 
 const SUGGESTIONS = ["What's due this week?", "Did anything change?", "Prep me for my next exam"];
 
@@ -26,6 +28,7 @@ let turnCounter = 0;
 /** Chat (S33 chat part). Pass a conversationId to continue a saved conversation. */
 export function ChatScreen({ conversationId: initialId }: { conversationId?: string }) {
   const qc = useQueryClient();
+  const router = useRouter();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const searchParams = useSearchParams();
   const [conversationId, setConversationId] = useState(initialId);
@@ -37,6 +40,7 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
   // Read inside send() so a retry right after run_started still uses the new conversation id.
   const conversationRef = useRef(initialId);
 
+  const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => api().conversations() });
   const history = useQuery({
     queryKey: ["conversation", initialId],
     queryFn: () => api().conversation(initialId!),
@@ -116,6 +120,20 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
     }
   }
 
+  /** S36: start over. On a saved chat's page go to /chat; on /chat just clear this screen. */
+  function newChat() {
+    controller.current?.abort();
+    if (initialId) {
+      router.push("/chat");
+      return;
+    }
+    setTurns([]);
+    setInput("");
+    setConversationId(undefined);
+    conversationRef.current = undefined;
+    window.history.replaceState(null, "", "/chat");
+  }
+
   function retry(turn: Turn) {
     setTurns((ts) => ts.filter((t) => t.key !== turn.key));
     void send(turn.userText);
@@ -133,27 +151,38 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
   };
 
   const saved: Message[] = history.data?.messages ?? [];
+  // S36: study sets made in this chat, so a reopened session shows its flashcards / quiz / plan again.
+  const setsById = new Map<string, StudySetSummary>(
+    (conversations.data?.find((c) => c.id === conversationId)?.study_sets ?? []).map((st) => [st.id, st]),
+  );
   const empty = saved.length === 0 && turns.length === 0;
 
   return (
     // Fill the screen minus the app shell padding (phone: pt-6 + pb-24; desktop: py-8) so the composer sits at the bottom.
     <div className="mx-auto flex min-h-[calc(100dvh-7.5rem)] w-full max-w-5xl gap-6 md:min-h-[calc(100dvh-4rem)]">
-      {isDesktop && <ConversationList activeId={conversationId} />}
+      {isDesktop && <ConversationList activeId={conversationId} onNewChat={newChat} />}
       <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-3xl font-semibold tracking-tight">Chat</h1>
-          <p className="text-sm text-muted-foreground">Answers come from your own classes, with a link to every source.</p>
+        <header className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1">
+            <h1 className="text-3xl font-semibold tracking-tight">Chat</h1>
+            <p className="text-sm text-muted-foreground">Answers come from your own classes, with a link to every source.</p>
+          </div>
+          {!isDesktop && (
+            <Button variant="outline" size="sm" className="shrink-0" onClick={newChat}>
+              <Plus aria-hidden /> New chat
+            </Button>
+          )}
         </header>
         {!isDesktop && (
           // Mobile: past chats fold away above the conversation (S33 rule 7, "sheet on mobile").
           <details className="rounded-xl border bg-card px-3 py-2 text-sm shadow-xs">
             <summary className="cursor-pointer select-none font-medium">Past chats</summary>
-            <ConversationList activeId={conversationId} className="w-full pt-2" />
+            <ConversationList activeId={conversationId} onNewChat={newChat} className="w-full pt-2" showNewChat={false} />
           </details>
         )}
 
         <div className="flex flex-1 flex-col gap-6" aria-live="polite">
-          {initialId && history.isPending && <Loading label="Loading conversation…" rows={2} />}
+          {initialId && history.isPending && <ConversationSkeleton />}
           {history.isError && <ErrorState error={history.error} onRetry={() => void history.refetch()} />}
           {saved.map((m) =>
             m.role === "user" ? (
@@ -161,6 +190,9 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
             ) : (
               <AssistantRow key={m.id}>
                 <AssistantText text={m.text} citations={m.citations} streaming={false} />
+                {m.study_set_ids.map((id) => setsById.get(id)).filter((st) => st !== undefined).map((st) => (
+                  <StudySetCard key={st.id} set={st} />
+                ))}
               </AssistantRow>
             ),
           )}
@@ -213,6 +245,8 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
           >
             <Textarea
               aria-label="Message"
+              // A prefilled question (e.g. from Today or Sessions) is ready to send with Enter.
+              autoFocus={Boolean(searchParams.get("prefill"))}
               placeholder="Ask about deadlines, lectures, or exam prep…"
               value={input}
               disabled={running}
@@ -297,32 +331,79 @@ function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
   );
 }
 
-export function ConversationList({ activeId, className }: { activeId?: string; className?: string }) {
+export function ConversationList({
+  activeId,
+  className,
+  onNewChat,
+  showNewChat = true,
+}: {
+  activeId?: string;
+  className?: string;
+  onNewChat?: () => void;
+  showNewChat?: boolean;
+}) {
   const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => api().conversations() });
+  const list = conversations.data ?? [];
   return (
-    <aside aria-label="Conversations" className={cn("flex w-56 shrink-0 flex-col gap-2 pt-1", className)}>
+    <aside aria-label="Conversations" className={cn("flex w-60 shrink-0 flex-col gap-2 pt-1", className)}>
       <span className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Your chats</span>
-      <Button asChild variant="outline" size="sm" className="justify-start">
-        <Link href="/chat">
-          <Plus aria-hidden /> New chat
-        </Link>
-      </Button>
-      <ul className="flex flex-col gap-0.5">
-        {(conversations.data ?? []).map((c) => (
-          <li key={c.id}>
-            <Link
-              href={`/chat/${c.id}`}
-              aria-current={c.id === activeId ? "page" : undefined}
-              className={cn(
-                "block truncate rounded-lg px-3 py-1.5 text-sm text-foreground/80 hover:bg-accent hover:text-foreground",
-                c.id === activeId && "bg-accent font-medium text-accent-foreground",
-              )}
-            >
-              {c.title}
+      {showNewChat &&
+        (onNewChat ? (
+          <Button variant="outline" size="sm" className="justify-start" onClick={onNewChat}>
+            <Plus aria-hidden /> New chat
+          </Button>
+        ) : (
+          <Button asChild variant="outline" size="sm" className="justify-start">
+            <Link href="/chat">
+              <Plus aria-hidden /> New chat
             </Link>
-          </li>
+          </Button>
         ))}
-      </ul>
+      {conversations.isPending ? (
+        <div role="status" className="flex flex-col gap-1.5 px-1 pt-1">
+          <span className="sr-only">Loading your chats…</span>
+          <Skeleton className="h-7 w-full" />
+          <Skeleton className="h-7 w-4/5" />
+          <Skeleton className="h-7 w-3/5" />
+        </div>
+      ) : list.length === 0 ? (
+        <p className="px-3 text-sm text-muted-foreground">Your chats will show up here.</p>
+      ) : (
+        <ul className="flex flex-col gap-0.5">
+          {list.map((c) => (
+            <SessionRow
+              key={c.id}
+              conversation={c}
+              variant="compact"
+              active={c.id === activeId}
+              onDeleted={c.id === activeId ? onNewChat : undefined}
+            />
+          ))}
+        </ul>
+      )}
+      <Link
+        href="/sessions"
+        className="rounded px-3 pt-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-2"
+      >
+        See all sessions and study sets
+      </Link>
     </aside>
+  );
+}
+
+function ConversationSkeleton() {
+  return (
+    <div role="status" aria-live="polite" className="flex flex-col gap-5">
+      <span className="sr-only">Loading conversation…</span>
+      <Skeleton className="h-10 w-2/3 self-end rounded-2xl" />
+      <div className="flex gap-3">
+        <Skeleton className="size-8 shrink-0 rounded-full" />
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-3/5" />
+        </div>
+      </div>
+    </div>
   );
 }

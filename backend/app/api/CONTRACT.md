@@ -64,3 +64,9 @@ event: done
 data: {"run_id":"…","message_id":"…","final_text":"Memoization stores solutions to subproblems [cite:chunk_8812]."}
 
 ```
+
+## Sessions (S36, REST, not SSE)
+- `GET /conversations` → each `ConversationSummary` also has `study_sets: StudySetSummary[]` (made in that chat, newest first).
+- `StudySetSummary` (and the `study_set` SSE event) has `conversation_id: uuid | null` (null once its chat is deleted).
+- `PATCH /conversations/{id}` `{"title": "1..80 chars"}` → `ConversationSummary`; blank → 422; not yours → 404.
+- `DELETE /conversations/{id}` → 204; messages are deleted, study sets stay (`conversation_id` → null); not yours → 404.

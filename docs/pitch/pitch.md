@@ -66,5 +66,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Piazza posts (S17): read-only connector + **Connect Piazza** in Settings/onboarding | ✅ **live-verified with a real account** (2026-11-15): login window → posts imported → shown on the course page → cited by the chat |
 | Submitted work never shows as Overdue (Canvas + Gradescope submission state, SUBMITTED badge) | ✅ live-verified 2026-11-15 on a real Canvas account: Overdue 5 → 2 after one sync |
 | Built-in PDF viewer: a citation's **View** opens the cited lecture PDF inside the app at the cited page | ✅ live-verified 2026-11-15 (real Canvas lecture, opened at p. 2 of 61; phone + laptop). Mobile Safari may not render PDFs inline: "Open in Canvas" is always in the viewer |
+| **Sessions** (S36): every chat with the flashcards / quizzes / plans made in it; rename and delete chats (study sets stay) | ✅ verified in the browser 2026-11-15 on the real-data stack (laptop + 375 px); 7 tests |
 | Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

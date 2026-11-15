@@ -1,6 +1,10 @@
 import { http, HttpResponse } from "msw";
+import type { StudySet, StudySetSummary } from "@/lib/api/types";
 import type { Fixtures } from "./fixtures";
 import { MOCK_API_URL, errorResponse } from "./handlers";
+
+export const studySetSummary = ({ id, type, title, course_id, conversation_id, created_at }: StudySet): StudySetSummary =>
+  ({ id, type, title, course_id, conversation_id: conversation_id ?? null, created_at });
 
 export function studyHandlers(f: Fixtures) {
   const api = (path: string) => `${MOCK_API_URL}${path}`;
@@ -8,7 +12,7 @@ export function studyHandlers(f: Fixtures) {
   const unauthorized = () => errorResponse(401, "unauthorized", "Sign in again.");
   return [
     http.get(api("/study-sets"), ({ request }) => authed(request)
-      ? HttpResponse.json(f.studySets.map(({ id, type, title, course_id, created_at }) => ({ id, type, title, course_id, created_at }))) : unauthorized()),
+      ? HttpResponse.json(f.studySets.map(studySetSummary)) : unauthorized()),
     http.get(api("/study-sets/:id"), ({ request, params }) => {
       if (!authed(request)) return unauthorized();
       const set = f.studySets.find((s) => s.id === params.id);

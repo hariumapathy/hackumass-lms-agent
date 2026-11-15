@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, expect, it } from "vitest";
-import { StudyDetail, StudyList } from "@/components/study/study-screen";
+import { StudyDetail } from "@/components/study/study-screen";
 import { buildFixtures } from "@/mocks/fixtures";
 import { createHandlers, MOCK_API_URL } from "@/mocks/handlers";
 import { renderWithProviders } from "./utils";
@@ -80,22 +80,18 @@ it("S33 saved citation map needs no citation lookup", async () => {
   expect(lookups).toBe(0);
 });
 
-it("S33 study list links all saved sets and handles an empty list", async () => {
-  const view = renderWithProviders(<StudyList />);
-  expect(await screen.findByRole("link", { name: /CS 311 dynamic programming quiz/ })).toHaveAttribute("href", `/study/${quiz.id}`);
-  expect(screen.getAllByRole("link", { name: /CS 311/ })).toHaveLength(3);
-  view.unmount();
-  server.use(http.get(`${MOCK_API_URL}/study-sets`, () => HttpResponse.json([])));
-  renderWithProviders(<StudyList />);
-  expect(await screen.findByText("No study sets yet")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Ask for a study set" })).toHaveAttribute("href", "/chat");
+// S36: the study list moved into Sessions (tests/s36-sessions.test.tsx).
+it("S36 a study set links back to Sessions and to the chat it was made in", async () => {
+  renderWithProviders(<StudyDetail id={quiz.id} />);
+  expect(await screen.findByRole("link", { name: "Open the chat" })).toHaveAttribute("href", `/chat/${quiz.conversation_id}`);
+  expect(screen.getByRole("link", { name: "Back to Sessions" })).toHaveAttribute("href", "/sessions");
 });
 
 it("S33 missing study set offers retry and a way back", async () => {
   renderWithProviders(<StudyDetail id="missing" />);
   expect(await screen.findByRole("alert")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /Try again/ })).toBeEnabled();
-  expect(screen.getByRole("link", { name: "All study sets" })).toHaveAttribute("href", "/study");
+  expect(screen.getByRole("link", { name: "Back to Sessions" })).toHaveAttribute("href", "/sessions");
 });
 
 it("S33 malformed payload does not crash the study page", async () => {

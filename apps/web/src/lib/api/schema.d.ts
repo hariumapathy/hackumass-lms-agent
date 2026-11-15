@@ -356,10 +356,18 @@ export interface paths {
         get: operations["conversation_conversations__conversation_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Conversation
+         * @description S36: delete a chat and its messages; its study sets stay (conversation_id -> null).
+         */
+        delete: operations["delete_conversation_conversations__conversation_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Rename Conversation
+         * @description S36: rename a chat (user-scoped; someone else's id is a 404).
+         */
+        patch: operations["rename_conversation_conversations__conversation_id__patch"];
         trace?: never;
     };
     "/study-sets": {
@@ -614,6 +622,11 @@ export interface components {
             /** Messages */
             messages: components["schemas"]["Message"][];
         };
+        /** ConversationRename */
+        ConversationRename: {
+            /** Title */
+            title: string;
+        };
         /** ConversationSummary */
         ConversationSummary: {
             /**
@@ -628,6 +641,11 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Study Sets
+             * @default []
+             */
+            study_sets: components["schemas"]["StudySetSummary"][];
         };
         /** CourseDetail */
         CourseDetail: {
@@ -986,6 +1004,8 @@ export interface components {
             title: string;
             /** Course Id */
             course_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -1012,6 +1032,8 @@ export interface components {
             title: string;
             /** Course Id */
             course_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -1750,6 +1772,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_conversation_conversations__conversation_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationRename"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationSummary"];
                 };
             };
             /** @description Validation Error */

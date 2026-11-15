@@ -1,4 +1,4 @@
-import { studyHandlers } from "./handlers-study";
+import { studyHandlers, studySetSummary } from "./handlers-study";
 // MSW handlers for every Stage 1 endpoint in S02, backed by fixtures.ts.
 // Used by the browser in mock mode (NEXT_PUBLIC_API_MOCKS=1) and by tests (msw/node).
 import { http, HttpResponse } from "msw";
@@ -122,8 +122,35 @@ export function createHandlers(opts: HandlerOptions = {}) {
     }),
 
     http.get(api("/conversations"), ({ request }) =>
-      authed(request) ? HttpResponse.json(f.conversations) : unauthorized(),
+      authed(request)
+        ? HttpResponse.json(
+            f.conversations.map((c) => ({
+              ...c,
+              study_sets: f.studySets.filter((st) => st.conversation_id === c.id).map(studySetSummary),
+            })),
+          )
+        : unauthorized(),
     ),
+
+    // S36: rename + delete (study sets stay, unlinked).
+    http.patch(api("/conversations/:id"), async ({ request, params }) => {
+      if (!authed(request)) return unauthorized();
+      const conversation = f.conversations.find((c) => c.id === String(params.id));
+      if (!conversation) return errorResponse(404, "not_found", "Conversation not found.");
+      const { title } = (await request.json()) as { title: string };
+      conversation.title = title.trim();
+      return HttpResponse.json(conversation);
+    }),
+
+    http.delete(api("/conversations/:id"), ({ request, params }) => {
+      if (!authed(request)) return unauthorized();
+      const id = String(params.id);
+      const index = f.conversations.findIndex((c) => c.id === id);
+      if (index < 0) return errorResponse(404, "not_found", "Conversation not found.");
+      f.conversations.splice(index, 1);
+      for (const st of f.studySets) if (st.conversation_id === id) st.conversation_id = null;
+      return new HttpResponse(null, { status: 204 });
+    }),
 
     http.get(api("/conversations/:id"), ({ request, params }) => {
       if (!authed(request)) return unauthorized();
@@ -138,7 +165,7 @@ export function createHandlers(opts: HandlerOptions = {}) {
       const body = (await request.json()) as ChatRequest;
       const conversationId = body.conversation_id ?? "d0000000-0000-4000-8000-0000000000aa";
       if (!f.conversations.some((c) => c.id === conversationId)) {
-        f.conversations.unshift({ id: conversationId, title: body.message.slice(0, 60), updated_at: new Date().toISOString() });
+        f.conversations.unshift({ id: conversationId, title: body.message.slice(0, 60), updated_at: new Date().toISOString(), study_sets: [] });
       }
       return sseResponse((/prep|quiz|flashcard|study/i.test(body.message) ? scriptedStudyChat : scriptedChat)(conversationId, f), { delayMs: opts.chatDelayMs ?? 0 });
     }),

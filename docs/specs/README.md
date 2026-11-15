@@ -46,6 +46,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S34 | [Settings](S34-settings.md) | C | S30, S26 | In progress (Soumith): mock mode, T01–T06 green; accounts list = Canvas, Gradescope, Piazza |
 
 | S35 | [UMass-inspired UI](S35-umass-ui.md) | C | S30–S34 | Done (Hari, 2026-11-15) |
+| S36 | [Sessions + chat rename/delete](S36-sessions.md) | B+C | S22, S24, S33 | Done (Hari, 2026-11-15) |
 
 ## Stage 4: Stretch (only after H24, in order)
 [S17 Piazza connector](S17-piazza-connector.md) (A, built: fixture + DB tests green, Connect Piazza in the UI; **live login check pending**) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.
