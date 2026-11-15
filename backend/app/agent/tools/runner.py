@@ -26,6 +26,10 @@ log = logging.getLogger(__name__)
 ToolFn = Callable[[RunCtx, Any], Awaitable[ToolResult]]
 
 
+class ToolRejected(Exception):
+    """Raised by a tool for a problem the model can fix; its message goes back to the model."""
+
+
 @dataclass(frozen=True)
 class ToolSpec:
     name: str
@@ -56,6 +60,8 @@ async def invoke(spec: ToolSpec, ctx: RunCtx, raw_args: str) -> str:
         return f"Invalid arguments for {spec.name}: {_describe(err)}. Fix them and try again."
     try:
         result = await spec.fn(ctx, args)
+    except ToolRejected as err:
+        return f"{spec.name} rejected: {err} Fix it and try again."
     except Exception:  # noqa: BLE001 - the model gets a readable error; details go to our logs
         log.exception("tool %s failed", spec.name)
         return f"{spec.name} failed. Try again once, or answer with what you already have."

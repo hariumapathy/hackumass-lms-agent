@@ -32,7 +32,7 @@ from pydantic import BaseModel, ValidationError
 from app.agent.citations import resolve_rows, validate_citations
 from app.agent.gemini import gemini_client
 from app.agent.prompts import PromptContext, build_instructions
-from app.agent.tools import READ_TOOLS
+from app.agent.tools import AGENT_TOOLS
 from app.agent.tools.context import RunCtx
 from app.agent.tools.coverage import compute_coverage
 from app.agent.tools.data import ToolData
@@ -87,24 +87,39 @@ def agent_available(settings: Settings) -> bool:
 # --- tools -> SDK -----------------------------------------------------------------------------
 
 
+def _simplify(node: Any, defs: dict[str, Any]) -> Any:
+    if isinstance(node, list):
+        return [_simplify(n, defs) for n in node]
+    if not isinstance(node, dict):
+        return node
+    if "$ref" in node:
+        return _simplify(defs[node["$ref"].split("/")[-1]], defs)
+    node = dict(node)
+    options = node.pop("anyOf", None)
+    if options:
+        non_null = [o for o in options if o.get("type") != "null"]
+        if len(non_null) == 1:
+            node = {**_simplify(non_null[0], defs), **node}
+        else:
+            node["anyOf"] = _simplify(non_null, defs)
+    node.pop("title", None)
+    if node.get("default", ...) is None:
+        node.pop("default")
+    out = {k: _simplify(v, defs) if k in {"items", "properties"} else v for k, v in node.items()}
+    if "properties" in out:
+        out["properties"] = {k: _simplify(v, defs) for k, v in node["properties"].items()}
+    return out
+
+
 def _flat_schema(model: type[BaseModel]) -> dict[str, Any]:
-    """JSON schema without `anyOf: [T, null]` and titles: friendlier for Gemini and small models."""
+    """JSON schema with `$ref`s inlined, no `anyOf: [T, null]`, no titles: friendlier for Gemini
+    and small models (nested models such as S24 study sets included)."""
     schema = model.model_json_schema()
-    props = {}
-    for name, prop in schema.get("properties", {}).items():
-        prop = dict(prop)
-        options = prop.pop("anyOf", None)
-        if options:
-            non_null = [o for o in options if o.get("type") != "null"]
-            if non_null:
-                prop = {**non_null[0], **prop}
-        prop.pop("title", None)
-        if prop.get("default", ...) is None:
-            prop.pop("default")
-        props[name] = prop
-    out: dict[str, Any] = {"type": "object", "properties": props, "additionalProperties": False}
-    if schema.get("required"):
-        out["required"] = schema["required"]
+    defs = schema.pop("$defs", {})
+    out = _simplify(schema, defs)
+    out["type"] = "object"
+    out.setdefault("properties", {})
+    out["additionalProperties"] = False
     return out
 
 
@@ -144,9 +159,6 @@ class RunState:
     calls: dict[str, tuple[str, str, str, float]] = field(default_factory=dict)  # call_id ->
     # (status id, tool, label, started)
     text_parts: list[str] = field(default_factory=list)
-    study_sets: list[s.StudySet] = field(default_factory=list)
-    blocks: list[s.StudyBlock] = field(default_factory=list)
-    block_summary: str | None = None
     tool_log: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -160,21 +172,9 @@ def _label(state: RunState, tool: str, raw_args: str) -> str:
     return "Working on it…"
 
 
-def _special_outputs(tool: str, output: str, state: RunState) -> None:
-    try:
-        payload = json.loads(output)
-    except ValueError:
-        return
-    if tool == "create_study_set" and isinstance(payload.get("study_set"), dict):
-        state.study_sets.append(s.StudySet.model_validate(payload["study_set"]))
-    elif tool == "add_study_block" and isinstance(payload.get("blocks"), list):
-        state.blocks += [s.StudyBlock.model_validate(b) for b in payload["blocks"]]
-        state.block_summary = payload.get("summary") or state.block_summary
-
-
 def map_stream_event(ev: StreamEvent, state: RunState) -> list[s.ChatEvent]:
     """SDK stream event -> immediate S02 events (text, status). Study sets and proposed blocks
-    are collected in `state` and emitted after the answer (S02 ordering rule 3)."""
+    are collected by the tools in RunCtx and emitted after the answer (S02 ordering rule 3)."""
     if isinstance(ev, RawResponsesStreamEvent):
         if isinstance(ev.data, ResponseTextDeltaEvent) and ev.data.delta:
             state.text_parts.append(ev.data.delta)
@@ -200,8 +200,6 @@ def map_stream_event(ev: StreamEvent, state: RunState) -> list[s.ChatEvent]:
         state.tool_log.append(
             {"tool": tool, "ms": round((time.perf_counter() - started) * 1000), "ok": not failed}
         )
-        if not failed:
-            _special_outputs(tool, output, state)
         return [
             s.StatusEvent(
                 id=status_id, label=label, state="failed" if failed else "done", tool=tool
@@ -230,7 +228,7 @@ class ChatRuntime:
         self.data_factory = data_factory
         self.model_factory = model_factory
         self.clock = clock
-        self.tools = tools if tools is not None else list(READ_TOOLS)
+        self.tools = tools if tools is not None else list(AGENT_TOOLS)
 
     async def run(self, user: UserCtx, req: s.ChatRequest) -> AsyncGenerator[s.ChatEvent, None]:
         now = self.clock.now()
@@ -288,7 +286,11 @@ class ChatRuntime:
                     code="timeout", message="That took too long. Please try again.", retryable=True
                 )
             except Exception as exc:  # noqa: BLE001 - provider/model errors
-                log.warning("agent run failed: %s", type(exc).__name__)
+                log.warning(  # status code only (402 = out of credits, 429 = rate limit)
+                    "agent run failed: %s status=%s",
+                    type(exc).__name__,
+                    getattr(exc, "status_code", None),
+                )
                 error = s.ErrorEvent(
                     code="model_error",
                     message="The AI service had a problem. Please try again.",
@@ -317,12 +319,13 @@ class ChatRuntime:
                 if checked.valid_ids
                 else []
             )
-            for study_set in state.study_sets:
+            for study_set in ctx.study_sets:
+                await store.save_study_set(user.user_id, study_set)
                 yield s.StudySetEvent(study_set=study_set)
-            if state.blocks:
+            if ctx.proposed_blocks:
                 yield s.ApprovalRequiredEvent(
-                    blocks=state.blocks,
-                    summary=state.block_summary or f"Add {len(state.blocks)} study sessions?",
+                    blocks=ctx.proposed_blocks,
+                    summary=ctx.block_summary or f"Add {len(ctx.proposed_blocks)} study sessions?",
                 )
             yield s.CitationsEvent(citations=citations, dropped=checked.dropped_ids)
             message = s.Message(
@@ -330,8 +333,8 @@ class ChatRuntime:
                 role="assistant",
                 text=checked.clean_text,
                 citations=citations,
-                study_set_ids=[st.id for st in state.study_sets],
-                block_ids=[b.id for b in state.blocks],
+                study_set_ids=[st.id for st in ctx.study_sets],
+                block_ids=[b.id for b in ctx.proposed_blocks],
                 created_at=self.clock.now(),
             )
             await store.add_message(user.user_id, conv_id, message)

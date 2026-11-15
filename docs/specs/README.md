@@ -23,9 +23,9 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S21 | [Agent tools](S21-agent-tools.md) | B | S01, S03, S20 | In progress (Hari): 6 read tools on mock data; SQL waits for S01/S03 |
 | S22 | [Agent runtime and chat streaming](S22-agent-runtime-and-chat.md) | B | S02, S21 | In progress (Hari): live on Gemini over mock data; DB persistence waits for S01 |
 | S23 | [Citations](S23-citations.md) | B | S21, S22 | In progress (Hari): validation done; DB resolution waits for S01 |
-| S30 | [Frontend shell and auth](S30-frontend-shell-and-auth.md) | C | S00, S02 | Draft |
-| S32 | [Today view and course pages](S32-today-view.md) | C (UI) + B (endpoints) | S30 | Draft |
-| S33 | [Chat and study UI](S33-chat-and-study-ui.md) (chat part) | C | S30 | Draft |
+| S30 | [Frontend shell and auth](S30-frontend-shell-and-auth.md) | C | S00, S02 | In progress (Soumith): mock mode, T01–T09 green |
+| S32 | [Today view and course pages](S32-today-view.md) | C (UI) + B (endpoints) | S30 | In progress (Soumith): UI in mock mode, T04–T09 green; B endpoints pending |
+| S33 | [Chat and study UI](S33-chat-and-study-ui.md) (chat part) | C | S30 | In progress (Soumith): mock mode, green |
 
 ## Stage 2: Depth (hours 10–18) → checkpoint H18
 | ID | Spec | Role | Depends on | Status |
@@ -33,17 +33,17 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S13 | [Browser sessions and live login](S13-browser-sessions.md) | A | S10 | Draft |
 | S14 | [Gradescope connector](S14-gradescope-connector.md) | A | S13 | Draft |
 | S15 | [Echo360 connector](S15-echo360-connector.md) | A | S11, S13 | **Stretch** (moved out of MVP 2026-11-14) |
-| S24 | [Study sets](S24-study-sets.md) | B | S22, S23 | Draft |
+| S24 | [Study sets](S24-study-sets.md) | B | S22, S23 | In progress (Hari): tool + routes done (in-memory); DB waits for S01 |
 | S25 | [Study blocks, approvals and calendar feed](S25-approvals-and-calendar.md) | B | S22 | Draft |
-| S31 | [Onboarding and connect flow](S31-onboarding-and-connect.md) | C | S30, S13 | Draft |
-| S33 | [Chat and study UI](S33-chat-and-study-ui.md) (study cards, approvals) | C | S24, S25 | Draft |
+| S31 | [Onboarding and connect flow](S31-onboarding-and-connect.md) | C | S30, S13 | In progress (Soumith): mock mode, e2e green |
+| S33 | [Chat and study UI](S33-chat-and-study-ui.md) (study cards, approvals) | C | S24, S25 | In progress (Soumith): mock mode, T07–T13 green |
 
 ## Stage 3: Completeness (hours 18–24) → checkpoint H24 (feature freeze)
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
 | S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Done (Neal); Echo360 rule 2 waits for S15 |
-| S26 | [Model picker and model evals](S26-model-picker-and-evals.md) | B | S22 | Draft |
-| S34 | [Settings](S34-settings.md) | C | S30, S26 | Draft |
+| S26 | [Model picker and model evals](S26-model-picker-and-evals.md) | B | S22 | In progress (Hari): evals done; picker minimal |
+| S34 | [Settings](S34-settings.md) | C | S30, S26 | In progress (Soumith): mock mode, T01–T06 green |
 
 ## Stage 4: Stretch (only after H24, in order)
 [S17 Piazza connector](S17-piazza-connector.md) (A, Draft) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.

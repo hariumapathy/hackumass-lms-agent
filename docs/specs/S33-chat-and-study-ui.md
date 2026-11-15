@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Soumith): chat + study cards + approvals + study pages built in mock mode (Claude + Codex); S33-T01–T13 green |
 | **Stage** | 1 (chat + citations), 2 (study cards + approvals) |
 | **Role** | C |
 | **Depends on** | S30; S22/S23 (chat), S24 (study sets), S25 (approvals) |
@@ -72,6 +72,8 @@ Assistant: Midterm 1 is Thu Nov 20, 7 PM ⚠ moved from Nov 18 [Canvas announcem
 | S33-T09 | Approval card: Add/Skip call API once and lock buttons | component |
 | S33-T10 | Stop button aborts the stream | component |
 | S33-T11 | E2E (mocked): ask → stream → open quiz → answer → approve blocks | e2e |
+| S33-T12 | E2E (mocked, 375 px): message box stays above the bottom tabs, empty and after a long chat | e2e |
+| S33-T13 | New chat shows suggested questions that send when tapped (rule 8) | component |
 
 ## Out of scope
 Voice input, editing past messages, sharing study sets.

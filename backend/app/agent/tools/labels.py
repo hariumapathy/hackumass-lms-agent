@@ -41,4 +41,9 @@ def status_label(tool: str, args: BaseModel) -> str:
     if tool == "fetch_latest":
         source = _PLATFORMS.get(a.get("source") or "")
         return f"Checking {source or 'your classes'} for updates…"
+    if tool == "create_study_set":
+        kind = {"plan": "study plan", "quiz": "quiz", "flashcards": "flashcards"}
+        return f"Making your {kind.get(a.get('type') or '', 'study set')}…"
+    if tool == "add_study_block":
+        return "Finding time for study sessions…"
     return "Working on it…"

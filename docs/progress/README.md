@@ -32,6 +32,8 @@ Feature-by-feature status lives in the spec index: [specs/README.md](../specs/RE
 
 ## Merged to main
 _Newest first. One line per merged PR: what it adds and who._
+- PR #13: S24 study sets tool + routes (in-memory), S26 golden-question evals (merge steward integration of dev/hari). (Hari)
+- PR #12: S11 Canvas connector, S12 file processing + embeddings; S10 skips removal for incomplete listings. (Neal)
 - PR #8: S01 schema + RLS, S03 seed semester (`make db-reset`, demo login `demo@example.com` / `demo-password-311` locally), S10 sync framework + Procrastinate queue (`make worker`). (Neal)
 - S21 agent-tool plumbing (no DB yet) + handoff docs. (Hari, final dev/hari PR)
 - PR #5: S20 real Supabase JWT auth, route/repo scans, chat rate limit, private logs. (Hari)
