@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, CalendarCheck, LogOut, MessageSquare, Settings, type LucideIcon } from "lucide-react";
+import { CalendarCheck, Layers, LogOut, MessageSquare, Settings, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import type { CourseSummary } from "@/lib/api/types";
@@ -25,11 +25,12 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: "/today", label: "Today", icon: CalendarCheck },
   { href: "/chat", label: "Chat", icon: MessageSquare },
-  { href: "/study", label: "Study", icon: BookOpen },
+  { href: "/sessions", label: "Sessions", icon: Layers },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
+const isActive = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(`${href}/`) || (href === "/sessions" && pathname.startsWith("/study"));
 
 export function useCourses() {
   return useQuery({ queryKey: ["courses"], queryFn: () => api().courses(), staleTime: 5 * 60_000 });

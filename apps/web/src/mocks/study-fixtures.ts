@@ -7,14 +7,16 @@ export function buildStudyFixtures(now: Date) {
     date: new Date(now.getTime() + (i + 1) * 86400000).toISOString().slice(0, 10), minutes: 45,
     topics: ["Dynamic programming"], tasks: [{ text: `Day ${i + 1}: Practice memoization and trace a recurrence`, chunk_ids: [8812] }],
   }));
+  // S36: the plan + quiz were made in the demo chat; the flashcards' chat was deleted (saved set).
+  const conversation_id = "d0000000-0000-4000-8000-000000000001";
   const studySets: StudySet[] = [
-    { id: "e0000000-0000-4000-8000-000000000001", type: "plan", title: "CS 311 midterm study plan", course_id, created_at, payload: { days } },
-    { id: "e0000000-0000-4000-8000-000000000002", type: "quiz", title: "CS 311 dynamic programming quiz", course_id, created_at, payload: { questions: [
+    { id: "e0000000-0000-4000-8000-000000000001", type: "plan", title: "CS 311 midterm study plan", course_id, conversation_id, created_at, payload: { days } },
+    { id: "e0000000-0000-4000-8000-000000000002", type: "quiz", title: "CS 311 dynamic programming quiz", course_id, conversation_id, created_at, payload: { questions: [
       { type: "mcq", prompt: "What does memoization store?", choices: ["Solutions to subproblems", "Only final answers", "Every possible input", "Sorted edges"], answer_index: 0, explanation: "Caching each subproblem avoids repeated work.", chunk_ids: [8812] },
       { type: "mcq", prompt: "What does memoization trade for time?", choices: ["Accuracy", "Memory", "Input size", "Correctness"], answer_index: 1, explanation: "Stored results use memory to save computation.", chunk_ids: [9930] },
       { type: "short", prompt: "Explain why overlapping subproblems help dynamic programming.", answer_text: "Reuse a stored solution instead of solving the same subproblem again.", explanation: "Repeated subproblems make caching useful.", chunk_ids: [8812] },
     ] } },
-    { id: "e0000000-0000-4000-8000-000000000003", type: "flashcards", title: "CS 311 quick review", course_id, created_at, payload: { cards: [
+    { id: "e0000000-0000-4000-8000-000000000003", type: "flashcards", title: "CS 311 quick review", course_id, conversation_id: null, created_at, payload: { cards: [
       { front: "What is memoization?", back: "Caching solutions to subproblems.", chunk_ids: [8812] },
       { front: "What resource does caching use?", back: "Memory.", chunk_ids: [9930] },
       { front: "What does caching save?", back: "Time spent repeating computation.", chunk_ids: [8812] },

@@ -3,7 +3,7 @@ import { CalendarRange, Layers, ListChecks, type LucideIcon } from "lucide-react
 import type { StudySet, StudySetSummary } from "@/lib/api/types";
 
 export const STUDY_LABELS = { plan: "Study plan", quiz: "Practice quiz", flashcards: "Flashcards" };
-const STUDY_ICONS: Record<keyof typeof STUDY_LABELS, LucideIcon> = {
+export const STUDY_ICONS: Record<keyof typeof STUDY_LABELS, LucideIcon> = {
   plan: CalendarRange,
   quiz: ListChecks,
   flashcards: Layers,

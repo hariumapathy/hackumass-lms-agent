@@ -155,6 +155,9 @@ export function createApiClient() {
     conversations: () => request<ConversationSummary[]>("GET", "/conversations"),
     conversation: (id: string) =>
       request<{ conversation: ConversationSummary; messages: Message[] }>("GET", `/conversations/${encodeURIComponent(id)}`),
+    renameConversation: (id: string, title: string) =>
+      request<ConversationSummary>("PATCH", `/conversations/${encodeURIComponent(id)}`, { body: { title } }),
+    deleteConversation: (id: string) => request<void>("DELETE", `/conversations/${encodeURIComponent(id)}`),
     sync: (body: { platform?: Platform; course_id?: string } = {}) =>
       request<{ sync_run_ids: string[] }>("POST", "/sync", { body }),
     syncStatus: () => request<{ sources: SourceStatus[] }>("GET", "/sync/status"),
