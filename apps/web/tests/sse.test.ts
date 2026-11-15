@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError, configureApi } from "@/lib/api/client";
 import { SseParser, streamChat, toChatEvent } from "@/lib/api/sse";
 import type { ChatEvent } from "@/lib/api/types";
-import { buildFixtures, scriptedChat } from "@/mocks/fixtures";
+import { buildFixtures, scriptedChat, scriptedStudyChat } from "@/mocks/fixtures";
 import { encodeSseEvent, errorResponse, MOCK_API_URL } from "@/mocks/handlers";
 import { createMockServer } from "@/mocks/server";
 
@@ -48,7 +48,7 @@ describe("SSE parser and chat stream", () => {
     configureApi({ getToken: async () => "tok", onUnauthorized: () => {} });
     const events: ChatEvent[] = [];
     await streamChat({ message: "Prep me for the CS 311 midterm" }, { onEvent: (e) => events.push(e) });
-    expect(events).toEqual(scriptedChat("d0000000-0000-4000-8000-0000000000aa", fixtures));
+    expect(events).toEqual(scriptedStudyChat("d0000000-0000-4000-8000-0000000000aa", fixtures));
     expect(events[0].type).toBe("run_started");
     expect(events.at(-1)?.type).toBe("done");
   });

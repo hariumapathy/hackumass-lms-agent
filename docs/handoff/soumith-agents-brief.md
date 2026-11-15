@@ -67,6 +67,7 @@ Specs: [S33](../specs/S33-chat-and-study-ui.md) (study cards + approvals), [S24]
 6. **Mocks:** put new handlers in **`src/mocks/handlers-study.ts`** (export `studyHandlers(f)`), add one line to spread them in `createHandlers`. Cover `GET /study-sets`, `GET /study-sets/{id}` (plan, quiz, flashcards), `POST /study-blocks/decision`, and a scripted chat variant emitting `study_set` + `approval_required` (after the last `text`, before `citations`).
 7. **Tests:** S33-T07, T08, T09 + a runtime test that the two events render cards; e2e S33-T11.
 8. **Known contract gap:** reloaded conversations can't show whether blocks were added or skipped (`Message` has only `block_ids`). Render without the outcome and note it ("P7 pending", see `docs/progress/soumith.md`).
+9. **Phone layout (found in Claude’s QA, 375 px):** the chat composer sits right under the last message, and its `sticky bottom-0` would slide under the fixed bottom tab bar on long chats. In `chat-screen.tsx`: make the chat column fill the screen (`min-h-[calc(100dvh-8rem)]`, messages `flex-1`) and use `bottom-16 md:bottom-0` on the composer.
 
 ### 3.B Cursor: S31 onboarding, then S34 settings
 Specs: [S31](../specs/S31-onboarding-and-connect.md) (**simplified for non-technical students on `main`, read it carefully**), [S34](../specs/S34-settings.md), [S11](../specs/S11-canvas-connector.md) (Canvas connect endpoint), [S13](../specs/S13-browser-sessions.md) (live login endpoints), [S26](../specs/S26-model-picker-and-evals.md) (`/models`), [S25](../specs/S25-approvals-and-calendar.md) (calendar feed).

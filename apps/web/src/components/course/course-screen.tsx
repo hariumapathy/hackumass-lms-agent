@@ -63,7 +63,7 @@ export function CourseView({ course, tz, now }: { course: CourseDetail; tz: stri
         {upcoming.length ? (
           <ul className="flex flex-col gap-2">
             {upcoming.map((i) => (
-              <ItemRow key={i.id} item={i} tz={tz} now={now} />
+              <ItemRow key={i.id} item={i} course={course} tz={tz} now={now} />
             ))}
           </ul>
         ) : (
@@ -76,7 +76,7 @@ export function CourseView({ course, tz, now }: { course: CourseDetail; tz: stri
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Past ({past.length})</h2>
           <ul className="flex flex-col gap-2 opacity-80">
             {past.map((i) => (
-              <ItemRow key={i.id} item={i} tz={tz} now={now} />
+              <ItemRow key={i.id} item={i} course={course} tz={tz} now={now} />
             ))}
           </ul>
         </section>

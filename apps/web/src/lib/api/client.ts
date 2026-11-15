@@ -22,6 +22,9 @@ import type {
   Platform,
   SourceStatus,
   Today,
+  StudySet,
+  StudySetSummary,
+  StudyBlock,
 } from "./types";
 
 export class ApiError extends Error {
@@ -136,6 +139,10 @@ async function request<T>(
 export function createApiClient() {
   return {
     request,
+    studySets: () => request<StudySetSummary[]>("GET", "/study-sets"),
+    studySet: (id: string) => request<StudySet>("GET", `/study-sets/${encodeURIComponent(id)}`),
+    decideBlocks: (block_ids: string[], approve: boolean) =>
+      request<{ blocks: StudyBlock[] }>("POST", "/study-blocks/decision", { body: { block_ids, approve } }),
     me: () => request<Me>("GET", "/me"),
     today: (date?: string) => request<Today>("GET", "/today", { query: { date } }),
     courses: () => request<CourseSummary[]>("GET", "/courses"),
