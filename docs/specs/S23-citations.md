@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): validation, quote check, deep links, resolution from tool data done; DB resolution + `GET /citations` wait for S01 |
 | **Stage** | 1 (validation + resolution); deep links completed in Stage 2 with S15 |
 | **Role** | B |
 | **Depends on** | S21, S22 |
@@ -67,3 +67,10 @@ clean_text: `Memoization trades memory for time [cite:chunk_8812].`, citations: 
 
 ## Out of scope
 Click-time live link checking (optional, stretch), rendering (S33).
+
+## Implementation notes (2026-11-14, Hari)
+- `backend/app/agent/citations.py`: `validate_citations`, `validate_ids`, `build_deep_link`, `to_citation`, `resolve_rows`. Tests: `tests/unit/test_s23_citations.py` (T01, T03, T04, T07, T08 + resolution on mock rows).
+- **Chunk texts for the quote check** come from the run itself: `invoke` (S21) stores each returned chunk's text in `RunCtx.chunk_texts`, so no extra DB read. The `[COURSE · Title · p.N]` header is stripped before matching. Library: **rapidfuzz** (`partial_ratio ≥ 85`, quotes of 6+ words, straight or curly quotes).
+- **Malformed markers** (`[cite:abc]`, `[cite: chunk_1]`, `[CITE:…]`) are **removed**, along with one space before them, so students never see raw markers.
+- **Echo360 deep link:** `source_url` + `?time=<start_s>` (matches the S02 mock). The S15 spike confirms the real format; until then, no timestamp falls back to `source_url`.
+- **Resolution** goes through `ToolData.chunks_by_id` (one student's data), so another student's chunk ID never resolves. Today that's `MockToolData`; the DB version (join chunks → materials/posts → courses, status rules 4) arrives with S01. **Still to do after S01:** T02, T05, T06, T09 (integration) and wiring `GET /citations` to real data.

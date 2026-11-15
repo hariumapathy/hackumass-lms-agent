@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): plumbing done (T01, T03 helpers, T07, T08, T12–T15); DB-backed tools wait for S01/S03 |
+| **Status** | In progress (Hari): all six read tools done against `ToolData` (mock semester); SQL `DbToolData` + seed-based integration tests wait for S01/S03 |
 | **Stage** | 1 (read tools + `fetch_latest`); `create_study_set` in S24, `add_study_block` in S25 |
 | **Role** | B |
 | **Depends on** | S01, S03, S20 (and S10 for `fetch_latest`) |
@@ -111,4 +111,6 @@ Built so far (`backend/app/agent/tools/`, tests in `tests/unit/test_s21_tools.py
 - `results.py`: `ToolResult`, recursive chunk-ID collection, `wrap_untrusted` (escapes any `<untrusted`/`</untrusted` inside the text so a post can't close the wrapper), `wrap_post_text` (announcement → `canvas`, piazza, email), `truncate_result` (~6,000 tokens estimated as 24,000 characters; no tiktoken dependency; shortens long `text` fields, then drops the lowest-ranked results).
 - `timefmt.py`: `local_time` ("Thu Nov 19, 7:00 PM"), `relative_time` ("in 6 days"), `ago`. `labels.py`: plain-language status labels (no "sync").
 
-**Next (needs S01 schema + S03 seed):** the six tool functions' SQL (hybrid search with RRF, misses rows), `fetch_latest` (needs S10's `enqueue_sync`/`wait_for_sync`), and T02, T04–T06, T09–T11.
+**Read tools** (`read.py`, registry `READ_TOOLS` in `tools/__init__.py`): all six tools are implemented against a `ToolData` interface (`data.py`), one student's data. `MockToolData` (`mock_source.py`, keyword search) backs them until S01. Tests on mock data: `tests/unit/test_s21_read_tools.py`. Arg models also treat `null` as "not given" (Gemini sends nulls).
+
+**Next (needs S01 schema + S03 seed):** `DbToolData` (SQL: hybrid search with RRF, misses rows, user scoping), `fetch_latest` via S10's `enqueue_sync`/`wait_for_sync`, and the seed-based integration versions of T02, T04–T06, T09–T11.
