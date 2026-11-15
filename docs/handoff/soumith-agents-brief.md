@@ -69,7 +69,9 @@ Specs: [S33](../specs/S33-chat-and-study-ui.md) (study cards + approvals), [S24]
 8. **Known contract gap:** reloaded conversations can't show whether blocks were added or skipped (`Message` has only `block_ids`). Render without the outcome and note it ("P7 pending", see `docs/progress/soumith.md`).
 9. **Phone layout (found in Claude’s QA, 375 px):** the chat composer sits right under the last message, and its `sticky bottom-0` would slide under the fixed bottom tab bar on long chats. In `chat-screen.tsx`: make the chat column fill the screen (`min-h-[calc(100dvh-8rem)]`, messages `flex-1`) and use `bottom-16 md:bottom-0` on the composer.
 
-### 3.B Cursor: S31 onboarding, then S34 settings
+### 3.B S31 onboarding (DONE: Cursor `b54a81b` + Claude fixes `626bead`) and S34 settings (NOW: **Codex**, after its study pages)
+
+> **Update 20:30 ET:** Cursor was stopped after S31. S31 is merged with all 4 e2e green. **S34 settings is now Codex’s** (point 2 below; tests S34-T01…T06). The S34 mocks are already in `src/mocks/handlers-account.ts` (models with Gemini default, `PATCH /me`, `DELETE /me/data`, calendar rotate, disconnect) and `src/components/ui/dialog.tsx` exists (hand-written, no `cn` package). Reuse `src/components/connect/` (`LiveLogin`, calendar links). The **Canvas-expiry banner** across the app is Claude’s (not in S34’s settings page work).
 Specs: [S31](../specs/S31-onboarding-and-connect.md) (**simplified for non-technical students on `main`, read it carefully**), [S34](../specs/S34-settings.md), [S11](../specs/S11-canvas-connector.md) (Canvas connect endpoint), [S13](../specs/S13-browser-sessions.md) (live login endpoints), [S26](../specs/S26-model-picker-and-evals.md) (`/models`), [S25](../specs/S25-approvals-and-calendar.md) (calendar feed).
 1. **S31 onboarding** (replace `src/app/onboarding/page.tsx`, keep `RequireAuth`; components in `src/components/connect/`):
    - Guided Canvas step: `POST /connections/canvas {token, expires_at?}`, with friendly error messages.
