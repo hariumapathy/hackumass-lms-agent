@@ -14,14 +14,21 @@
 5. The contract: [`backend/app/api/CONTRACT.md`](../../backend/app/api/CONTRACT.md) (SSE) and `apps/web/src/lib/api/schema.d.ts` (REST, generated; **never edit by hand**).
 
 ## 1. Your worktree (already created for you)
-Claude works in the main checkout `hackumass-lms-agent/` on `dev/soumith`. **You work only in the sibling folder `hackumass-lms-agent-codex/` on branch `soumith/codex`** (made from `dev/soumith`, deps installed, pushed to origin). Two worktrees = no stepping on each other mid-edit. **Editing the same files is OK; we merge afterwards.**
+Three folders, side by side:
+| Folder | Branch | Who |
+|---|---|---|
+| `hackumass-lms-agent/` (main checkout) | `dev/soumith` | **Nobody edits here.** Merge target only |
+| `hackumass-lms-agent-claude/` | `soumith/claude` | Claude Code |
+| `hackumass-lms-agent-codex/` | `soumith/codex` | **You (Codex)** |
+
+You work only in `hackumass-lms-agent-codex/` (made from `dev/soumith`, deps installed, pushed to origin). Separate worktrees = no stepping on each other mid-edit. **Editing the same files is OK; we merge afterwards.**
 ```bash
 cd ../hackumass-lms-agent-codex/apps/web
 pnpm test        # should show 30 passing
 ```
 - Commit + `git push` on `soumith/codex` after each verified piece (small commits merge easier).
-- Pull Claude's latest with `git merge origin/dev/soumith` every hour or so; resolve conflicts on your side.
-- Final merge: `soumith/codex` → `dev/soumith`, then `dev/soumith` → `main` at handoff.
+- Pull Claude's latest with `git fetch origin && git merge origin/soumith/claude` every hour or so; resolve conflicts on your side.
+- Final merge: `soumith/claude` and `soumith/codex` → `dev/soumith` (in the main checkout), then `dev/soumith` → `main` at handoff.
 - Ignore the stray `.agents/` folder in the main checkout.
 
 ## 2. What already exists (don't rebuild it)
