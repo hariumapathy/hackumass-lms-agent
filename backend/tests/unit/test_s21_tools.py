@@ -218,7 +218,7 @@ def test_s21_t12_coverage_source_filter_and_never_synced() -> None:
     cov = compute_coverage(connections, NOW, source="canvas")
     assert cov.searched == ["canvas"]
     assert cov.freshness == {"canvas": "never"} and cov.stale == ["canvas"]
-    assert set(cov.not_connected) == {"gradescope", "echo360", "piazza"}
+    assert set(cov.not_connected) == {"gradescope", "piazza"}  # Echo360 isn't offered
 
 
 # --- S21-T13: oversized results truncated --------------------------------------------------------

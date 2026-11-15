@@ -80,7 +80,13 @@ class GeminiEmbeddings:
                 delay *= 2
                 continue
             resp.raise_for_status()
-            data = sorted(resp.json()["data"], key=lambda d: d["index"])
+            data = resp.json()["data"]
+            # Gemini's OpenAI-compatible endpoint omits `index` (results come back in input
+            # order); OpenAI includes it. Sort only when present.
+            if all("index" in d for d in data):
+                data = sorted(data, key=lambda d: d["index"])
+            if len(data) != len(batch):
+                raise RuntimeError(f"embedding count mismatch: {len(data)} for {len(batch)} texts")
             return [_normalize(d["embedding"]) for d in data]
         raise RuntimeError("unreachable")
 
