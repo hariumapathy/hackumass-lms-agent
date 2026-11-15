@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): built + tested on `neal/s16-merge`; awaiting review |
 | **Stage** | 3 (course matching minimal version in Stage 1) |
 | **Role** | A |
 | **Depends on** | S11, S14 |
@@ -65,9 +65,9 @@ flowchart LR
 | Exam only on a calendar event, not an assignment | Still an item (S11), merges normally |
 
 ## Acceptance criteria
-- [ ] Seed data (S03) items with Canvas + Gradescope sources show as one item
-- [ ] No false merges on the curated test cases
-- [ ] Moving a due date on one source produces exactly one canonical change
+- [x] Seed data (S03) items with Canvas + Gradescope sources show as one item (merge on a seeded user is a no-op)
+- [x] No false merges on the curated test cases
+- [x] Moving a due date on one source produces exactly one canonical change
 
 ## Test plan
 | ID | Test | Type |
@@ -84,3 +84,13 @@ flowchart LR
 
 ## Out of scope
 LLM-based deadline extraction from syllabi/emails/announcements (stretch: would create `item_sources` with `platform` of the post); manual merge/split UI.
+
+## Implementation notes (2026-11-14, Neal)
+- Code: `backend/app/sync/merge.py` (`merge_user(conn, user_id, *, clock=None) -> MergeStats`, plus the pure `match_course`, `match_item`, `items_match`, `canonical_fields`, `clean_title`, `normalize_term`). The `merge_user` task in `sync/jobs.py` calls it after each successful sync. Course codes use the shared `app/core/courses.normalize_course_code` (unchanged). Tests: `tests/unit/test_s16_merge_unit.py`, `tests/integration/test_s16_merge_db.py`.
+- **Change rows: one place, S16.** The S10 pipeline no longer writes `changes` rows for `item_sources` (neither field changes nor `status=removed`); it only stores the source (`status='changed'`). `merge_user` compares each item's recomputed canonical fields with the stored item and writes one row per changed `title`/`due_at`/`points` (`entity_type='item'`, `entity_id` = canonical item) and sets `items.status='changed'`; when all sources are removed it writes one `status` → `removed` row. So a Gradescope due date moving under a Canvas due date writes nothing. Posts/materials changes are still written by the pipeline. S10-T03 was updated to run `merge_user` before asserting the row. Side effect: a source change becomes visible as a change only after the merge job (seconds later).
+- **Course matching:** `match_course(course, kept)` works on canonical courses (not single links): every link already has a course because the pipeline creates one per platform course. Courses are visited Canvas-first; a course merges into the single kept course with the same normalized code **and** term (`normalize_term`: "Fall 2026" = "2026 fall" = "FA26"; `null` only equals `null`) and no platform in common. Two same-platform courses (sections) never merge; a third course matching both is ambiguous and stays separate. Merging re-points `course_id` in course_links, items, item_sources, materials, posts, chunks, changes, study_sets, study_blocks, misses, fills null code/term/color on the kept course, and deletes the other. Rule 2 (Echo360 via launching Canvas course) is not implemented (no S15 data yet); Echo360 courses with a code match by rule 1.
+- **Item matching** (same course): units are unattached sources plus items whose course was merged in this run (so items created on both sides before the courses matched still fold together: sources, study_blocks.item_id and changes.entity_id move to the kept item, the other item is deleted). Units go Canvas-first. Titles are cleaned (`HW4` → `homework 4`, `PS3` → `problem set 3`, noise words submit/submission/gradescope/canvas/pdf/upload/online/on/via/here dropped) before `token_set_ratio`. Type families: `exam`, assignment-like, or unknown (`other`/missing: compatible with both); an `assignment`/`other` titled with midterm/exam/prelim (and no homework/review/practice/lab/project/quiz word) counts as an exam, since Gradescope lists exams as assignments. Ambiguity also covers two same-platform records wanting one item (neither merges). Removed sources never match; an unmatched source gets its own item.
+- **Precedence:** first non-null by Canvas > Gradescope > others for title/due_at/points/description; type: exam wins, else the first known non-`other`. Seeded sources without `raw._normalized` fall back to `raw.points` and keep the item's type/description.
+- **No change rows when an item was created or gained sources in this run** (a newly connected platform renaming the item is a merge, not news). A source being **removed** does produce changes if the canonical values move to the remaining source (e.g. Canvas assignment deleted, Gradescope copy remains).
+- Runs in one transaction behind `pg_advisory_xact_lock('merge:<user>')`; a second run writes nothing (`MergeStats` all zero, S16-T09).
+- Known gap (pipeline, not merge): after two courses merge, a later *changed* Gradescope course record updates the canonical course's `name` (pipeline `course()` writes `courses.name` for any platform), overwriting the Canvas name. Fix in the pipeline: only rename the course from Canvas, or when it has no Canvas link.

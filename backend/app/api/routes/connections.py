@@ -9,9 +9,12 @@ from fastapi import APIRouter, Depends, Response
 from app.api import mock_data as mock
 from app.api import schemas as s
 from app.api.deps import UserCtx, current_user
+from app.connectors.browser.manager import LoginManager, get_login_manager
+from app.core.errors import not_found
 
 router = APIRouter(tags=["connections"])
 User = Annotated[UserCtx, Depends(current_user)]
+Logins = Annotated[LoginManager, Depends(get_login_manager)]
 
 
 @router.post("/connections/canvas", response_model=s.Connection)
@@ -27,13 +30,21 @@ async def connect_canvas(body: s.CanvasConnectRequest, user: User) -> s.Connecti
 
 
 @router.post("/connections/{platform}/login", response_model=s.LoginStartResponse)
-async def start_login(platform: s.Platform, user: User) -> s.LoginStartResponse:
-    return s.LoginStartResponse(login_id=uuid4(), mode="local", live_view_url=None)
+async def start_login(platform: s.Platform, user: User, logins: Logins) -> s.LoginStartResponse:
+    session = await logins.start(user.user_id, platform)  # S13; 409 if one is already pending
+    return s.LoginStartResponse(
+        login_id=session.login_id, mode=logins.mode, live_view_url=session.live_view_url
+    )
 
 
 @router.get("/connections/{platform}/login/{login_id}", response_model=s.LoginStatusResponse)
-async def login_status(platform: s.Platform, login_id: UUID, user: User) -> s.LoginStatusResponse:
-    return s.LoginStatusResponse(state="succeeded")
+async def login_status(
+    platform: s.Platform, login_id: UUID, user: User, logins: Logins
+) -> s.LoginStatusResponse:
+    session = logins.get(user.user_id, login_id)
+    if session.platform != platform:
+        raise not_found("Login")
+    return s.LoginStatusResponse(state=session.state, error=session.error)
 
 
 @router.delete("/connections/{platform}", status_code=204)

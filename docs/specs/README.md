@@ -30,8 +30,8 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 ## Stage 2: Depth (hours 10–18) → checkpoint H18
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
-| S13 | [Browser sessions and live login](S13-browser-sessions.md) | A | S10 | Draft |
-| S14 | [Gradescope connector](S14-gradescope-connector.md) | A | S13 | Draft |
+| S13 | [Browser sessions and live login](S13-browser-sessions.md) | A | S10 | Done (Neal): local headed login; live NetID check + disconnect (T06, B) pending |
+| S14 | [Gradescope connector](S14-gradescope-connector.md) | A | S13 | Done (Neal): fixtures green; live account check pending |
 | S15 | [Echo360 connector](S15-echo360-connector.md) | A | S11, S13 | **Stretch** (moved out of MVP 2026-11-14) |
 | S24 | [Study sets](S24-study-sets.md) | B | S22, S23 | In progress (Hari): tool + routes done (in-memory); DB waits for S01 |
 | S25 | [Study blocks, approvals and calendar feed](S25-approvals-and-calendar.md) | B | S22 | Draft |
@@ -41,7 +41,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 ## Stage 3: Completeness (hours 18–24) → checkpoint H24 (feature freeze)
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
-| S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Draft |
+| S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Done (Neal); Echo360 rule 2 waits for S15 |
 | S26 | [Model picker and model evals](S26-model-picker-and-evals.md) | B | S22 | In progress (Hari): evals done; picker minimal |
 | S34 | [Settings](S34-settings.md) | C | S30, S26 | In progress (Soumith): mock mode, T01–T06 green |
 

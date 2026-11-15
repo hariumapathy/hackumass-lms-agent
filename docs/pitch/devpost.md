@@ -47,5 +47,7 @@ Required by the rules: list everything we didn't write, and mention it during ju
 | PyMuPDF, python-pptx, tiktoken | Reading lecture PDFs/slides and splitting them into searchable chunks | AGPL-3.0, MIT, MIT |
 | Google Gemini API (chat + embeddings) | Default AI model | Google API terms |
 | Code from [gradescope-mcp](https://github.com/Yuanpeng-Li/gradescope-mcp), [`gradescopeapi`](https://pypi.org/project/gradescopeapi/), [piazza-mcp](https://github.com/profess/piazza-mcp); reference: [canvas-mcp](https://github.com/vishalsachdev/canvas-mcp) | Connector parsing helpers (vendored, see THIRD_PARTY_NOTICES.md) | MIT |
+| [gradescope-mcp](https://github.com/Yuanpeng-Li/gradescope-mcp) @ `f8a46c8` (Yuanpeng Li): course-list parser + logged-out checks, vendored in `connectors/gradescope/_vendored/`; [`gradescopeapi`](https://github.com/nyuoss/gradescope-api) 1.8.1 (NYU OSS): student assignment-table parser | Gradescope connector (S14), using the student's saved login session, never a password | MIT |
+| Playwright for Python | Live UMass login window, saved browser session (S13) | Apache-2.0 |
 
 Every external library added later must be added here in the same PR.

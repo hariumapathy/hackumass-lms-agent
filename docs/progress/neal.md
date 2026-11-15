@@ -12,10 +12,12 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 - **S10 sync framework** (`a97ab4a`): connector interface, diff, pipeline, Procrastinate queue (`0002_procrastinate.sql`), crypto, `make worker`, S16-lite 1:1 merge.
 
 - **S11 Canvas connector** + **S12 file processing** merged into `dev/neal` (321 tests green). Canvas connect: `app.connectors.canvas.service.connect_canvas(conn, user_id, token)` → `CanvasConnectResult`; raises `InvalidCanvasToken` (`code="invalid_token"` → 400) or `PlatformError` (→ 503).
+- **S16 merge + change detection** merged into `dev/neal` (369 tests green): one item per real deadline across Canvas/Gradescope; only S16 writes item change rows.
+- **S13 live login + S14 Gradescope** merged into `dev/neal` (423 tests green). Manual run: `make api` + `make worker` on the laptop, Connect Gradescope → Chromium window → School Credentials → UMass → Duo.
 - **Merge steward** rules + check script (`docs/handoff/merge-steward.md`, `scripts/merge-steward-check.sh`).
 
 ## In progress
-- Parallel agents in my lane (each on its own branch; I review and merge into `dev/neal`): **S16** merge (`neal/s16-merge`), **S13 + S14** browser login + Gradescope (`neal/s13-s14-gradescope`).
+- Nothing half-built. Live checks need a human: paste a real Canvas token (S11), NetID + Duo Gradescope login (S13/S14).
 
 ## Next
 - S11 Canvas → S12 file processing (tiktoken chunker; the Gemini embedding provider is already in `app/core/embeddings.py`).
@@ -28,6 +30,8 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 -
 
 ## Notes for other agents
+- **Hari:** S13-T06 disconnect is yours: `DELETE /connections/{platform}` should delete the connection (secret cascades) and cancel queued sync runs. S13 wired only the two login route bodies in `connections.py`.
+- Live login runs in the API process (window opens on the machine running `make api`; login state is in memory).
 - **Hari:** `POST /connections/canvas` can call `connect_canvas(...)` above. S20 delete-my-data can call `app.sync.processing.delete_user_files(user_id)` (removes Storage files under `users/{user_id}/`) and drop the T07 xfail.
 - PyMuPDF is AGPL-3.0 (fine: repo is public; in credits).
 - **Hari: heads-up on `api/routes/connections.py`.** S13 (role A) wires ONLY the bodies of `POST /connections/{platform}/login` and `GET /connections/{platform}/login/{login_id}`; schemas unchanged. If you're wiring other routes in that file, expect a small merge there.

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!-- Hand-written fixture: Gradescope's logged-out home page with the email login form. -->
+<html lang="en"><head><meta charset="utf-8"><title>Gradescope</title></head>
+<body>
+<a href="/login">Log In</a>
+<form action="/login" accept-charset="UTF-8" method="post">
+  <input type="hidden" name="authenticity_token" value="fake-authenticity-token">
+  <input type="email" name="session[email]" id="session_email">
+  <input type="password" name="session[password]" id="session_password">
+  <input type="submit" name="commit" value="Log In">
+</form>
+<a href="/saml">School Credentials</a>
+</body></html>

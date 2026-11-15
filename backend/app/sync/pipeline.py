@@ -34,6 +34,11 @@ from app.sync.diff import changed_fields, classify, meaningful_fields, record_ha
 log = logging.getLogger("app.sync")
 
 SOURCE_TABLES = ("course_links", "item_sources", "materials", "posts")
+# S16: once courses are merged, only Canvas (or a course with no Canvas link) renames it.
+_RENAME_GUARD = (
+    "and (%s = 'canvas' or not exists (select 1 from course_links l "
+    "where l.user_id = courses.user_id and l.course_id = courses.id and l.platform = 'canvas'))"
+)
 # (user_id, material_id, source): source = the record's download/text/cues for S12 (not in the DB)
 ProcessMaterial = Callable[[UUID, UUID, dict[str, Any]], Awaitable[None]]
 ProcessPost = Callable[[UUID, UUID], Awaitable[None]]
@@ -148,8 +153,9 @@ class _Store:
             if ex is not None:  # placeholder link created by an earlier child record
                 await self.one(
                     "update courses set name = %s, code = %s, term = %s "
-                    "where user_id = %s and id = %s returning id",
-                    (rec.name, rec.code, rec.term, self.user_id, cid),
+                    "where user_id = %s and id = %s "
+                    f"{_RENAME_GUARD} returning id",
+                    (rec.name, rec.code, rec.term, self.user_id, cid, self.platform),
                 )
             return "new", row["id"]
         self.course_ids[rec.platform_id] = ex["course_id"]
@@ -158,8 +164,9 @@ class _Store:
             await self.touch("course_links", ex["id"], ", content_hash = %s", (h,))
             await self.one(
                 "update courses set name = %s, code = coalesce(%s, code), "
-                "term = coalesce(%s, term) where user_id = %s and id = %s returning id",
-                (rec.name, rec.code, rec.term, self.user_id, ex["course_id"]),
+                "term = coalesce(%s, term) where user_id = %s and id = %s "
+                f"{_RENAME_GUARD} returning id",
+                (rec.name, rec.code, rec.term, self.user_id, ex["course_id"], self.platform),
             )
         else:
             await self.touch("course_links", ex["id"], ", status = 'active'")
@@ -195,7 +202,6 @@ class _Store:
         if outcome == "unchanged":
             await self.touch("item_sources", ex["id"])
             return outcome, ex["id"]
-        old_fields = (ex["raw"] or {}).get("_normalized", {})
         await self.one(
             "update item_sources set raw_title = %s, raw_due_at = %s, raw = %s, source_url = %s, "
             "content_hash = %s, source_updated_at = %s, last_synced_at = %s, status = 'changed' "
@@ -212,9 +218,8 @@ class _Store:
                 ex["id"],
             ),
         )
-        await self.change_rows(
-            "item", ex["item_id"] or ex["id"], cid, old_fields, _jsonable(new_fields)
-        )
+        # No `changes` row here: S16 `merge_user` compares canonical items and writes one row per
+        # canonical field change (a non-canonical source moving must not alert the student).
         return outcome, ex["id"]
 
     async def post(self, rec: NPost) -> tuple[str, UUID]:
@@ -330,7 +335,9 @@ class _Store:
         """Full scope only: rows of this platform not seen in this run -> removed (+ change).
         Courses/tables the connector reported as incompletely listed are left alone."""
         removed = 0
-        entity = {"item_sources": "item", "materials": "material", "posts": "post"}
+        # Removed item sources get no change row here: S16 marks the canonical item removed (and
+        # writes its change) once all of its sources are gone.
+        entity = {"materials": "material", "posts": "post"}
         skip: dict[str, list[UUID]] = {}
         for course_pid, table in incomplete or set():
             cid = await self.course_id(course_pid)
