@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Soumith): S34-T06 expiry banner done app-wide (Claude); settings page S34-T01–T05 with Codex |
+| **Status** | In progress (Soumith): built in mock mode, S34-T01–T06 green (Claude). Acceptance criteria need the real API (S20/S26) |
 | **Stage** | 3 |
 | **Role** | C |
 | **Depends on** | S30, S26 (models), S25 (calendar), S20 (`/me`, `/me/data`) |

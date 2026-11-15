@@ -43,7 +43,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 |---|---|---|---|---|
 | S16 | [Merge and change detection](S16-merge-and-changes.md) | A | S11, S14 | Draft |
 | S26 | [Model picker and model evals](S26-model-picker-and-evals.md) | B | S22 | Draft |
-| S34 | [Settings](S34-settings.md) | C | S30, S26 | In progress (Soumith/Codex): banner done, page in progress |
+| S34 | [Settings](S34-settings.md) | C | S30, S26 | In progress (Soumith): mock mode, T01–T06 green |
 
 ## Stage 4: Stretch (only after H24, in order)
 [S17 Piazza connector](S17-piazza-connector.md) (A, Draft) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.

@@ -1,5 +1,6 @@
-import { Placeholder } from "@/components/states/placeholder";
+import { SettingsScreen } from "@/components/settings/settings-screen";
 
+// Settings (S34).
 export default function SettingsPage() {
-  return <Placeholder title="Settings" />; // S34 (Stage 3)
+  return <SettingsScreen />;
 }
