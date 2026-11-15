@@ -4,7 +4,7 @@
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from procrastinate import PsycopgConnector
@@ -209,18 +209,35 @@ async def test_s10_t05_duplicate_enqueue_returns_same_run(conn, user) -> None:  
 
 
 async def test_s10_t06_agent_job_runs_before_queued_schedule_job(conn, user) -> None:  # noqa: ANN001
+    # Own queue name: a live `make worker` (queues sync/process) never sees these jobs, and we
+    # never touch anyone else's queued jobs.
+    queue = f"test-s10-{uuid4().hex[:8]}"
+
+    async def defer(job: Any, priority: int) -> None:
+        await jobs.sync_platform.configure(queue=queue, priority=priority).defer_async(
+            job=job.model_dump(mode="json")
+        )
+
     jobs.app.replace_connector(PsycopgConnector(conninfo=get_settings().database_url))
     async with jobs.app.open_async():
-        await conn.execute("delete from procrastinate_jobs where queue_name = 'sync'")
-        sched = await jobs.enqueue_sync(conn, user, "canvas", SyncScope(), "schedule")
-        agent = await jobs.enqueue_sync(
-            conn, user, "canvas", SyncScope(kind="course", course_platform_id="12345"), "agent"
-        )
-        job = await jobs.app.job_manager.fetch_job(queues=["sync"], worker_id=None)
-        assert job is not None
-        assert job.task_kwargs["job"]["sync_run_id"] == str(agent)
-        assert sched != agent
-        await conn.execute("delete from procrastinate_jobs where queue_name = 'sync'")
+        try:
+            sched = await jobs.enqueue_sync(
+                conn, user, "canvas", SyncScope(), "schedule", defer=defer
+            )
+            agent = await jobs.enqueue_sync(
+                conn,
+                user,
+                "canvas",
+                SyncScope(kind="course", course_platform_id="12345"),
+                "agent",
+                defer=defer,
+            )
+            job = await jobs.app.job_manager.fetch_job(queues=[queue], worker_id=None)
+            assert job is not None
+            assert job.task_kwargs["job"]["sync_run_id"] == str(agent)
+            assert sched != agent
+        finally:
+            await conn.execute("delete from procrastinate_jobs where queue_name = %s", (queue,))
 
 
 async def test_s10_t07_auth_expired_needs_reconnect_no_retry(conn, user) -> None:  # noqa: ANN001
@@ -304,6 +321,28 @@ async def test_s10_secret_stored_encrypted_and_scheduler_finds_due(conn, user) -
     await repo.mark_run(conn, user, run_id, "succeeded", NOW - timedelta(minutes=5))
     assert (user, "canvas") not in await jobs.due_connections(conn, NOW)
     assert (user, "canvas") in await jobs.due_connections(conn, NOW + timedelta(minutes=30))
+
+
+async def test_S10_unreadable_credential_finishes_run_with_reconnect(conn, user, monkeypatch):  # noqa: ANN001, ANN201
+    from cryptography.fernet import Fernet
+
+    monkeypatch.setenv("ENCRYPTION_KEY", Fernet.generate_key().decode())
+    get_settings.cache_clear()
+    await repo.upsert_connection_secret(
+        conn, user, "canvas", b"old-unreadable-secret", "canvas_token"
+    )
+    run_id = await repo.create_run(conn, user, "canvas", {}, "manual", NOW)
+    job = jobs.SyncJob(
+        user_id=user, platform="canvas", scope=SyncScope(), trigger="manual", sync_run_id=run_id
+    )
+    assert (
+        await jobs.execute_sync(conn, job, final_attempt=True, clock=FixedClock(NOW))
+        == "needs_reconnect"
+    )
+    run = await repo.get_run(conn, user, run_id)
+    connection = await repo.get_connection(conn, user, "canvas")
+    assert run and run.status == "needs_reconnect" and run.finished_at == NOW
+    assert connection and connection.status == "needs_reconnect"
 
 
 class WindowedConnector(FakeConnector):

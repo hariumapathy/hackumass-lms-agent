@@ -133,7 +133,7 @@ function ReconnectView({ platform, pollMs }: { platform: Platform; pollMs?: numb
   const qc = useQueryClient();
   const label = PLATFORM_LABEL[platform];
   const done = () => {
-    void qc.invalidateQueries({ queryKey: ["me"] });
+    for (const key of ["me", "today", "courses", "course", "sync-status"]) void qc.invalidateQueries({ queryKey: [key] });
     router.push("/settings");
   };
 

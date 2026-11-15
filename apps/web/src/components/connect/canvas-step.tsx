@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { api, ApiError } from "@/lib/api/client";
 import type { Connection } from "@/lib/api/types";
 
-export const CANVAS_SETTINGS_URL = "https://umass.instructure.com/profile/settings";
+export const CANVAS_SETTINGS_URL = "https://umamherst.instructure.com/profile/settings";
 
 /** Friendly copy for every error POST /connections/canvas can return (S31 errors table, S02 codes). */
 export function canvasErrorMessage(e: unknown): { message: string; retryable: boolean } {
@@ -167,7 +167,8 @@ function Instruction({ n, children }: { n: number; children: ReactNode }) {
       >
         {n}
       </span>
-      <div className="flex flex-col justify-center gap-2 pt-0.5">{children}</div>
+      {/* Plain block (not flex): a flex column would put every inline word/em/strong on its own line. */}
+      <div className="min-w-0 pt-0.5 leading-relaxed">{children}</div>
     </li>
   );
 }

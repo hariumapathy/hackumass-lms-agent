@@ -28,11 +28,11 @@ export function TodayScreen() {
 
   const markSeen = useMutation({
     mutationFn: (ids: string[]) => api().markChangesSeen(ids),
-    onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ["today"] }), qc.invalidateQueries({ queryKey: ["changes"] })]),
+    onSuccess: () => Promise.all(["today", "changes", "course"].map((key) => qc.invalidateQueries({ queryKey: [key] }))),
   });
   const syncNow = useMutation({
     mutationFn: (platform: Platform) => api().sync({ platform }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["today"] }),
+    onSuccess: () => Promise.all(["today", "sync-status"].map((key) => qc.invalidateQueries({ queryKey: [key] }))),
   });
 
   if (today.isPending) return <Loading label="Loading today…" rows={5} />;

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Neal): database integration and live Canvas dashboard verified; frontend regressions green |
 | **Stage** | 1 (Today on seed data); course page + changes polish in Stage 3 |
 | **Role** | C (UI); B implements `GET /today`, `/courses`, `/items`, `/changes` (deterministic queries, no AI) |
 | **Depends on** | S30, S02 |
@@ -63,3 +63,9 @@ The deterministic dashboard: what's overdue, due today, due this week, upcoming 
 
 ## Out of scope
 Grades, drag-and-drop planning, notifications.
+
+## Demo integration verification (2026-11-14, Neal)
+- User authorized fixing the existing demo specs on main. Database routes now use scoped queries for Today, course summaries/details, items, changes, mark-seen and citations. Empty accounts return empty lists; another student's course returns 404. No schema/API contracts changed.
+- Today uses the profile timezone and injected app clock, including DST, seven-day overdue, 30-day exams, unseen changes from 14 days, and posts from 72 hours. Mark-seen persists and clears item badges.
+- The app polls import status every 3 seconds while running (30 seconds idle), invalidating Today/course/profile caches on completion. Five-minute Today refresh remains. Import status includes pending merges so onboarding waits for canonical deadlines.
+- Regression tests: `tests/integration/test_s32_dashboard_db.py`, `test_s11_connect_route_db.py`, web `tests/s32-sync-refresh.test.tsx`. S32-T10 = completion invalidates cached views; S32-T11 = pending merge stays running and runs before bulk processing. Live Canvas → local DB → Today verified.

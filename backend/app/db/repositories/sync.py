@@ -173,7 +173,33 @@ async def last_success_at(
 async def running_platforms(conn: AsyncConnection[Any], user_id: UUID) -> set[str]:
     cur = await conn.execute(
         "select distinct platform from sync_runs where user_id = %s "
-        "and status in ('queued', 'running')",
-        (user_id,),
+        "and status in ('queued', 'running') "
+        "union select platform from connections where user_id = %s and exists ("
+        "select 1 from procrastinate_jobs where task_name = 'merge_user' "
+        "and status in ('todo', 'doing') and args->>'user_id' = %s)",
+        (user_id, user_id, str(user_id)),
     )
     return {r["platform"] for r in await cur.fetchall()}
+
+
+async def disconnect(
+    conn: AsyncConnection[Any], user_id: UUID, platform: str, now: datetime
+) -> None:
+    """S13-T06: forget credentials, stop queued syncs, retain already imported classes."""
+    async with conn.transaction():
+        await conn.execute(
+            "select procrastinate_cancel_job_v1(id, false, false) from procrastinate_jobs "
+            "where task_name = 'sync_platform' and status = 'todo' "
+            "and args->'job'->>'user_id' = %s and args->'job'->>'platform' = %s",
+            (str(user_id), platform),
+        )
+        await conn.execute(
+            "update sync_runs set status = 'failed', finished_at = %s, "
+            "error = 'Account disconnected.' where user_id = %s and platform = %s "
+            "and status = 'queued'",
+            (now, user_id, platform),
+        )
+        # The secret cascades from this row. Scheduler only considers active connections.
+        await conn.execute(
+            "delete from connections where user_id = %s and platform = %s", (user_id, platform)
+        )

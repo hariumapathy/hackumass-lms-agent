@@ -48,11 +48,16 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 |---|---|
 | Repo, scaffolding, CI (S00) | ✅ |
 | API + streaming contract with mock data (S02) | ✅ |
-| Real sign-in checks on every API call: Supabase tokens, chat rate limit, private logs (S20) | ✅ (profile storage waits for the DB schema) |
-| Database with per-student privacy rules (S01) | ✅ on `dev/neal` (PR #8) |
-| Backup demo semester: 4 UMass courses, deadlines, announcements, slides, lecture transcripts, a moved midterm (S03) | ✅ on `dev/neal` (PR #8), loads in ~1 s |
-| AI agent on Gemini: answers deadline + material questions with tools, streams progress (S21, S22) | ✅ on the mock semester (real data after S01/S03) |
+| Real sign-in checks on every API call: Supabase tokens, chat rate limit, private logs (S20) | ✅ including stored profiles |
+| Database with per-student privacy rules (S01) | ✅ on main (PR #8) |
+| Backup demo semester: 4 UMass courses, deadlines, announcements, slides, lecture transcripts, a moved midterm (S03) | ✅ on main (PR #8), loads in ~1 s |
+| AI agent on Gemini: answers deadline + material questions with tools, streams progress (S21, S22) | ✅ on the seeded semester in the DB (and the mock); real Canvas data verified on Neal's laptop |
 | Verified citations: made-up or unreturned sources are dropped, quotes checked (S23) | ✅ |
 | Flashcards / quizzes / study plans where every item cites a real source (S24) | ✅ backend (UI cards: S33) |
-| Agent evals: 15 golden student questions incl. a prompt-injection test (S26) | ✅ runner; first run 4/4 before credits ran out |
+| Agent evals: 15 golden student questions incl. a prompt-injection test (S26) | ✅ **13/14 pass on the seed (93%)**, ~9 s per answer, ~half a cent per question |
+| Student app on phone + laptop: sign-in, Today view (deadlines, "moved" alerts, source links), course pages, chat with streaming progress and clickable citations, study plan / quiz / flashcards, Add/Skip study sessions, guided onboarding, Settings incl. Delete my data (S30–S34) | ✅ complete on the demo semester; screens show live data as each backend endpoint is wired (chat + study sets already live) |
+| Demo mode with no backend at all ("Continue with demo data"): the backup demo always works | ✅ |
+| Live Canvas connection → worker → database → Today/course pages; disconnect and automatic view refresh | ✅ verified on Neal's laptop with eight real courses; correct UMass host; production navigation |
+| Real material citations | ✅ Gemini answer with a real syllabus page and announcement citation verified |
+| Calendar subscription and saved study-session approvals (S25) | ⬜ still stubs; skip in live-data demo |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

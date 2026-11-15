@@ -1,5 +1,7 @@
 # Soumith's frontend lane: brief for three parallel agents (Claude Code, Codex, Cursor)
 
+> **CLOSED (2026-11-14 ~20:05 ET):** Codex and Cursor hit their limits; all their work is merged and on `main`. Kept for history only. **Current frontend docs: [`apps/web/README.md`](../../apps/web/README.md); status + needs: [`progress/soumith.md`](../progress/soumith.md).**
+
 **Updated:** 2026-11-14 ~19:40 ET (≈ H23). Written by Claude Code (Opus 5.5) on Soumith's laptop.
 **Base for everyone:** `dev/soumith` (includes Stage 1 frontend `653d134` and e2e fixes `e266eb5`).
 Final Devpost submission **Sun 09:00 ET**, our code freeze **08:00**, live demo 12:30.
@@ -71,7 +73,7 @@ Specs: [S33](../specs/S33-chat-and-study-ui.md) (study cards + approvals), [S24]
 
 ### 3.B S31 onboarding (DONE: Cursor `b54a81b` + Claude fixes `626bead`) and S34 settings (NOW: **Codex**, after its study pages)
 
-> **Update 20:30 ET:** Cursor was stopped after S31. S31 is merged with all 4 e2e green. **S34 settings is now Codex’s** (point 2 below; tests S34-T01…T06). The S34 mocks are already in `src/mocks/handlers-account.ts` (models with Gemini default, `PATCH /me`, `DELETE /me/data`, calendar rotate, disconnect) and `src/components/ui/dialog.tsx` exists (hand-written, no `cn` package). Reuse `src/components/connect/` (`LiveLogin`, calendar links). The **Canvas-expiry banner** across the app is Claude’s (not in S34’s settings page work).
+> **Update (~19:50 ET):** Cursor was stopped after S31. S31 is merged with all 4 e2e green. **S34 settings is now Codex’s** (point 2 below; tests S34-T01…T06). The S34 mocks are already in `src/mocks/handlers-account.ts` (models with Gemini default, `PATCH /me`, `DELETE /me/data`, calendar rotate, disconnect) and `src/components/ui/dialog.tsx` exists (hand-written, no `cn` package). Reuse `src/components/connect/` (`LiveLogin`, calendar links). The **Canvas-expiry banner** across the app is Claude’s (not in S34’s settings page work).
 Specs: [S31](../specs/S31-onboarding-and-connect.md) (**simplified for non-technical students on `main`, read it carefully**), [S34](../specs/S34-settings.md), [S11](../specs/S11-canvas-connector.md) (Canvas connect endpoint), [S13](../specs/S13-browser-sessions.md) (live login endpoints), [S26](../specs/S26-model-picker-and-evals.md) (`/models`), [S25](../specs/S25-approvals-and-calendar.md) (calendar feed).
 1. **S31 onboarding** (replace `src/app/onboarding/page.tsx`, keep `RequireAuth`; components in `src/components/connect/`):
    - Guided Canvas step: `POST /connections/canvas {token, expires_at?}`, with friendly error messages.

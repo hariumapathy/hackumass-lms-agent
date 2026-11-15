@@ -25,13 +25,17 @@ Feature-by-feature status lives in the spec index: [specs/README.md](../specs/RE
 | Checkpoint | Goal | Status |
 |---|---|---|
 | H2 | Contracts agreed; repo + Supabase set up | Partial: repo, hosted Supabase, S02 done; S01/S03 pending |
-| H10 | A question about real Canvas data answered end to end in the UI | Not started |
+| H10 | A question about real Canvas data answered end to end in the UI | Verified locally 2026-11-14 (Neal): eight live courses, Today, Gemini + real citations |
 | H18 | Study mode with verified citations from real data; Gradescope connected | Not started |
 | H24 | MVP feature freeze; full demo run-through | Not started |
 | H30 | Code freeze; bug fixes only | Not started |
 
 ## Merged to main
 _Newest first. One line per merged PR: what it adds and who._
+- PR #18: agent on the real DB (`DATA_SOURCE=db`), S20 `/me` DB routes, Canvas connect route (S11-T12), real `/sync` + `/sync/status`, eval 13/14 (merge steward integration of dev/hari, PR #16). (Hari)
+- PR #17: devlog for lane A merges (S11-S14, S16) and merge steward. (Neal)
+- PR #15: S16 cross-platform merge + change detection, S13 local live login, S14 Gradescope connector. (Neal)
+- PR #14: S30-S34 frontend (mock mode): shell + auth, onboarding/connect, Today + course pages, chat + study UI, Settings (merge steward integration of dev/soumith). (Soumith)
 - PR #13: S24 study sets tool + routes (in-memory), S26 golden-question evals (merge steward integration of dev/hari). (Hari)
 - PR #12: S11 Canvas connector, S12 file processing + embeddings; S10 skips removal for incomplete listings. (Neal)
 - PR #8: S01 schema + RLS, S03 seed semester (`make db-reset`, demo login `demo@example.com` / `demo-password-311` locally), S10 sync framework + Procrastinate queue (`make worker`). (Neal)

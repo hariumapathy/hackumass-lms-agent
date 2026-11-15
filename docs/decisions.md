@@ -34,6 +34,7 @@
 | 2026-11-14 | **S20 auth:** verify Supabase tokens by their `alg`: ES256 via the project JWKS (cached 10 min), HS256 via `SUPABASE_JWT_SECRET` if set (PyJWT). `/me` routes keep S02 mock data until S01's `profiles` table exists | Hosted project signs with ES256; frontend never sees 503s before the schema lands |
 | 2026-11-14 | **Default model `gemini-3.5-flash`** (2.5 closed to new keys; 3.8 overloaded on free tier). Gemini stream fix wraps the client (tool-call indexes). `CHAT_MODE=auto\|agent\|scripted`; scripted is the demo backup | Verified live; parallel tool calls work |
 | 2026-11-14 | Agent tools read through a `ToolData` interface; `MockToolData` (S02 mock semester) until S01/S03, then `DbToolData`. Chat history in an in-memory store until S01 | Real agent works end to end before the DB exists; no route changes later |
+| 2026-11-14 | `DATA_SOURCE=mock\|db` switches the agent's tool data + chat history between the S02 mock semester (in-memory) and the S01 DB (`DbToolData`, `DbChatStore`); account routes follow it | One switch for demo backup vs real data; mock stays the default until the hosted DB is migrated + seeded |
 | 2026-11-14 | Agent tools read only our database; only the sync worker touches platforms and credentials | Security (prompt injection can't act on the LMS), speed, model-agnostic |
 | 2026-11-14 | ~9 tools organized by action, not per platform | Sync already merged platforms; fewer tools = better tool choice, esp. smaller models |
 | 2026-11-14 | One MCP server over our combined data (stretch), not one per platform | Lets students use their data in Claude/ChatGPT without reintroducing live pulling |
@@ -42,3 +43,5 @@
 
 | 2026-11-14 | **Merge steward:** one Claude session merges each `dev/*` branch into `main` every 15 min when CI + local checks are green, resolving conflicts on a `merge/<name>` branch (never pushes to `dev/*`); rules in [handoff/merge-steward.md](handoff/merge-steward.md) | Three people + many agents push constantly; one owner for integration avoids drift and stale `main` |
 _Still in planning — stack, roles and final MVP scope not yet locked. See [06-open-questions.md](06-open-questions.md)._
+
+| 2026-11-14 | Demo fixes authorized on main: use official UMass Canvas host `umamherst.instructure.com`; DB dashboard and disconnect; priority merge before bulk file processing; production demo UI; email sign-in with Google opt-in only when configured | Live token check exposed wrong host, mock dashboard, stale caches and merge starvation; no schema or API shape changes |
