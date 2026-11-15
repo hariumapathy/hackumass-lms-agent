@@ -21,6 +21,15 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 19:25 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
+**Hour:** ~H23 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
+**Start check:** main = c9acce2 (fast-forwarded into dev/neal); `make test` green (60 pass, 2 skip pending S01). Local Supabase started (Docker).
+**Done:** **S01 schema**: `0001_init.sql` (enums, 19 tables, indexes incl. HNSW + GIN, RLS select-own for `authenticated`, no client writes, `connection_secrets` locked). Row models for every table (`TABLE_MODELS`). S01-T01–T08 + model/column check pass; S20-T05/T07 un-skipped and pass (made their emails unique so they re-run).
+**Done (cont.):** **S03 seed** (`43824e4`): fixtures in `supabase/seed/`, `uv run app seed`, `make db-reset` = migrate + seed (0.5 s, fake embeddings). Local login `demo@example.com` / `demo-password-311`; IDs match `mock_data.py`. Also `core/embeddings.py` (fake + Gemini) and `core/hashing.py` (S10-T01). PR #8 (S01 + S03) open for B/C review. Merged main (Hari's S21) into dev/neal: 166 pass, 1 xfail; ruff/pyright/eslint/tsc/vitest green.
+**Process notes (honest):** S01/S03 were still `Draft` (built on the handoff's instruction; review now in PR #8). S03 tests were written alongside the loader, not strictly failing-first.
+**Decisions / design changes:** none (clarifications in S01/S03 implementation notes).
+**Roadblocks:** none. Hosted Supabase secret key is in git-ignored `.env.hosted`; hosted `DATABASE_URL` + `GEMINI_API_KEY` still needed to seed the hosted demo with real embeddings.
+**Next steps (in order):** 1. S10 sync framework. 2. S11 Canvas. 3. S12 processing (tiktoken chunker). 4. Merge PR #8 once B/C OK (or at handoff if green).
 ## 2026-11-14 19:20 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF (Hari pauses; Neal starts)
 **Hour:** ~H23 (Devpost draft due **23:59 tonight**; final submission Sun 09:00, freeze 08:00; judging 12:30)
 **Start check:** main = fb07fb2; `make setup` ok; `make test` green (27 backend + 1 web).
