@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Ready (Neal; user explicitly requested specification and implementation, 2026-11-14) |
 | **Stage** | 4 (stretch; first stretch item for role A) |
 | **Role** | A |
 | **Depends on** | S10, S13 |
