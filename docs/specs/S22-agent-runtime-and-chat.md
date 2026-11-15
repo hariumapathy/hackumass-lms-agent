@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): runtime + streaming live on Gemini over mock data; DB persistence (T09 integration) + profile model/timezone wait for S01 |
 | **Stage** | 1 |
 | **Role** | B |
 | **Depends on** | S02, S21 (S23 for citation post-processing) |
@@ -117,3 +117,15 @@ Rules:
 
 ## Out of scope
 Multi-agent handoffs, voice, memory beyond the conversation, MCP server (stretch).
+
+## Implementation notes (2026-11-14, Hari)
+- **Harness:** OpenAI Agents SDK `openai-agents` 0.24 (model-agnostic: Gemini/OpenAI/Ollama via Chat Completions, others via LiteLLM). Code: `app/agent/runtime.py` (`ChatRuntime.run`, `map_stream_event`, `history_window`, `model_for`, `to_function_tool`), `app/agent/prompts/system.md`, `app/agent/store.py`, `app/agent/gemini.py`.
+- **ScriptedModel:** the SDK ships one (`agents.testing.ScriptedModel`); we use it instead of writing our own. Tests: `tests/runtime/test_s22_runtime.py` (T01–T11; T09 runs against the in-memory store), `tests/unit/test_s22_gemini.py`.
+- **Default model:** `gemini-3.5-flash` (`GEMINI_MODEL`), checked live. `gemini-2.5-flash` returns 404 for new keys; `gemini-3.8-flash` was overloaded on the free tier (503 / timeout); `gemini-3.5-flash-lite` is fast but skipped citations.
+- **Gemini stream fix** (`app/agent/gemini.py`): Gemini's OpenAI-compatible stream sends tool calls with `index: null`, so the SDK merged parallel calls into one (`{...}{...}`) and the next turn failed with 400. `GeminiClient` wraps `AsyncOpenAI` and reassigns indexes by call id. With it, parallel tool calls work (3/3 live runs).
+- **Chat mode** (`CHAT_MODE`): `auto` (default) = real agent when a model key is set, else the scripted S02 stream; `scripted` = always the scripted stream (**demo backup**); `agent` = always the agent. Tests clear model keys, so they never call a real LLM.
+- **Tool data:** tools read through `ToolData` (`app/agent/tools/data.py`). Until S01/S03 the runtime uses `MockToolData`, built from the S02 mock semester (same courses/IDs) plus a few hand-written slide/transcript chunks, so the agent answers for real before the DB exists. After S01: a `DbToolData` with the same methods, scoped to the user.
+- **Persistence:** `MemoryChatStore` (per process) until S01's `conversations`/`messages`/`agent_runs`; `GET /conversations[/{id}]` read it in agent mode. Run logs hold tool names, durations, ok flags and dropped citation IDs, never content.
+- **Special tool outputs** (for S24/S25): `create_study_set` returns `{"study_set": StudySet}`; `add_study_block` returns `{"blocks": [StudyBlock], "summary": str}`. The runtime emits `study_set` / one `approval_required` after the answer.
+- **Profile:** timezone fixed to America/New_York and model = default until S01's `profiles` exists.
+- Errors: `model_error` (provider), `max_turns`, `timeout` (90 s), all `retryable`. Messages are plain language; provider details only go to logs (exception type only).

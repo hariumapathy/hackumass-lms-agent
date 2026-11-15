@@ -38,6 +38,25 @@ def collect_chunk_ids(result: ToolResult) -> set[int]:
     return found
 
 
+def collect_chunk_texts(result: ToolResult) -> dict[int, str]:
+    """chunk_id -> text for every result row (or nested row) that carries both."""
+    found: dict[int, str] = {}
+
+    def walk(value: Any) -> None:
+        if isinstance(value, dict):
+            cid, text = value.get("chunk_id"), value.get("text")
+            if isinstance(cid, int) and isinstance(text, str):
+                found[cid] = text
+            for inner in value.values():
+                walk(inner)
+        elif isinstance(value, list):
+            for inner in value:
+                walk(inner)
+
+    walk(result.results)
+    return found
+
+
 def wrap_untrusted(text: str, source: str) -> str:
     """Mark synced third-party text as data. The text can't close the wrapper early."""
     safe = text.replace("</untrusted", "&lt;/untrusted").replace("<untrusted", "&lt;untrusted")

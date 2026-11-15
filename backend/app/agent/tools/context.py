@@ -16,5 +16,7 @@ class RunCtx:
     timezone: str
     clock: Clock
     conn: Any = None  # psycopg AsyncConnection; None in pure unit tests
+    data: Any = None  # ToolData scoped to this student (tools/data.py)
     allowed_chunk_ids: set[int] = field(default_factory=set)
+    chunk_texts: dict[int, str] = field(default_factory=dict)  # for the S23 quote check
     status_emitter: StatusEmitter | None = None

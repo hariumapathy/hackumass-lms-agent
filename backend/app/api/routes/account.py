@@ -9,6 +9,7 @@ from app.api import mock_data as mock
 from app.api import schemas as s
 from app.api.deps import UserCtx, current_user
 from app.core.errors import AppError
+from app.core.settings import get_settings
 
 router = APIRouter(tags=["account"])
 User = Annotated[UserCtx, Depends(current_user)]
@@ -20,7 +21,7 @@ async def get_me(user: User) -> s.Me:
         user_id=user.user_id,
         display_name="Demo Student",
         timezone=mock.TZ,
-        model_choice="openai/gpt-default",
+        model_choice="gemini/gemini-default",
         connections=mock.connections(),
     )
 
@@ -52,27 +53,29 @@ async def list_models(user: User) -> s.ModelsResponse:
 
 
 def _models() -> s.ModelsResponse:
+    """Minimal S26 picker: Gemini is the default (decisions.md); availability = key configured."""
+    settings = get_settings()
     return s.ModelsResponse(
-        default="openai/gpt-default",
+        default="gemini/gemini-default",
         models=[
             s.ModelOption(
+                id="gemini/gemini-default",
+                label="Gemini (recommended)",
+                provider="google",
+                tier="recommended",
+                available=bool(settings.gemini_api_key),
+            ),
+            s.ModelOption(
                 id="openai/gpt-default",
-                label="GPT (default)",
+                label="GPT",
                 provider="openai",
                 tier="recommended",
-                available=True,
+                available=bool(settings.openai_api_key),
             ),
             s.ModelOption(
                 id="anthropic/claude-default",
                 label="Claude",
                 provider="anthropic",
-                tier="recommended",
-                available=False,
-            ),
-            s.ModelOption(
-                id="gemini/gemini-default",
-                label="Gemini",
-                provider="google",
                 tier="recommended",
                 available=False,
             ),
