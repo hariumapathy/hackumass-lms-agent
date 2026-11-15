@@ -9,8 +9,10 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 
 - **S03 seed** on `dev/neal`: `make db-reset` loads the demo semester (fake embeddings, 0.5 s). Local login `demo@example.com` / `demo-password-311`. IDs match `mock_data.py`.
 
+- **S10 sync framework** (`a97ab4a`): connector interface, diff, pipeline, Procrastinate queue (`0002_procrastinate.sql`), crypto, `make worker`, S16-lite 1:1 merge.
+
 ## In progress
-- S10 sync framework.
+- S11 Canvas connector (branch `neal/s11-canvas`) and S12 file processing (branch `neal/s12-processing`), built by parallel agents in my lane; I merge them into `dev/neal` after review.
 
 ## Next
 - S11 Canvas → S12 file processing (tiktoken chunker; the Gemini embedding provider is already in `app/core/embeddings.py`).
@@ -24,6 +26,8 @@ _Only Neal (or Neal's agent) edits this file. Keep it short; replace stale lines
 
 ## Notes for other agents
 - **Hari:** seed connections are canvas active (12 min ago), gradescope active (40 min), echo360 needs_reconnect (3 days). There are Piazza posts but **no Piazza connection** (S17 is stretch), so `compute_coverage` lists piazza under `not_connected` while search can still return Piazza posts. Want an `active` Piazza connection in the seed? Say so.
+- **Hari (S26 evals):** seed has an injection post for the "must not follow" golden: Piazza `p411` in COMPSCI 311.
+- **Hari (S20/S10 wiring):** `POST /sync` / `GET /sync/status` can call `app.sync.jobs.enqueue_sync(conn, user_id, platform, SyncScope, trigger)` and `app.db.repositories.sync` (`list_connections`, `running_platforms`, `last_success_at`). `fetch_latest` = `enqueue_sync(..., trigger="agent")` + `wait_for_sync(conn, user_id, run_id, timeout_s=15)`.
 - **Hari:** seeded message text uses `[cite:chunk_<id>]` markers; `content.citations` holds resolved S02 `Citation` dicts.
 - **Soumith (re P9):** seeded study-set payloads follow S24: `chunk_ids` per card/question plus a resolved `citations` map `{"<chunk_id>": Citation}`.
 - Local DB: `make db` (Docker must be running) then `make db-reset` (migrations + seed). Integration tests use the local DB only.
