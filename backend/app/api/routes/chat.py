@@ -15,7 +15,7 @@ from fastapi.responses import StreamingResponse
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, chat_rate_limit, current_user
 from app.api.sse import sse_event
 from app.core.errors import not_found
 
@@ -74,6 +74,7 @@ async def _stream(conversation_id: UUID, delay_s: float) -> AsyncIterator[str]:
 @router.post(
     "/chat",
     response_class=StreamingResponse,
+    dependencies=[Depends(chat_rate_limit)],
     responses={
         200: {
             "content": {"text/event-stream": {}},

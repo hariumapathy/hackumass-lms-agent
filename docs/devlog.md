@@ -21,6 +21,14 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 18:57 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
+**Hour:** ~H22.5 (Devpost draft due 23:59 tonight, ~5 h; final submission Sun 09:00, freeze 08:00)
+**Start check:** main = fb07fb2 (merged into dev/hari, fast-forward); no commits from Neal/Soumith yet; `make setup` ok; `make test` green (27 backend + 1 web).
+**Done:** **S20 auth** (PR into main, see below): JWKS ES256 + HS256 verification, route/repository scans, error envelope, `PATCH /me` validation, chat rate limit, private JSON request logs, psycopg pool + `profiles` repository. 60 backend tests pass; T05/T07 skip "pending S01". Credits/notices updated (PyJWT, psycopg).
+**Decisions / design changes:** `/me` routes stay on mock data (with the real user_id) until S01; tokens accepted by `alg` (JWKS or HS256). Line in decisions.md.
+**Roadblocks:** none. Gotcha found: psycopg async needs a selector loop on Windows (see S20 notes).
+**In progress:** S21 parts that don't need S01.
+
 ## 2026-11-14 18:52 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
 **Hour:** ~H22.4 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
 **Start check:** main = 478380a; no new commits from Neal/Soumith yet; `make test` + `make lint` green; usage window reset.
