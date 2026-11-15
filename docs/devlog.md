@@ -40,6 +40,8 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 - Claude (21:10): **Codex stopped too, so Claude built S34 Settings**: accounts (status, Refresh, Reconnect, Disconnect with confirm), profile (name, time zone), calendar (Google/Apple/Outlook buttons, masked link, copy, new link with confirm), privacy (Delete my data, type DELETE), Advanced → AI choice grouped Recommended/Experimental (Gemini default). S34-T01–T05 + banner T06; 69 unit + 5 e2e green, lint/typecheck/build clean. **All role-C MVP screens now exist in mock mode.**
 
+- Claude (21:35): **Codex hit its usage limit; Claude finished its lane.** Codex had completed study cards, approvals and study pages (S33-T07–T11). Done now: phone chat layout (message box at the bottom, stays above the tab bar; e2e S33-T12) and a bug where a new chat showed no suggested questions (disabled query counted as loading; S33-T13). Codex's uncommitted duplicate Settings in its worktree is superseded by `46b03e6`. Spec index statuses for S30/S32/S33 corrected. PR `soumith/claude` → `dev/soumith`.
+
 **Decisions / design changes (Soumith OK'd):**
 - Frontend REST types are re-exports of generated `schema.d.ts`; only SSE event types are hand-written (from CONTRACT.md).
 - Node-20 pins kept: MSW 2.15 (not 3), supabase-js 2.109, `clsx` + `tailwind-merge` instead of shadcn's Node-22 `cn` package.

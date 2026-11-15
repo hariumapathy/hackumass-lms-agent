@@ -169,4 +169,13 @@ describe("S33 chat UI", () => {
     expect(signal?.aborted).toBe(true);
     expect(screen.getByRole("textbox", { name: /message/i })).toBeEnabled();
   });
+
+  it("S33-T13 a new chat starts with suggested questions (rule 8) that send when tapped", async () => {
+    mockMatchMedia(true);
+    renderWithProviders(<ChatScreen />);
+    const suggestion = await screen.findByRole("button", { name: "What's due this week?" });
+    expect(screen.getByRole("button", { name: /prep me for my next exam/i })).toBeInTheDocument();
+    await userEvent.click(suggestion);
+    expect(await screen.findByText(/rewatch the nov 11 lecture|midterm 1/i)).toBeInTheDocument();
+  });
 });

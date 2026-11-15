@@ -121,7 +121,8 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
   const empty = saved.length === 0 && turns.length === 0;
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-5xl gap-6">
+    // Fill the screen minus the app shell padding (phone: pt-6 + pb-24; desktop: py-8) so the composer sits at the bottom.
+    <div className="mx-auto flex min-h-[calc(100dvh-7.5rem)] w-full max-w-5xl gap-6 md:min-h-[calc(100dvh-4rem)]">
       {isDesktop && <ConversationList activeId={conversationId} />}
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Chat</h1>
@@ -148,7 +149,7 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
           {turns.map((t) => (
             <TurnView key={t.key} turn={t} onRetry={() => retry(t)} />
           ))}
-          {empty && !history.isPending && (
+          {empty && !(initialId && history.isPending) && (
             <div className="flex flex-col items-start gap-3 py-8">
               <p className="text-muted-foreground">Ask anything about your courses. Answers cite your own course materials.</p>
               <div className="flex flex-wrap gap-2">
@@ -163,7 +164,8 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
           <div ref={endRef} />
         </div>
 
-        <form onSubmit={onSubmit} className="sticky bottom-0 flex items-end gap-2 bg-background pb-2">
+        {/* Phone: stick above the fixed bottom tab bar (4rem); desktop: to the bottom edge. */}
+        <form onSubmit={onSubmit} className="sticky bottom-16 flex items-end gap-2 bg-background py-2 md:bottom-0">
           <Textarea
             aria-label="Message"
             placeholder="Ask about deadlines, lectures, or exam prep…"
