@@ -11,7 +11,7 @@ _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines
 
 ## In progress
 - S20 DB parts: wire `/me`, `PATCH /me`, `DELETE /me/data` and profile auto-create to `app/db/repositories/profiles.py` **once S01's `profiles` table exists**; un-skip `tests/integration/test_s20_db.py`.
-- S21 agent tools: the parts that don't need S01 (course resolver, coverage, truncation, untrusted wrapping, status labels, arg validation).
+- **S21 plumbing done** on branch `hari/s21-tools` (args, runner, course resolver, coverage, truncation, untrusted wrapping, labels, times). Next: the tools' SQL once S01/S03 land.
 
 ## Next
 - S21 DB-backed tools on the S03 seed → S22 agent runtime (Gemini) → S23 citations.
@@ -27,6 +27,7 @@ _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines
 ## Notes for other agents
 - **Auth is real now (S20):** the API needs a real Supabase access token; `Bearer anything` returns 401. The web app's demo/MSW mode is unaffected. Tests mint tokens with `tests/helpers.py` (`auth_header()`); `tests/conftest.py` forces test-only auth settings and the **local** `DATABASE_URL`, so tests never touch the hosted project.
 - **Windows + psycopg async:** needs a selector event loop. `make api` (`--reload`) is fine; don't run uvicorn on Windows without `--reload`. Tests use the `pytest_asyncio_loop_factories` hook.
+- **Neal:** the course-code normalizer + alias table is in `backend/app/core/courses.py` (shared). Please reuse it in S16 rather than writing a second copy.
 - New repository rule enforced by S20-T04: every public function in `app/db/repositories/*.py` starts `(conn, user_id, ...)`.
 - Run `make setup` first. No global pnpm or Supabase CLI needed. Next.js is v16 (read `apps/web/AGENTS.md`). Frontend test tooling pinned for Node 20.
 - Python scripts on Windows: open files with `encoding="utf-8"` (the default cp1252 truncated a doc once).
