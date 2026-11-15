@@ -39,7 +39,7 @@ export function CourseView({ course, tz, now }: { course: CourseDetail; tz: stri
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <span className="size-3 rounded-full" style={{ backgroundColor: course.color ?? "currentColor" }} aria-hidden />
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-semibold tracking-tight">
             {course.code} <span className="font-normal text-muted-foreground">· {course.name}</span>
           </h1>
         </div>

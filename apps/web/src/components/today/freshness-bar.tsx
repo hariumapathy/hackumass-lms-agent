@@ -16,12 +16,19 @@ export function FreshnessBar({
   onSyncNow: (platform: Platform) => void;
 }) {
   return (
-    <section aria-label="Sources" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+    <section aria-label="Sources" className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       {sources.filter((s) => isConnectable(s.platform)).map((s) => {
         const label = PLATFORM_LABEL[s.platform];
         const reconnect = s.connection_status === "needs_reconnect";
         return (
-          <span key={s.platform} className="inline-flex items-center gap-1.5">
+          <span
+            key={s.platform}
+            className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 shadow-xs"
+          >
+            <span
+              aria-hidden
+              className={`size-1.5 rounded-full ${reconnect || s.stale ? "bg-highlight" : "bg-emerald-600"}`}
+            />
             {(reconnect || s.stale) && <AlertTriangle className="size-3.5 text-amber-600" aria-label="out of date" />}
             {label} · {s.running ? <Loader2 className="size-3.5 animate-spin" aria-label="updating" /> : s.last_sync_at ? `updated ${shortAgo(s.last_sync_at, now)} ago` : "not updated yet"}
             {reconnect ? (

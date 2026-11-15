@@ -23,6 +23,10 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-15 01:30 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/umass-ui
+**Done:** PR #25 merged (Piazza live-verified, Windows live-login fixes). **S35 UMass UI** on `hari/umass-ui`: official palette (maroon `#840028`, black `#212721`, yellow `#FFC72C` highlight only), Fraunces + Geist, new sign-in, app frame, Today, Chat (follow-scroll + Jump to latest), Study/Settings polish; light/dark; 375 px + laptop checked in the browser; live Gemini chat with citation popovers works in the new UI. Prompt: plain-text math (no LaTeX). 78 web + 322 backend unit/runtime tests; lint, types, production build green. Details + pitfalls: S35 "Implementation".
+**Next:** merge `hari/umass-ui`; rehearse the 3-minute demo with `docs/demo-runbook.md`; final Devpost text before 09:00 (code freeze 08:00).
+
 ## 2026-11-15 00:40 ET · Hari's laptop · Claude Code (Opus 5.5) · branch hari/test-calendar-piazza
 **Done:** synced main (`10c3de8`, calendar + Piazza merged by Soumith); 477 backend + 75 web tests green. **Calendar re-verified live** (chat proposal → Add → downloaded .ics has the session at 3 PM ET). **Piazza live-verified with Hari's real account** after fixing the Windows live-login bugs (details: S17 "Live verification", live-test-bugs.md). Change summaries now plain language.
 **Gotchas:** stop `make demo-worker` before running integration tests (it grabs queued test jobs: S13-T06 fails otherwise). An old orphaned `next dev` (PID from an earlier session) can hold :3000 and crash ("Jest worker…" 500s): kill it in Task Manager (node.exe) before `make demo-web`.

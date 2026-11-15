@@ -28,7 +28,7 @@ export function SourceChip({ platform, url }: { platform: Platform; url: string 
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+      className="rounded-full border bg-background px-2.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-accent-foreground"
     >
       {PLATFORM_LABEL[platform]}
     </a>
@@ -38,7 +38,7 @@ export function SourceChip({ platform, url }: { platform: Platform; url: string 
 export function StatusBadge({ status }: { status: RecordStatus }) {
   if (status === "changed")
     return (
-      <Badge variant="outline" className="border-amber-500/60 text-amber-700 dark:text-amber-400">
+      <Badge variant="outline" className="border-highlight bg-highlight/20 text-[10px] font-semibold tracking-wide text-foreground">
         CHANGED
       </Badge>
     );
@@ -65,20 +65,37 @@ export function CourseChip({ course, fallbackCode }: { course?: CourseSummary; f
 /** One deadline: course chip, title, local due time + relative, type, status, source links (S32 rule 2). */
 export function ItemRow({ item, course, tz, now }: { item: Item; course?: CourseSummary; tz: string; now: Date }) {
   const Icon = TYPE_ICON[item.type];
+  const dueMs = item.due_at ? new Date(item.due_at).getTime() - now.getTime() : null;
+  const soon = dueMs !== null && dueMs >= 0 && dueMs < 24 * 3600_000;
+  const late = dueMs !== null && dueMs < 0;
   return (
-    <li className="flex flex-col gap-1.5 rounded-lg border px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3">
-      <div className="flex min-w-0 flex-1 items-start gap-2.5">
-        <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-label={item.type} />
+    <li className="relative flex flex-col gap-2 overflow-hidden rounded-xl border bg-card py-3 pr-3 pl-4 shadow-xs transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:gap-3">
+      <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: course?.color ?? "var(--primary)" }} />
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-primary">
+          <Icon className="size-4" aria-label={item.type} />
+        </span>
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex flex-wrap items-center gap-2">
             <CourseChip course={course} fallbackCode={item.course_code} />
             <span className={item.status === "removed" ? "font-medium line-through" : "font-medium"}>{item.title}</span>
             <StatusBadge status={item.status} />
           </div>
-          <span className="text-sm text-muted-foreground">
+          <span className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
             {item.due_at ? (
               <>
-                <time dateTime={item.due_at}>{formatDateTime(item.due_at, tz)}</time> · {relative(item.due_at, now)}
+                <time dateTime={item.due_at}>{formatDateTime(item.due_at, tz)}</time> ·{" "}
+                <span
+                  className={
+                    soon
+                      ? "rounded bg-highlight px-1.5 font-semibold text-highlight-foreground"
+                      : late
+                        ? "font-medium text-destructive"
+                        : undefined
+                  }
+                >
+                  {relative(item.due_at, now)}
+                </span>
               </>
             ) : (
               "No due date"
@@ -86,7 +103,7 @@ export function ItemRow({ item, course, tz, now }: { item: Item; course?: Course
           </span>
         </div>
       </div>
-      <div className="flex flex-wrap gap-1.5 pl-6 sm:pl-0">
+      <div className="flex flex-wrap gap-1.5 pl-11 sm:pl-0">
         {item.sources.map((s) => (
           <SourceChip key={`${s.platform}-${s.source_url}`} platform={s.platform} url={s.source_url} />
         ))}

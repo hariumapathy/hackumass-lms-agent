@@ -14,7 +14,7 @@ import { parsePayload, type Payload, type Day, type Question, type Card } from "
 
 export function StudyList() {
   const query = useQuery({ queryKey: ["study-sets"], queryFn: () => api().studySets() });
-  return <div className="space-y-5"><h1 className="text-2xl font-semibold">Study sets</h1>
+  return <div className="space-y-5"><h1 className="text-3xl font-semibold tracking-tight">Study sets</h1>
     {query.isPending ? <Loading /> : query.isError ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : query.data.length ? <div className="grid gap-3 sm:grid-cols-2">{query.data.map(set => <StudySetCard key={set.id} set={set} />)}</div> : <Empty title="No study sets yet" action={<Link href="/chat" className="underline">Ask for a study set</Link>} />}
   </div>;
 }
@@ -24,7 +24,7 @@ export function StudyDetail({ id }: { id: string }) {
   const payload = query.data ? parsePayload(query.data.type, query.data.payload) : null;
   return <div className="mx-auto max-w-3xl space-y-5">
     <Link href="/study" className="text-sm underline">All study sets</Link>
-    {query.isPending ? <Loading /> : query.isError ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : <><h1 className="text-2xl font-semibold">{query.data.title}</h1>{payload ? <StudyContent key={id} set={query.data} payload={payload} /> : <ErrorState error={new Error("This study set couldn't be opened.")} />}</>}
+    {query.isPending ? <Loading /> : query.isError ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : <><h1 className="text-3xl font-semibold tracking-tight">{query.data.title}</h1>{payload ? <StudyContent key={id} set={query.data} payload={payload} /> : <ErrorState error={new Error("This study set couldn't be opened.")} />}</>}
   </div>;
 }
 
@@ -97,7 +97,7 @@ function Flashcards({ cards, citations }: { cards: Card[]; citations: Citation[]
   }
   return <section className="space-y-4" onKeyDown={e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); move(e.key === "ArrowRight" ? 1 : -1); } }}>
     <p aria-live="polite">Card {index + 1} of {cards.length}</p>
-    <button aria-label="Flip card" aria-pressed={flipped} className="min-h-52 w-full rounded-xl border bg-card p-6 text-lg focus-visible:outline-2" onClick={() => setFlipped(!flipped)}>{flipped ? card.back : card.front}</button>
+    <button aria-label="Flip card" aria-pressed={flipped} className="min-h-52 w-full rounded-2xl border bg-card p-6 text-lg shadow-sm transition-colors aria-pressed:border-primary/40 aria-pressed:bg-accent focus-visible:outline-2" onClick={() => setFlipped(!flipped)}>{flipped ? card.back : card.front}</button>
     <p className="text-sm text-muted-foreground">Click or press Space to flip. Use the arrow keys to move.</p>
     {flipped && <Sources ids={card.chunk_ids} citations={citations} />}
     <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => move(-1)}>Previous</Button><Button variant="outline" onClick={() => move(1)}>Next</Button><Button variant="outline" onClick={shuffle}>Shuffle</Button></div>

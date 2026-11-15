@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Plus, RotateCcw, Send, Square } from "lucide-react";
+import { AlertTriangle, ArrowDown, GraduationCap, Plus, RotateCcw, Send, Square } from "lucide-react";
 import { DESKTOP_QUERY, useMediaQuery } from "@/components/layout/use-media-query";
 import { ErrorState, Loading } from "@/components/states/states";
 import { Button } from "@/components/ui/button";
@@ -43,9 +43,23 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
     enabled: Boolean(initialId),
   });
 
+  // S35-T03: follow the stream only while the student is near the end; otherwise offer a jump.
+  const [atEnd, setAtEnd] = useState(true);
+  const atEndRef = useRef(true);
+  useEffect(() => {
+    const onScroll = () => {
+      const near = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 160;
+      atEndRef.current = near;
+      setAtEnd(near);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const jumpToEnd = () => endRef.current?.scrollIntoView?.({ block: "end", behavior: "smooth" });
+
   useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: "end" });
+    if (atEndRef.current) endRef.current?.scrollIntoView?.({ block: "end" });
   }, [turns]);
 
   const update = (key: string, fn: (t: Turn) => Turn) => setTurns((ts) => ts.map((t) => (t.key === key ? fn(t) : t)));
@@ -54,6 +68,7 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
     const message = text.trim();
     if (!message || controller.current) return;
     const key = `turn-${++turnCounter}`;
+    atEndRef.current = true; // sending a message always brings you to the answer
     setTurns((ts) => [...ts, newTurn(key, message)]);
     setInput("");
     setRunning(true);
@@ -125,10 +140,13 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
     <div className="mx-auto flex min-h-[calc(100dvh-7.5rem)] w-full max-w-5xl gap-6 md:min-h-[calc(100dvh-4rem)]">
       {isDesktop && <ConversationList activeId={conversationId} />}
       <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Chat</h1>
+        <header className="flex flex-col gap-1">
+          <h1 className="text-3xl font-semibold tracking-tight">Chat</h1>
+          <p className="text-sm text-muted-foreground">Answers come from your own classes, with a link to every source.</p>
+        </header>
         {!isDesktop && (
           // Mobile: past chats fold away above the conversation (S33 rule 7, "sheet on mobile").
-          <details className="rounded-md border px-3 py-2 text-sm">
+          <details className="rounded-xl border bg-card px-3 py-2 text-sm shadow-xs">
             <summary className="cursor-pointer select-none font-medium">Past chats</summary>
             <ConversationList activeId={conversationId} className="w-full pt-2" />
           </details>
@@ -141,20 +159,32 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
             m.role === "user" ? (
               <UserBubble key={m.id} text={m.text} />
             ) : (
-              <div key={m.id}>
+              <AssistantRow key={m.id}>
                 <AssistantText text={m.text} citations={m.citations} streaming={false} />
-              </div>
+              </AssistantRow>
             ),
           )}
           {turns.map((t) => (
             <TurnView key={t.key} turn={t} onRetry={() => retry(t)} />
           ))}
           {empty && !(initialId && history.isPending) && (
-            <div className="flex flex-col items-start gap-3 py-8">
-              <p className="text-muted-foreground">Ask anything about your courses. Answers cite your own course materials.</p>
+            <div className="flex flex-col items-start gap-4 rounded-2xl border bg-card px-5 py-6 shadow-xs">
+              <span className="grid size-10 place-items-center rounded-xl bg-maroon text-white" aria-hidden>
+                <GraduationCap className="size-5" />
+              </span>
+              <div className="flex flex-col gap-1">
+                <p className="font-display text-xl font-semibold">What can I help you study?</p>
+                <p className="text-sm text-muted-foreground">Ask anything about your courses. Answers cite your own course materials.</p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((s) => (
-                  <Button key={s} variant="outline" size="sm" onClick={() => void send(s)}>
+                  <Button
+                    key={s}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-primary/30 text-primary hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => void send(s)}
+                  >
                     {s}
                   </Button>
                 ))}
@@ -165,34 +195,66 @@ export function ChatScreen({ conversationId: initialId }: { conversationId?: str
         </div>
 
         {/* Phone: stick above the fixed bottom tab bar (4rem); desktop: to the bottom edge. */}
-        <form onSubmit={onSubmit} className="sticky bottom-16 flex items-end gap-2 bg-background py-2 md:bottom-0">
-          <Textarea
-            aria-label="Message"
-            placeholder="Ask about deadlines, lectures, or exam prep…"
-            value={input}
-            disabled={running}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={2}
-            className="min-h-11 resize-none"
-          />
-          {running ? (
-            <Button type="button" variant="outline" onClick={() => controller.current?.abort()}>
-              <Square aria-hidden /> Stop
-            </Button>
-          ) : (
-            <Button type="submit" disabled={!input.trim()}>
-              <Send aria-hidden /> Send
+        <div className="sticky bottom-16 flex flex-col gap-2 bg-gradient-to-t from-background via-background to-transparent pt-4 pb-3 md:bottom-0">
+          {!atEnd && (turns.length > 0 || saved.length > 0) && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="self-center rounded-full bg-card shadow-md"
+              onClick={jumpToEnd}
+            >
+              <ArrowDown aria-hidden /> Jump to latest
             </Button>
           )}
-        </form>
+          <form
+            onSubmit={onSubmit}
+            className="flex items-end gap-2 rounded-2xl border bg-card p-2 shadow-md focus-within:border-primary/50 focus-within:ring-[3px] focus-within:ring-ring/20"
+          >
+            <Textarea
+              aria-label="Message"
+              placeholder="Ask about deadlines, lectures, or exam prep…"
+              value={input}
+              disabled={running}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKeyDown}
+              rows={2}
+              className="min-h-11 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent"
+            />
+            {running ? (
+              <Button type="button" variant="outline" className="rounded-xl" onClick={() => controller.current?.abort()}>
+                <Square aria-hidden /> Stop
+              </Button>
+            ) : (
+              <Button type="submit" className="rounded-xl" disabled={!input.trim()}>
+                <Send aria-hidden /> Send
+              </Button>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   );
 }
 
 function UserBubble({ text }: { text: string }) {
-  return <div className="self-end rounded-2xl bg-primary px-4 py-2 whitespace-pre-wrap text-primary-foreground">{text}</div>;
+  return (
+    <div className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-primary px-4 py-2.5 whitespace-pre-wrap text-primary-foreground shadow-sm">
+      {text}
+    </div>
+  );
+}
+
+/** Assistant side: small avatar + content at a readable width. */
+function AssistantRow({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex gap-3">
+      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-maroon text-white" aria-hidden>
+        <GraduationCap className="size-4" />
+      </span>
+      <div className="flex min-w-0 max-w-[68ch] flex-1 flex-col gap-2.5">{children}</div>
+    </div>
+  );
 }
 
 function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
@@ -201,7 +263,7 @@ function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
   return (
     <>
       <UserBubble text={turn.userText} />
-      <div className="flex flex-col gap-2">
+      <AssistantRow>
         {turn.status.length > 0 &&
           (streaming ? (
             <StatusList items={turn.status} />
@@ -220,7 +282,7 @@ function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
         {turn.approval && <ApprovalCard {...turn.approval} />}
         {turn.phase === "stopped" && <p className="text-sm text-muted-foreground">Stopped.</p>}
         {turn.error && (
-          <div role="alert" className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/40 px-3 py-2 text-sm">
+          <div role="alert" className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm">
             <AlertTriangle className="size-4 text-destructive" aria-hidden />
             <span>{turn.error.message}</span>
             {turn.error.retryable && (
@@ -230,7 +292,7 @@ function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
             )}
           </div>
         )}
-      </div>
+      </AssistantRow>
     </>
   );
 }
@@ -238,7 +300,8 @@ function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
 export function ConversationList({ activeId, className }: { activeId?: string; className?: string }) {
   const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => api().conversations() });
   return (
-    <aside aria-label="Conversations" className={cn("flex w-56 shrink-0 flex-col gap-2", className)}>
+    <aside aria-label="Conversations" className={cn("flex w-56 shrink-0 flex-col gap-2 pt-1", className)}>
+      <span className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Your chats</span>
       <Button asChild variant="outline" size="sm" className="justify-start">
         <Link href="/chat">
           <Plus aria-hidden /> New chat
@@ -251,8 +314,8 @@ export function ConversationList({ activeId, className }: { activeId?: string; c
               href={`/chat/${c.id}`}
               aria-current={c.id === activeId ? "page" : undefined}
               className={cn(
-                "block truncate rounded-md px-3 py-1.5 text-sm hover:bg-accent",
-                c.id === activeId && "bg-accent font-medium",
+                "block truncate rounded-lg px-3 py-1.5 text-sm text-foreground/80 hover:bg-accent hover:text-foreground",
+                c.id === activeId && "bg-accent font-medium text-accent-foreground",
               )}
             >
               {c.title}

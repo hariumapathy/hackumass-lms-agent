@@ -25,7 +25,7 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
     today.overdue.length + today.due_today.length + today.due_this_week.length + today.upcoming_exams.length === 0;
 
   const items = (list: Item[]) => (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex flex-col gap-2.5">
       {list.map((i) => (
         <ItemRow key={i.id} item={i} course={byId.get(i.course_id)} tz={tz} now={now} />
       ))}
@@ -33,10 +33,11 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Today <span className="font-normal text-muted-foreground">· {formatLocalDay(today.date)}</span>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-7">
+      <header className="flex flex-col gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{formatLocalDay(today.date)}</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          Today <span className="sr-only">· {formatLocalDay(today.date)}</span>
         </h1>
         <FreshnessBar sources={today.sources} now={now} onSyncNow={onSyncNow} />
       </header>
@@ -44,8 +45,12 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
       {today.changes.length > 0 && <ChangeBanner changes={today.changes} onMarkSeen={onMarkSeen} busy={markingSeen} />}
 
       {nothingDue && <Empty title="Nothing due this week 🎉" description="New deadlines show up here as soon as they sync." />}
-      {today.overdue.length > 0 && <Section title="Overdue" count={today.overdue.length}>{items(today.overdue)}</Section>}
-      {today.due_today.length > 0 && <Section title="Due today" count={today.due_today.length}>{items(today.due_today)}</Section>}
+      {today.due_today.length > 0 && (
+        <Section title="Due today" count={today.due_today.length} tone="today">{items(today.due_today)}</Section>
+      )}
+      {today.overdue.length > 0 && (
+        <Section title="Overdue" count={today.overdue.length} tone="overdue">{items(today.overdue)}</Section>
+      )}
       {today.due_this_week.length > 0 && (
         <Section title="This week" count={today.due_this_week.length}>{items(today.due_this_week)}</Section>
       )}
@@ -62,17 +67,27 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
         </Section>
       )}
 
-      <Button asChild variant="outline" className="self-start">
-        <Link href={`/chat?prefill=${encodeURIComponent("What should I focus on this week?")}`}>
-          <MessageSquare aria-hidden /> Ask about your week
-        </Link>
-      </Button>
+      <div className="flex flex-col gap-3 rounded-2xl bg-maroon px-5 py-5 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-0.5">
+          <p className="font-display text-lg font-semibold">Not sure where to start?</p>
+          <p className="text-sm text-white/80">Get a plan for your week, with links to your own course materials.</p>
+        </div>
+        <Button asChild className="self-start bg-white text-maroon hover:bg-white/90 sm:self-auto">
+          <Link href={`/chat?prefill=${encodeURIComponent("What should I focus on this week?")}`}>
+            <MessageSquare aria-hidden /> Ask about your week
+          </Link>
+        </Button>
+      </div>
 
       {courses.length > 0 && (
         <Section title="Your courses">
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid gap-2.5 sm:grid-cols-2">
             {courses.map((c) => (
-              <li key={c.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
+              <li
+                key={c.id}
+                className="relative flex items-center justify-between overflow-hidden rounded-xl border bg-card py-3 pr-3 pl-4 shadow-xs transition-shadow hover:shadow-md"
+              >
+                <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: c.color ?? "var(--primary)" }} />
                 <CourseChip course={c} fallbackCode={c.code} />
                 <span className="text-xs text-muted-foreground">{c.upcoming_count} upcoming</span>
               </li>
@@ -84,35 +99,66 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
   );
 }
 
-function Section({ title, count, children }: { title: string; count?: number; children: ReactNode }) {
+type Tone = "default" | "today" | "overdue";
+
+const TONE_DOT: Record<Tone, string> = {
+  default: "bg-muted-foreground/40",
+  today: "bg-highlight",
+  overdue: "bg-destructive",
+};
+
+function Section({ title, count, tone = "default", children }: { title: string; count?: number; tone?: Tone; children: ReactNode }) {
   const id = useId();
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-2">
-      <h2 id={id} className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+    <section aria-labelledby={id} className="flex flex-col gap-3">
+      <h2 id={id} className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <span aria-hidden className={`size-2 rounded-full ${TONE_DOT[tone]}`} />
         {title}
-        {count !== undefined && ` (${count})`}
+        {count !== undefined && (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] tabular-nums tracking-normal">
+            <span className="sr-only">(</span>
+            {count}
+            <span className="sr-only">)</span>
+          </span>
+        )}
       </h2>
       {children}
     </section>
   );
 }
 
+const SHOWN_CHANGES = 3;
+
 function ChangeBanner({ changes, onMarkSeen, busy }: { changes: Change[]; onMarkSeen: (ids: string[]) => void; busy?: boolean }) {
   return (
     <section
       aria-label="Changes"
-      className="flex flex-col gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 sm:flex-row sm:items-start"
+      className="flex flex-col gap-3 rounded-xl border border-highlight/60 bg-highlight/15 px-4 py-3.5 sm:flex-row sm:items-start"
     >
-      <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-highlight text-highlight-foreground" aria-hidden>
+        <AlertTriangle className="size-4" />
+      </span>
       <div className="flex-1">
         <p className="text-sm font-medium">
           {changes.length} {changes.length === 1 ? "change" : "changes"}
         </p>
-        <ul className="text-sm">
-          {changes.map((c) => (
+        <ul className="mt-1 flex flex-col gap-0.5 text-sm text-foreground/85">
+          {changes.slice(0, SHOWN_CHANGES).map((c) => (
             <li key={c.id}>{c.summary}</li>
           ))}
         </ul>
+        {changes.length > SHOWN_CHANGES && (
+          <details className="text-sm text-foreground/85">
+            <summary className="mt-1 cursor-pointer select-none font-medium text-primary">
+              Show {changes.length - SHOWN_CHANGES} more
+            </summary>
+            <ul className="mt-0.5 flex flex-col gap-0.5">
+              {changes.slice(SHOWN_CHANGES).map((c) => (
+                <li key={c.id}>{c.summary}</li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
       <Button size="sm" variant="outline" disabled={busy} onClick={() => onMarkSeen(changes.map((c) => c.id))}>
         Mark seen
@@ -123,7 +169,7 @@ function ChangeBanner({ changes, onMarkSeen, busy }: { changes: Change[]; onMark
 
 function PostRow({ post, course, now }: { post: Post; course?: CourseSummary; now: Date }) {
   return (
-    <li className="flex flex-col gap-1 rounded-lg border px-3 py-2.5">
+    <li className="flex flex-col gap-1.5 rounded-xl border bg-card px-4 py-3 shadow-xs">
       <div className="flex flex-wrap items-center gap-2">
         <CourseChip course={course} fallbackCode="" />
         <span className="font-medium">{post.title}</span>

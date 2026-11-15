@@ -57,7 +57,7 @@ export function SignInPanel() {
   };
 
   return (
-    <div className="flex max-w-sm flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       {config.googleSignIn && <>
         <Button size="lg" disabled={busy} onClick={() => run(auth.signInWithGoogle)}>
           Continue with Google
@@ -65,11 +65,11 @@ export function SignInPanel() {
         <div className="text-center text-xs uppercase text-muted-foreground">or</div>
       </>}
       {sent ? (
-        <p role="status" className="text-sm">
-          Check {email} for a sign-in link.
+        <p role="status" className="rounded-lg border border-primary/20 bg-accent px-4 py-3 text-sm text-accent-foreground">
+          Check <span className="font-medium">{email}</span> for a sign-in link.
         </p>
       ) : (
-        <form onSubmit={onEmail} className="flex gap-2">
+        <form onSubmit={onEmail} className="flex flex-col gap-2.5">
           <label htmlFor="email" className="sr-only">
             Email
           </label>
@@ -82,7 +82,7 @@ export function SignInPanel() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Button type="submit" variant="outline" disabled={busy}>
+          <Button type="submit" size="lg" disabled={busy}>
             Email me a link
           </Button>
         </form>
