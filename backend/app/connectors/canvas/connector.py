@@ -148,19 +148,23 @@ class _Run:
     ) -> AsyncIterator[NormalizedRecord]:
         cid = str(course["id"])
         yield m.to_course(course, self.base)
-        sections: list[tuple[str, Callable[[], AsyncIterator[NormalizedRecord]]]] = [
-            ("syllabus", lambda: self.syllabus(cid, detail)),
-            ("assignments", lambda: self.assignments(cid)),
-            ("calendar events", lambda: self.events(cid, course)),
-            ("announcements", lambda: self.announcements(cid, incremental)),
-            ("files", lambda: self.files(cid)),
+        sections: list[tuple[str, str, Callable[[], AsyncIterator[NormalizedRecord]]]] = [
+            ("syllabus", "materials", lambda: self.syllabus(cid, detail)),
+            ("assignments", "item_sources", lambda: self.assignments(cid)),
+            ("calendar events", "item_sources", lambda: self.events(cid, course)),
+            ("announcements", "posts", lambda: self.announcements(cid, incremental)),
+            ("files", "materials", lambda: self.files(cid)),
         ]
-        for name, section in sections:
+        # Announcements are listed for a time window only: never treat older ones as removed.
+        self.ctx.incomplete.add((cid, "posts"))
+        for name, table, section in sections:
             try:
                 async for rec in section():
                     yield rec
             except (CanvasForbidden, CanvasNotFound):
-                # One hidden tab must not fail the whole sync (AuthExpired/PlatformError still do).
+                # One hidden tab must not fail the whole sync (AuthExpired/PlatformError still do),
+                # and must not make that tab's earlier records look removed.
+                self.ctx.incomplete.add((cid, table))
                 log.warning("canvas: skipped %s for course %s (not available)", name, cid)
 
     async def syllabus(

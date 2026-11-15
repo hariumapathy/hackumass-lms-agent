@@ -324,17 +324,24 @@ class _Store:
         )
         return outcome, ex["id"]
 
-    async def mark_removed(self, seen: dict[str, set[UUID]]) -> int:
-        """Full scope only: rows of this platform not seen in this run -> removed (+ change)."""
+    async def mark_removed(
+        self, seen: dict[str, set[UUID]], incomplete: set[tuple[str, str]] | None = None
+    ) -> int:
+        """Full scope only: rows of this platform not seen in this run -> removed (+ change).
+        Courses/tables the connector reported as incompletely listed are left alone."""
         removed = 0
         entity = {"item_sources": "item", "materials": "material", "posts": "post"}
+        skip: dict[str, list[UUID]] = {}
+        for course_pid, table in incomplete or set():
+            cid = await self.course_id(course_pid)
+            skip.setdefault(table, []).append(cid)
         for table in SOURCE_TABLES:
             ids = list(seen.get(table, set()))
             cur = await self.conn.execute(
                 f"update {table} set status = 'removed' where user_id = %s "  # noqa: S608
                 "and platform = %s and status <> 'removed' and not (id = any(%s)) "
-                "returning id, course_id",
-                (self.user_id, self.platform, ids),
+                "and not (course_id = any(%s)) returning id, course_id",
+                (self.user_id, self.platform, ids, skip.get(table, [])),
             )
             rows = await cur.fetchall()
             removed += len(rows)
@@ -422,7 +429,7 @@ async def run_sync(
                 out.posts_to_process.append(row_id)
         if scope.kind == "full":
             async with conn.transaction():
-                out.stats["removed"] = await store.mark_removed(seen)
+                out.stats["removed"] = await store.mark_removed(seen, ctx.incomplete)
     except AuthExpired:
         out.status, out.error = "needs_reconnect", "Your sign-in for this site expired."
         await repo.set_connection_status(
