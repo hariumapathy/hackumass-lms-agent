@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Neal): built + fixture-tested on `neal/s13-s14-gradescope`; live spike (rule 1) pending a real login |
+| **Status** | In progress (Neal): live login and import verified; independent source-page date spot-check remains |
 | **Stage** | 2 |
 | **Role** | A |
 | **Depends on** | S13 |
@@ -85,7 +85,7 @@ flowchart LR
 | `gradescopeapi` upstream change breaks parsing | Pin `gradescopeapi==1.8.1`; `layout_changed` error; vendored parser can be patched locally |
 
 ## Acceptance criteria
-- [ ] Spike result recorded (cookie injection works, or Playwright fallback chosen)
+- [x] Spike result recorded: saved browser cookies work with the requests client; no Playwright fetch fallback needed
 - [x] Fixture tests pass for course list and student assignment pages (hand-written fixtures, fake names/IDs)
 - [ ] Real sync with a saved session yields courses + items with correct due dates (spot-check 5)
 - [x] Vendored files have headers + license; THIRD_PARTY_NOTICES and Devpost credits updated
@@ -115,3 +115,10 @@ Submitting anything, downloading submissions, rubric details, grades UI (stretch
 - `layout_changed` saves the page to `backend/tests/fixtures/_debug/gradescope_<name>.html` (git-ignored).
 - **Spike (rule 1) not run yet** (needs a real UMass login). Cookie injection was verified offline (only gradescope.com cookies are sent to `www.gradescope.com`). If Gradescope rejects the requests-session, fall back to Playwright `open_with_state` + the same parsers.
 - Tests: `tests/connector/test_s14_gradescope.py` (S14-T01…T09 + scope, throttle, tail-row, login detection) using a fake `requests` adapter serving `tests/fixtures/gradescope/*.html` (hand-written, fake names/IDs).
+
+## Live spike result (2026-11-14, Neal)
+- The normal interactive Gradescope login succeeded; saved session was encrypted and the existing worker imported **20 student courses, 238 assignment sources, 186 dated**. Run finished succeeded with no reported error. No password supplied to the agent.
+- Three current-term canonical courses carried both Canvas and Gradescope links; five canonical deadlines had sources from both platforms. Different-semester COMPSCI 389 courses correctly remained separate.
+- Today visibly showed Gradescope freshness and two upcoming Gradescope-only deadlines in the merged COMPSCI 311 course. Five sampled extracted-local-time → UTC → canonical-time mappings agreed. Comparing five dates directly against the authenticated source pages remains a manual acceptance check.
+- All 33 focused S13/S14 connector/session tests pass. The login browser is on the API laptop, not embedded in the app. Saved-session reuse via requests works; source HTML/cookies were not committed. Historical student courses are also imported, so sidebar clutter is a follow-up, not a data-merge failure.
+- Operator instructions: [Gradescope runbook](../gradescope-runbook.md).

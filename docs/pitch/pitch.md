@@ -60,4 +60,5 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Live Canvas connection → worker → database → Today/course pages; disconnect and automatic view refresh | ✅ verified on Neal's laptop with eight real courses; correct UMass host; production navigation |
 | Real material citations | ✅ Gemini answer with a real syllabus page and announcement citation verified |
 | Calendar subscription and saved study-session approvals (S25) | ⬜ still stubs; skip in live-data demo |
+| Live Gradescope login + imports (S13/S14) | ✅ saved session imported 20 student courses and 238 assignments; three courses and five deadlines merged with Canvas |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |
