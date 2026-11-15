@@ -64,5 +64,7 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Calendar (S25): approve a proposed study session → it appears in the downloadable calendar (.ics) | ✅ re-verified live 2026-11-15 (Add → feed has the session at the right time) |
 | UMass-themed interface (S35): official maroon/black palette, serif headings, phone + laptop layouts, light + dark | ✅ 2026-11-15 |
 | Piazza posts (S17): read-only connector + **Connect Piazza** in Settings/onboarding | ✅ **live-verified with a real account** (2026-11-15): login window → posts imported → shown on the course page → cited by the chat |
+| Submitted work never shows as Overdue (Canvas + Gradescope submission state, SUBMITTED badge) | ✅ live-verified 2026-11-15 on a real Canvas account: Overdue 5 → 2 after one sync |
+| Built-in PDF viewer: a citation's **View** opens the cited lecture PDF inside the app at the cited page | ✅ live-verified 2026-11-15 (real Canvas lecture, opened at p. 2 of 61; phone + laptop). Mobile Safari may not render PDFs inline: "Open in Canvas" is always in the viewer |
 | Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

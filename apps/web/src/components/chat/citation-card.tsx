@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { FileViewerButton } from "@/components/files/file-viewer";
 import { Badge } from "@/components/ui/badge";
 import type { Citation } from "@/lib/api/types";
 import { PLATFORM_LABEL } from "@/lib/platforms";
@@ -51,6 +52,16 @@ export function CitationCard({ citation: c }: { citation: Citation }) {
       <blockquote className="border-l-2 pl-3 text-muted-foreground italic">{c.quote}</blockquote>
       <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <span>Synced {relative(c.last_synced_at)}</span>
+        <span className="flex items-center gap-2">
+        {c.file_id && (
+          <FileViewerButton
+            fileId={c.file_id}
+            title={c.title}
+            page={c.page}
+            sourceUrl={c.deep_link}
+            sourceLabel={PLATFORM_LABEL[c.platform]}
+          />
+        )}
         <a
           href={c.deep_link}
           target="_blank"
@@ -59,6 +70,7 @@ export function CitationCard({ citation: c }: { citation: Citation }) {
         >
           Open source <ExternalLink className="size-3" aria-hidden />
         </a>
+        </span>
       </div>
     </div>
   );

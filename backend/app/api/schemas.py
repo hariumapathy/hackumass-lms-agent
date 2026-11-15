@@ -211,6 +211,7 @@ class Citation(BaseModel):
     quote: str
     last_synced_at: datetime
     status: CitationStatus
+    file_id: UUID | None = None  # stored PDF: open in the app via GET /files/{file_id}#page=N
 
 
 class ChatRequest(BaseModel):

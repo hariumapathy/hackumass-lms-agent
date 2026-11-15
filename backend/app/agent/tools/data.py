@@ -46,6 +46,7 @@ class ChunkRow(BaseModel):
     course_id: UUID
     course_code: str
     material_id: str | None = None
+    file_id: UUID | None = None  # stored original PDF the app can show (GET /files/{id})
     title: str
     kind: str  # slides | transcript | post | syllabus
     platform: str

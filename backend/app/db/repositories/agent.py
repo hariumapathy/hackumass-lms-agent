@@ -23,6 +23,8 @@ _KIND_SQL = {
 _CHUNK_COLUMNS = """
 ch.id as chunk_id, ch.course_id, coalesce(c.code, c.name) as course_code,
        ch.material_id::text as material_id, coalesce(m.title, p.title) as title,
+       case when m.storage_path is not null and (lower(coalesce(m.mime_type, '')) like
+            'application/pdf%%' or lower(m.storage_path) like '%%.pdf') then m.id end as file_id,
        case when ch.post_id is not null then 'post'
             when m.kind = 'transcript' then 'transcript'
             when m.kind = 'syllabus' then 'syllabus'
