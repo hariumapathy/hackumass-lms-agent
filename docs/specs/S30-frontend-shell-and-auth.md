@@ -90,6 +90,7 @@ export async function streamChat(body: ChatRequest, handlers: {
 | S30-T05 | SSE parser ignores unknown event types without crashing | unit |
 | S30-T06 | Layout switches sidebar ↔ bottom tabs at breakpoint | component |
 | S30-T07 | E2E (mocked): sign in → lands on `/today` | e2e |
+| S30-T08 | Mock mode: app waits for the mock API; if it can’t start, a plain message + Try again (no endless spinner) | component |
 
 ## Out of scope
 Push notifications, offline mode, i18n.

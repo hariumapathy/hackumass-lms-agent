@@ -59,6 +59,7 @@ The deterministic dashboard: what's overdue, due today, due this week, upcoming 
 | S32-T06 | UI: needs_reconnect source shows Reconnect link | component |
 | S32-T07 | UI: source chips link to `source_url` in new tab | component |
 | S32-T08 | E2E (mocked): Today → course page → back | e2e |
+| S32-T09 | Course page: upcoming/past items with course color and source links | component |
 
 ## Out of scope
 Grades, drag-and-drop planning, notifications.
