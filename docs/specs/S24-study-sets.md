@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): tool, validation, citation filter, SSE event, routes done (in-memory store); DB save waits for S01 |
 | **Stage** | 2 |
 | **Role** | B |
 | **Depends on** | S22, S23 |
@@ -83,3 +83,10 @@ class Card(BaseModel):
 
 ## Out of scope
 Spaced repetition scheduling, quiz grading of free-text answers by AI (UI reveals answers; stretch: AI grading).
+
+## Implementation notes (2026-11-14, Hari)
+- `backend/app/agent/tools/study_sets.py` (tool + models), registered in `AGENT_TOOLS`; label "Making your flashcards…". Tests: `tests/unit/test_s24_study_sets.py` (T01–T08; T01/T08 run against the in-memory store).
+- The tool puts the full `StudySet` in `RunCtx.study_sets`; the runtime emits `study_set` after the answer and saves it via the chat store. The model only gets `{study_set_id, type, title, counts, removed_uncited_items}`.
+- Fixable problems (over 30% uncited items, plan dates out of range) raise `ToolRejected` → `"create_study_set rejected: …"` to the model. Shape errors → `"Invalid arguments …"`. Retries are bounded by `max_turns`.
+- Nested argument schemas are flattened for Gemini (`$ref` inlined, no `anyOf` null, no titles).
+- **Not yet:** saved payloads don't include a resolved `citations` map (the UI can call `GET /citations?ids=`); DB persistence after S01.
