@@ -83,6 +83,7 @@
           "account"
         ],
         "summary": "Patch Me",
+        "description": "S20 rule 10: timezone must be an IANA name, model_choice one of /models (S26).",
         "operationId": "patch_me_me_patch",
         "parameters": [
           {

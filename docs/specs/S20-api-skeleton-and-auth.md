@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): auth, scans, errors, rate limit, logging done; DB parts wait for S01 |
 | **Stage** | 1 |
 | **Role** | B |
 | **Depends on** | S01, S02 |
@@ -57,9 +57,9 @@ class Clock(Protocol): def now(self) -> datetime   # SystemClock, FixedClock (te
 | DB unavailable | 503-style `internal` with `retryable: true` |
 
 ## Acceptance criteria
-- [ ] Requests with a real Supabase session from the web app authenticate
-- [ ] All routes (except the two public) reject missing/invalid tokens
-- [ ] `/me` returns profile + connections; `DELETE /me/data` leaves nothing behind for that user
+- [ ] Requests with a real Supabase session from the web app authenticate (unit-tested with a JWKS ES256 token; needs a live check once S30 signs in against the hosted project)
+- [x] All routes (except the two public) reject missing/invalid tokens
+- [ ] `/me` returns profile + connections; `DELETE /me/data` leaves nothing behind for that user (repository code written; waits for S01)
 
 ## Test plan
 | ID | Test | Type |
@@ -77,3 +77,13 @@ class Clock(Protocol): def now(self) -> datetime   # SystemClock, FixedClock (te
 
 ## Out of scope
 Multi-instance rate limiting, admin roles, account deletion of the auth user.
+
+## Implementation notes (2026-11-14, Hari)
+- **Verification** (`app/core/auth.py`, library **PyJWT[crypto]**): the key is chosen by the token's `alg` header. ES256/RS256/EdDSA → JWKS (`SUPABASE_JWKS_URL`, cached 10 min, early refetch for an unknown `kid` at most every 30 s, last good keys kept if the endpoint is down; no keys at all → `503 internal, retryable`). HS256 → `SUPABASE_JWT_SECRET`. If both are set, both kinds are accepted (legacy tokens keep working during a key rotation). Our hosted project signs with **ES256** (checked against its JWKS). Requires `exp`, `sub` (a UUID), `aud="authenticated"`.
+- `current_user(authorization)` keeps the S02 signature but no longer accepts any bearer string. The web app's demo/MSW mode is unaffected (it never calls the backend).
+- **Rate limit:** `TokenBucket` (`app/core/ratelimit.py`), 10/min per user on `POST /chat` → 429 `rate_limited`, `retryable: true`. `create_app(clock=...)` injects the clock.
+- **Logs:** `RequestLogMiddleware` (`app/core/logging.py`) writes one JSON line per request (`request_id`, `user_id`, method, route template, status, latency) to logger `app.request` and sets an `x-request-id` response header. Headers, query strings and bodies are never logged.
+- **DB:** `app/db/pool.py` (psycopg 3 async pool, opened lazily, `dict_row`, outage → 503 retryable). `app/db/repositories/profiles.py`: `get_profile`, `ensure_profile`, `update_profile`, `delete_user_data`, all `(conn, user_id, ...)` (enforced by S20-T04). **Not wired into routes yet:** `/me`, `PATCH /me` and `DELETE /me/data` still return S02 mock data (with the real `user_id`) until S01's `profiles` table exists, so the frontend never sees 503s. Wiring them up and auto-creating the profile on first request is the first thing to do after S01 merges.
+- **PATCH /me validation** is live now (IANA timezone, `model_choice` must be in `/models`) → 422 `validation_error`.
+- **Tests:** `tests/unit/test_s20_auth.py` covers T01–T04, T06, T08–T10 and DB-down. `tests/integration/test_s20_db.py` (T05, T07) **skip with "pending S01"** until a local DB with the schema is running. The Storage half of T07 is skipped pending S12's storage helper, and job cancellation is pending S10. T06 runs as a unit test (no DB needed). Tests force `DATABASE_URL` to the local DB (or `TEST_DATABASE_URL`), so they can never touch the hosted project.
+- **Windows gotcha:** psycopg async can't run on Windows' default Proactor event loop. `make api` uses `--reload`, which makes uvicorn pick a selector loop, so it works. Tests get a selector loop from the `pytest_asyncio_loop_factories` hook in `tests/conftest.py`. Running uvicorn on Windows **without** `--reload` would break DB calls.
