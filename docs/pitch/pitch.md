@@ -29,7 +29,7 @@ See the diagram in [03-architecture.md](../03-architecture.md#system-diagram). T
 - **Sync first, agent second:** a worker copies course data into one database; the AI only reads that database.
 - **No passwords:** Canvas token; Gradescope/Echo360 via a one-time browser login with Duo.
 - **Verified citations:** the model cites chunk IDs; our code resolves them to real links.
-- **Any model:** OpenAI by default, others via adapters, tested with a golden-question script.
+- **Any model:** Google Gemini by default (free tier), OpenAI/Claude optional, all tested with a golden-question script.
 
 ## Judging criteria mapping
 See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we-score).
@@ -48,4 +48,9 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 |---|---|
 | Repo, scaffolding, CI (S00) | ✅ |
 | API + streaming contract with mock data (S02) | ✅ |
+| Real sign-in checks on every API call: Supabase tokens, chat rate limit, private logs (S20) | ✅ (profile storage waits for the DB schema) |
+| Database with per-student privacy rules (S01) | ✅ on `dev/neal` (PR #8) |
+| Backup demo semester: 4 UMass courses, deadlines, announcements, slides, lecture transcripts, a moved midterm (S03) | ✅ on `dev/neal` (PR #8), loads in ~1 s |
+| AI agent on Gemini: answers deadline + material questions with tools, streams progress (S21, S22) | ✅ on the mock semester (real data after S01/S03) |
+| Verified citations: made-up or unreturned sources are dropped, quotes checked (S23) | ✅ |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

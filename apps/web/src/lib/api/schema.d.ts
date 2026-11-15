@@ -35,7 +35,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Patch Me */
+        /**
+         * Patch Me
+         * @description S20 rule 10: timezone must be an IANA name, model_choice one of /models (S26).
+         */
         patch: operations["patch_me_me_patch"];
         trace?: never;
     };

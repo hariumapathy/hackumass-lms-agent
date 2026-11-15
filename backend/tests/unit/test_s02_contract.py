@@ -9,8 +9,9 @@ from fastapi.testclient import TestClient
 from app.api import schemas as s
 from app.api.sse import parse_sse, sse_event
 from app.main import create_app
+from tests.helpers import auth_header
 
-AUTH = {"Authorization": "Bearer test-token"}
+AUTH = auth_header()
 
 EXPECTED_ENDPOINTS = {
     ("get", "/health"),

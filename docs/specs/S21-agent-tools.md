@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): all six read tools done against `ToolData` (mock semester); SQL `DbToolData` + seed-based integration tests wait for S01/S03 |
 | **Stage** | 1 (read tools + `fetch_latest`); `create_study_set` in S24, `add_study_block` in S25 |
 | **Role** | B |
 | **Depends on** | S01, S03, S20 (and S10 for `fetch_latest`) |
@@ -101,3 +101,16 @@ Every tool returns a `ToolResult` JSON envelope:
 
 ## Out of scope
 Grades tool (stretch), write tools other than S24/S25, web search.
+
+## Implementation notes (2026-11-14, Hari)
+Built so far (`backend/app/agent/tools/`, tests in `tests/unit/test_s21_tools.py`), none of it needs the DB:
+- `args.py`: Pydantic argument models for the six read tools, `extra="forbid"` (the model can't pass `user_id`), `k ≤ 12`, page/time ranges capped at 20 pages / 20 minutes.
+- `context.py`: `RunCtx`. `runner.py`: `ToolSpec` + `invoke(spec, ctx, raw_json) -> str`, matching the Agents SDK's `on_invoke_tool` shape so S22 only needs a thin adapter. Invalid JSON/args → `"Invalid arguments for <tool>: …"`. A crashing tool → a short retry hint with no internals. Each result is truncated, then its chunk IDs are added to `ctx.allowed_chunk_ids`.
+- `courses.py`: course resolver (UUID, code with aliases, bare number like `"311"`, name fragment; ambiguous → "Which one?" note). The code normalizer lives in **`app/core/courses.py`** so S16 can reuse it instead of writing a second copy (heads-up to Neal).
+- `coverage.py`: `compute_coverage(connections, now, source)`. `needs_reconnect`/`error` platforms are still searched (their older data is still there) and flagged. Stale = older than 2× the S10 schedule (Piazza assumed hourly). Never synced → `"never"` + stale.
+- `results.py`: `ToolResult`, recursive chunk-ID collection, `wrap_untrusted` (escapes any `<untrusted`/`</untrusted` inside the text so a post can't close the wrapper), `wrap_post_text` (announcement → `canvas`, piazza, email), `truncate_result` (~6,000 tokens estimated as 24,000 characters; no tiktoken dependency; shortens long `text` fields, then drops the lowest-ranked results).
+- `timefmt.py`: `local_time` ("Thu Nov 19, 7:00 PM"), `relative_time` ("in 6 days"), `ago`. `labels.py`: plain-language status labels (no "sync").
+
+**Read tools** (`read.py`, registry `READ_TOOLS` in `tools/__init__.py`): all six tools are implemented against a `ToolData` interface (`data.py`), one student's data. `MockToolData` (`mock_source.py`, keyword search) backs them until S01. Tests on mock data: `tests/unit/test_s21_read_tools.py`. Arg models also treat `null` as "not given" (Gemini sends nulls).
+
+**Next (needs S01 schema + S03 seed):** `DbToolData` (SQL: hybrid search with RRF, misses rows, user scoping), `fetch_latest` via S10's `enqueue_sync`/`wait_for_sync`, and the seed-based integration versions of T02, T04–T06, T09–T11.

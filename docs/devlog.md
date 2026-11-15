@@ -14,12 +14,57 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **Roadblocks:** what, what was tried, options
 **State of main:** merged up to <hash>? tests green?
 **Next steps (in order):** 1. ... 2. ... 3. ...
-0. **FIRST (Hari's next session): apply the Gemini-default decision** (docs/decisions.md): update S26 `models.yaml` default + tiers, S22 `model_for` notes, S12 embeddings provider/dimension (verify Gemini embedding output dims = 1536 or pick alternative), 03 stack table + diagram LLM label, `.env.example` comments (GEMINI_API_KEY required, OPENAI_API_KEY optional), Devpost credits + hackathon.md (opt in to MLH Best Use of Gemini API). Hari gets a free key at aistudio.google.com and puts it in `.env`.
 **Gotchas for the next agent:** ...
-- **Hosted Supabase project created (2026-11-14 17:30 ET):** `hackumass-lms-agent`, ref `eahciwnufpjuzqlxqdni`, us-east-1, free plan, org ParkTheBus (Hari). URL `https://eahciwnufpjuzqlxqdni.supabase.co`; auth uses **JWKS** (`/auth/v1/.well-known/jwks.json`), so S20 needs no JWT secret. Public URL + publishable key are in Hari's `.env`; **service role key and DB connection string are secrets**: Hari shares them via a password manager, never git/chat. No migrations applied yet (S01).
 ```
 
+> **Agents editing this file with scripts:** match the newest dated entry, not the template above (an earlier `sed` inserted into the template by mistake).
+
 ---
+
+## 2026-11-14 19:25 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
+**Hour:** ~H23 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
+**Start check:** main = c9acce2 (fast-forwarded into dev/neal); `make test` green (60 pass, 2 skip pending S01). Local Supabase started (Docker).
+**Done:** **S01 schema**: `0001_init.sql` (enums, 19 tables, indexes incl. HNSW + GIN, RLS select-own for `authenticated`, no client writes, `connection_secrets` locked). Row models for every table (`TABLE_MODELS`). S01-T01–T08 + model/column check pass; S20-T05/T07 un-skipped and pass (made their emails unique so they re-run).
+**Done (cont.):** **S03 seed** (`43824e4`): fixtures in `supabase/seed/`, `uv run app seed`, `make db-reset` = migrate + seed (0.5 s, fake embeddings). Local login `demo@example.com` / `demo-password-311`; IDs match `mock_data.py`. Also `core/embeddings.py` (fake + Gemini) and `core/hashing.py` (S10-T01). PR #8 (S01 + S03) open for B/C review. Merged main (Hari's S21) into dev/neal: 166 pass, 1 xfail; ruff/pyright/eslint/tsc/vitest green.
+**Process notes (honest):** S01/S03 were still `Draft` (built on the handoff's instruction; review now in PR #8). S03 tests were written alongside the loader, not strictly failing-first.
+**Decisions / design changes:** none (clarifications in S01/S03 implementation notes).
+**Roadblocks:** none. Hosted Supabase secret key is in git-ignored `.env.hosted`; hosted `DATABASE_URL` + `GEMINI_API_KEY` still needed to seed the hosted demo with real embeddings.
+**Next steps (in order):** 1. S10 sync framework. 2. S11 Canvas. 3. S12 processing (tiktoken chunker). 4. Merge PR #8 once B/C OK (or at handoff if green).
+## 2026-11-14 19:20 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF (Hari pauses; Neal starts)
+**Hour:** ~H23 (Devpost draft due **23:59 tonight**; final submission Sun 09:00, freeze 08:00; judging 12:30)
+**Start check:** main = fb07fb2; `make setup` ok; `make test` green (27 backend + 1 web).
+**Done:**
+- **S20 auth** (`84888b4`, PR #5, merged to main as `c9acce2`): Supabase tokens verified by `alg` (ES256 via the project JWKS, cached 10 min; HS256 via `SUPABASE_JWT_SECRET` if set). Route-table + repository-signature scans, error envelope (401/404/422/500, 503 retryable), `PATCH /me` validation, 10/min chat rate limit, JSON request logs without tokens or text, psycopg pool + `profiles` repository. Smoke-checked against the real `.env`: live JWKS fetch works, forged tokens get 401.
+- **S21 plumbing** (`e537d8d`, PR #6, now included in the final dev/hari PR): tool args, `invoke` runner (SDK-shaped), course resolver, coverage/freshness, truncation, untrusted wrapping, local/relative times, status labels. Shared course-code normalizer in `backend/app/core/courses.py` (for S16).
+- `GEMINI_API_KEY` is in Hari's `.env` (never in git). Checked: the native and OpenAI-compatible endpoints both answer 200. Models available include `gemini-2.5-flash` / `gemini-3.x-flash` and embeddings `gemini-embedding-001` / `gemini-embedding-2` (for S12: check 1536-dim output).
+- Credits/notices: PyJWT, cryptography, psycopg.
+**Tests:** 119 backend pass, 2 skip (S20-T05/T07, "pending S01"); web 1 pass; ruff/pyright/eslint/tsc clean; CI green.
+**In progress (not finished):** nothing half-built. Parked on dependencies:
+- S20 DB parts: wire `/me`, `PATCH /me`, `DELETE /me/data` + profile auto-create to `app/db/repositories/profiles.py`; un-skip `tests/integration/test_s20_db.py`. **Needs S01.** Storage cleanup needs S12, job cancellation needs S10.
+- S21 tool SQL (hybrid search with RRF, misses rows) + T02, T04–T06, T09–T11. **Needs S01 + S03.** `fetch_latest` needs S10.
+**Decisions / design changes:** `/me` routes keep S02 mock data (with the real user_id) until S01; tokens accepted by `alg`. In decisions.md and the S20 notes.
+**Roadblocks:** none. The agent may not run `gh pr merge` (permission check); Hari merges PRs.
+**State of main:** S20 merged (`c9acce2`). The final dev/hari PR (S21 + this handoff) is green → Hari merges it. Soumith's frontend (S30/S32/S33, mock mode) is on `dev/soumith`, not on main yet.
+**Next steps (in order):**
+1. **Hari:** Devpost draft before 23:59 (text in [pitch/devpost.md](pitch/devpost.md)); merge the dev/hari PR; decide Soumith's S02 follow-ups P6–P9 (see `dev/soumith` progress file).
+2. **Neal:** S01 schema → S03 seed (IDs match `backend/app/api/mock_data.py`) → S10 → S11 → S12. Reuse `app/core/courses.py` in S16. Repository functions must start `(conn, user_id, ...)` (S20-T04 enforces it).
+3. **Hari (after S01/S03):** wire the S20 DB parts → S21 tool SQL → S22 agent runtime on Gemini (key is ready) → S23 citations.
+4. **Soumith:** frontend can now sign in for real against the hosted project and call `make api` (S20 is on main).
+**Gotchas for the next agent:**
+- Auth is real: `Bearer anything` → 401. Tests mint tokens with `tests/helpers.py`; `tests/conftest.py` forces test auth settings and the **local** `DATABASE_URL` (or `TEST_DATABASE_URL`), so tests never touch the hosted DB.
+- psycopg async on Windows needs a selector loop: `make api` (`--reload`) is fine; tests use the `pytest_asyncio_loop_factories` hook.
+- Python scripts on Windows: open files with `encoding="utf-8"` (cp1252 truncated a spec once).
+- New FastAPI includes routers lazily: walk `route.original_router.routes` (see `_api_routes` in `test_s20_auth.py`).
+
+## 2026-11-14 18:52 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
+**Hour:** ~H22.4 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
+**Start check:** main = 478380a; no new commits from Neal/Soumith yet; `make test` + `make lint` green; usage window reset.
+**Done:**
+- Step 0: **Gemini is t**In progress:** nothing half-done.abel, Devpost credits/built-with, pitch, hackathon.md (opt in to MLH Best Use of Gemini API).
+- Fixed earlier devlog edits that had landed inside the entry template.
+**In progress:** Step 0: apply the **Gemini-default decision** (docs/decisions.md) to S26 `models.yaml` default/tiers, S22 notes, S12 embeddings (Gemini embedding at 1536 dims, else alternative), 03 stack table + diagram label, `.env.example`, settings default, Devpost credits + hackathon.md (MLH Best Use of Gemini API opt-in).
+**State of the hosted DB:** Supabase project `hackumass-lms-agent`, ref `eahciwnufpjuzqlxqdni`, us-east-1, free plan, org ParkTheBus (Hari), created 17:30 ET. URL `https://eahciwnufpjuzqlxqdni.supabase.co`; auth uses **JWKS** (`/auth/v1/.well-known/jwks.json`), so S20 needs no JWT secret. Public URL + publishable key are in Hari's `.env`; **service role key, DB connection string, GEMINI_API_KEY are secrets** (Hari fills them in and shares via a password manager, never git/chat). No migrations applied yet (S01).
+**Next steps (in order):** 1. Finish step 0. 2. S20 real JWT auth (JWKS). 3. S21 agent tools (needs S01 schema from Neal for DB queries; build against seed fixtures meanwhile).
 
 ## 2026-11-14 18:10 ET · Soumith's laptop · Claude Code (Opus 5.5) + Codex in parallel · branch dev/soumith
 **Hour:** ~H22.5. Devpost draft due 23:59 tonight (Hari); final submission Sun 09:00, code freeze 08:00.

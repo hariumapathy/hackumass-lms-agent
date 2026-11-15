@@ -19,7 +19,14 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
     gemini_api_key: SecretStr | None = None
-    embeddings_provider: Literal["openai", "fake"] = "openai"
+    gemini_model: str = (
+        "gemini-3.5-flash"  # behind "gemini/gemini-default" (2.5 closed to new keys)
+    )
+    openai_model: str = "gpt-4.1-mini"
+    # auto: real agent when a model key is set, else the scripted S02 stream. scripted: always
+    # the scripted stream (demo backup). agent: always the real agent.
+    chat_mode: Literal["auto", "agent", "scripted"] = "auto"
+    embeddings_provider: Literal["gemini", "openai", "fake"] = "gemini"
     web_origin: str = "http://localhost:3000"
     public_api_url: str = "http://localhost:8000"  # used to build calendar feed URLs (S25)
     browser_provider: Literal["local", "hosted"] = "local"

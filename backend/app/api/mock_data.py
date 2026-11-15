@@ -114,7 +114,7 @@ def posts() -> list[s.Post]:
             course_id=mid("course/cs311"),
             kind="announcement",
             title="Midterm 1 moved to Thursday",
-            excerpt="Midterm 1 is now Thursday Nov 20 at 7 PM in Thompson 104.",
+            excerpt="Midterm 1 moved two days later. Same time and room (Thompson 104).",
             posted_at=n - timedelta(hours=30),
             status="active",
             source_url="https://example.instructure.com/courses/cs311/discussion_topics/a1",

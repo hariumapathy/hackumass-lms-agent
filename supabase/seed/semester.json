@@ -1,0 +1,49 @@
+{
+  "_doc": "S03 seed semester. Dates are relative to load time (see backend/app/db/seed_dates.py). Refs: 'course/material#n' (n = page, or transcript window number) and 'course/post:key'. IDs are uuid5('hackumass-mock/<kind>/<key>') to match backend/app/api/mock_data.py.",
+  "term": "Fall 2026",
+  "profile": {"display_name": "Demo Student", "timezone": "America/New_York", "model_choice": null},
+  "connections": [
+    {"platform": "canvas", "status": "active", "expires": "+60d", "last_sync": "-12m", "account_label": "Demo Student"},
+    {"platform": "gradescope", "status": "active", "last_sync": "-40m"},
+    {"platform": "echo360", "status": "needs_reconnect", "last_sync": "-3d", "last_error": "Session expired"}
+  ],
+  "courses": [
+    {"key": "cs311", "code": "COMPSCI 311", "name": "Introduction to Algorithms", "color": "#7c3aed", "platforms": ["canvas", "gradescope", "echo360"]},
+    {"key": "cs320", "code": "COMPSCI 320", "name": "Intro to Software Engineering", "color": "#0891b2", "platforms": ["canvas", "gradescope"]},
+    {"key": "math235", "code": "MATH 235", "name": "Introduction to Linear Algebra", "color": "#16a34a", "platforms": ["canvas"]},
+    {"key": "stats315", "code": "STATS 315", "name": "Statistics I", "color": "#ea580c", "platforms": ["canvas"]}
+  ],
+  "changes": [
+    {"key": "mid1", "entity": "item/mid1", "field": "due_at", "old": {"date": "+4d 19:00"}, "new": {"date": "+6d 19:00"}, "detected": "-30h", "seen": false},
+    {"key": "hw5", "entity": "item/hw5", "field": "points", "old": 50, "new": 60, "detected": "-10h", "seen": false},
+    {"key": "a0", "entity": "post/a0", "field": "body", "old": "HW 5 on dynamic programming is posted. Start early: problems 3 and 4 (LCS and edit distance) take longer than they look. For every problem I want the recurrence written in words first, then the table, then the running time.", "new": {"post_body": "a0"}, "detected": "-5d", "seen": true}
+  ],
+  "study_sets": [
+    {"key": "fc1", "course": "cs311", "type": "flashcards", "title": "COMPSCI 311 DP flashcards", "created": "-1h", "payload": {"cards": [
+      {"front": "What does memoization store?", "back": "Solutions to subproblems, so each one is computed only once.", "refs": ["cs311/l7#6"]},
+      {"front": "Memoization trades what for what?", "back": "Memory for time.", "refs": ["cs311/t-nov11#2", "cs311/l7#7"]},
+      {"front": "Weighted interval scheduling recurrence?", "back": "OPT(j) = max(v_j + OPT(p(j)), OPT(j-1)), OPT(0) = 0.", "refs": ["cs311/l7#4"]},
+      {"front": "Running time of 0/1 knapsack DP?", "back": "O(nW): pseudo-polynomial, because W is a number, not an input length.", "refs": ["cs311/l8#4", "cs311/t-nov13#2"]},
+      {"front": "LCS recurrence when the last characters differ?", "back": "L(i, j) = max(L(i-1, j), L(i, j-1)).", "refs": ["cs311/l8#5"]},
+      {"front": "Why does greedy fail on 0/1 knapsack?", "back": "Value-per-weight greedy is only optimal for fractional knapsack; small counterexamples break it.", "refs": ["cs311/post:p402"]}
+    ]}},
+    {"key": "quiz1", "course": "cs311", "type": "quiz", "title": "COMPSCI 311 Midterm 1 practice quiz", "created": "-2d", "payload": {"questions": [
+      {"type": "mcq", "prompt": "Which greedy rule is optimal for unweighted interval scheduling?", "choices": ["Earliest start time", "Shortest interval", "Earliest finish time", "Fewest conflicts"], "answer_index": 2, "answer_text": null, "explanation": "Earliest finish time stays ahead of any optimal solution.", "refs": ["cs311/l5#2", "cs311/l5#3"]},
+      {"type": "mcq", "prompt": "What does T(n) = 2T(n/2) + O(n) solve to?", "choices": ["O(n)", "O(n log n)", "O(n^2)", "O(log n)"], "answer_index": 1, "answer_text": null, "explanation": "Each of the log n levels of the recursion tree does O(n) work.", "refs": ["cs311/l6#2"]},
+      {"type": "short", "prompt": "Why is naive recursion on the weighted interval scheduling recurrence slow?", "choices": null, "answer_index": null, "answer_text": "The same subproblems are recomputed many times, so the recursion tree grows exponentially.", "explanation": "Memoization fixes this by storing each OPT(j) once.", "refs": ["cs311/l7#5", "cs311/t-nov6#3"]},
+      {"type": "mcq", "prompt": "Is the O(nW) knapsack algorithm polynomial in the input size?", "choices": ["Yes, always", "No, it is pseudo-polynomial", "Only when n < W", "Only for fractional knapsack"], "answer_index": 1, "answer_text": null, "explanation": "W takes only log W bits to write down.", "refs": ["cs311/l8#4"]}
+    ]}}
+  ],
+  "study_blocks": [
+    {"key": "0", "course": "cs311", "item": "mid1", "title": "CS 311 midterm prep (1/2)", "start": "+1d 18:00", "minutes": 60, "status": "proposed"},
+    {"key": "1", "course": "cs311", "item": "mid1", "title": "CS 311 midterm prep (2/2)", "start": "+2d 18:00", "minutes": 60, "status": "proposed"},
+    {"key": "2", "course": "cs320", "item": "proj2", "title": "Project 2 milestone work", "start": "+3d 14:00", "minutes": 90, "status": "approved", "decided": "-1d"},
+    {"key": "3", "course": "math235", "item": "quiz7", "title": "Eigenvalues review", "start": "+1d 08:00", "minutes": 45, "status": "declined", "decided": "-1d"}
+  ],
+  "conversations": [
+    {"key": "c1", "title": "What's on CS 311 Midterm 1?", "updated": "-20h", "messages": [
+      {"role": "user", "text": "What's on my CS 311 midterm?"},
+      {"role": "assistant", "text": "COMPSCI 311 Midterm 1 covers Lectures 1-9, through dynamic programming {{cite:cs311/syllabus#3}}. The instructor confirmed on Piazza that graphs are not on it; they move to Midterm 2 {{cite:cs311/post:p398}}. Focus on greedy proofs, divide and conquer recurrences, and DP recurrences such as weighted interval scheduling {{cite:cs311/l7#4}}."}
+    ]}
+  ]
+}

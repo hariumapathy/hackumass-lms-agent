@@ -1,33 +1,35 @@
 # Hari: progress
 
-**Branch:** `dev/hari` · **Role:** B (agent and API) · **Last updated:** 2026-11-14 17:55 ET (handoff)
+**Branch:** `dev/hari` · **Role:** B (agent and API) · **Last updated:** 2026-11-14 19:20 ET (handoff, paused for Neal)
 
 _Only Hari (or Hari's agent) edits this file. Keep it short; replace stale lines._
 
 ## Done
 - Planning docs, repo setup, agent context, team branches.
-- **S00 scaffolding (code):** `backend/`, `apps/web/` (Next.js 16), `supabase/`, root `Makefile`, `.env.example`, CI workflow.
-- **S02 API + SSE contract (code):** typed route stubs for every endpoint (mock data, demo-auth stub), error envelope, SSE framing, scripted `POST /chat` stream, `backend/app/api/CONTRACT.md`, `make types` → `apps/web/src/lib/api/{openapi.json,schema.d.ts}`. 27 backend tests pass; ruff, pyright, eslint and typecheck clean.
+- **S00 scaffolding** and **S02 API + SSE contract** (on `main`).
+- **S20 auth** (merged to main, PR #5): real Supabase JWT verification (JWKS ES256 for the hosted project, HS256 fallback), route-table + repository-signature scans, error envelope incl. 500, `PATCH /me` validation, 10/min chat rate limit, JSON request logs without tokens/text, psycopg pool + `profiles` repository. 
+- **S21 plumbing** (args, runner, course resolver, coverage, truncation, untrusted wrapping, labels, times). 119 backend tests pass, 2 skip pending S01.
+- `GEMINI_API_KEY` in `.env` and verified (OpenAI-compatible endpoint works).
 
 ## In progress
-- S00: `make db` untested (needs Docker Desktop). CI green; PR #1 merged to main at handoff.
-- S02: waiting for Soumith's review.
+- S20 DB parts: wire `/me`, `PATCH /me`, `DELETE /me/data` and profile auto-create to `app/db/repositories/profiles.py` **once S01's `profiles` table exists**; un-skip `tests/integration/test_s20_db.py`.
+- Paused (nothing half-built). Parked: S21 tool SQL + `fetch_latest` (needs S01, S03, S10).
 
 ## Next
-- Stage 1: S20 (real Supabase JWT auth) → S21 (tools) → S22 (agent runtime) → S23 (citations). Needs S01 schema from Neal for anything DB-backed.
+- S21 DB-backed tools on the S03 seed → S22 agent runtime (Gemini) → S23 citations.
 
 ## Blocked on / needs from others
-- **Timeline:** clock started Fri 9:30 PM, so it ends Sun ~9:30 AM ET. A compressed scope plan is waiting on Hari's approval.
-- Hosted Supabase project + OpenAI key from Hari (in `.env`, never in chat or git).
-- S01 schema (Neal) before S20/S21 can hit a real DB.
+- **Neal:** S01 schema (S20 DB parts, S21 queries) and S03 seed.
+- **Hari (human):** Devpost draft before Sat 23:59 ET. `SUPABASE_SERVICE_ROLE_KEY` (the new "secret key") in `.env` when the sync worker / delete-my-data needs it. Never in chat or git.
+- **Soumith's S02 follow-ups P6–P9** (see soumith.md) need a decision; none blocks Stage 1.
 
 ## Contract change proposals
-- None. S02 notes list types the spec referenced but hadn't defined (`MaterialSummary`, `ConversationSummary`, …); review them when you review S02.
+- None.
 
 ## Notes for other agents
-- **Run `make setup` first.** No global pnpm or Supabase CLI needed (pinned via `npx` in the Makefile).
-- **Next.js is v16**: read `apps/web/AGENTS.md` before frontend code; `pnpm typecheck` runs `next typegen` first.
-- Frontend test tooling is pinned to Node-20-compatible versions (Vitest 3.2, Vite 7, jsdom 26). Don't upgrade without checking Node.
-- **Soumith:** `make api` serves realistic mock data now. Any non-empty `Authorization: Bearer x` header works until S20. Scripted chat stream: `POST /chat?delay_ms=150`. Re-run `make types` after pulling. **MSW handlers + SSE parser moved from S02 to S30** (S02-T05/T06).
-- **Backend:** `tzdata` is a dependency because Windows has no IANA timezone database (`ZoneInfo` needs it). New env var `PUBLIC_API_URL`.
-- Neal: `supabase/migrations/` is empty and ready for S01. Mock course codes and IDs in `backend/app/api/mock_data.py` match the S03 seed plan.
+- **Auth is real now (S20):** the API needs a real Supabase access token; `Bearer anything` returns 401. The web app's demo/MSW mode is unaffected. Tests mint tokens with `tests/helpers.py` (`auth_header()`); `tests/conftest.py` forces test-only auth settings and the **local** `DATABASE_URL`, so tests never touch the hosted project.
+- **Windows + psycopg async:** needs a selector event loop. `make api` (`--reload`) is fine; don't run uvicorn on Windows without `--reload`. Tests use the `pytest_asyncio_loop_factories` hook.
+- **Neal:** the course-code normalizer + alias table is in `backend/app/core/courses.py` (shared). Please reuse it in S16 rather than writing a second copy.
+- New repository rule enforced by S20-T04: every public function in `app/db/repositories/*.py` starts `(conn, user_id, ...)`.
+- Run `make setup` first. No global pnpm or Supabase CLI needed. Next.js is v16 (read `apps/web/AGENTS.md`). Frontend test tooling pinned for Node 20.
+- Python scripts on Windows: open files with `encoding="utf-8"` (the default cp1252 truncated a doc once).

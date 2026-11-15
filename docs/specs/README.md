@@ -9,20 +9,20 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
 | S00 | [Repo scaffolding and tooling](S00-repo-scaffolding.md) | All | — | In progress (Hari) |
-| S01 | [Database schema](S01-database-schema.md) **(contract)** | A | S00 | Draft |
+| S01 | [Database schema](S01-database-schema.md) **(contract)** | A | S00 | In progress (Neal): built + tested; awaiting B/C review |
 | S02 | [API and streaming contract](S02-api-contract.md) **(contract)** | B | S00, S01 | In progress (Hari): on `dev/hari`, awaiting C review |
-| S03 | [Seed data](S03-seed-data.md) **(contract)** | A | S01 | Draft |
+| S03 | [Seed data](S03-seed-data.md) **(contract)** | A | S01 | In progress (Neal): built + tested; awaiting review |
 
 ## Stage 1: Vertical slice (hours 2–10) → checkpoint H10
 | ID | Spec | Role | Depends on | Status |
 |---|---|---|---|---|
-| S10 | [Sync framework](S10-sync-framework.md) | A | S01 | Draft |
-| S11 | [Canvas connector](S11-canvas-connector.md) | A | S10 | Draft |
-| S12 | [File processing and embeddings](S12-file-processing.md) | A | S10 | Draft |
-| S20 | [Backend API skeleton and auth](S20-api-skeleton-and-auth.md) | B | S01, S02 | Draft |
-| S21 | [Agent tools](S21-agent-tools.md) | B | S01, S03, S20 | Draft |
-| S22 | [Agent runtime and chat streaming](S22-agent-runtime-and-chat.md) | B | S02, S21 | Draft |
-| S23 | [Citations](S23-citations.md) | B | S21, S22 | Draft |
+| S10 | [Sync framework](S10-sync-framework.md) | A | S01 | Done (Neal) |
+| S11 | [Canvas connector](S11-canvas-connector.md) | A | S10 | Done (Neal); live-token check pending; API route wiring = B |
+| S12 | [File processing and embeddings](S12-file-processing.md) | A | S10 | Done (Neal); real-course file check pending |
+| S20 | [Backend API skeleton and auth](S20-api-skeleton-and-auth.md) | B | S01, S02 | In progress (Hari): auth done; DB parts wait for S01 |
+| S21 | [Agent tools](S21-agent-tools.md) | B | S01, S03, S20 | In progress (Hari): 6 read tools on mock data; SQL waits for S01/S03 |
+| S22 | [Agent runtime and chat streaming](S22-agent-runtime-and-chat.md) | B | S02, S21 | In progress (Hari): live on Gemini over mock data; DB persistence waits for S01 |
+| S23 | [Citations](S23-citations.md) | B | S21, S22 | In progress (Hari): validation done; DB resolution waits for S01 |
 | S30 | [Frontend shell and auth](S30-frontend-shell-and-auth.md) | C | S00, S02 | In progress (Soumith): mock mode, T01–T09 green |
 | S32 | [Today view and course pages](S32-today-view.md) | C (UI) + B (endpoints) | S30 | In progress (Soumith): UI in mock mode, T04–T09 green; B endpoints pending |
 | S33 | [Chat and study UI](S33-chat-and-study-ui.md) (chat part) | C | S30 | In progress (Soumith): mock mode, green |
