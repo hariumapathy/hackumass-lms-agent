@@ -36,6 +36,10 @@ class ChatStore(Protocol):
     async def conversation(
         self, user_id: UUID, conversation_id: UUID
     ) -> s.ConversationDetail | None: ...
+    async def save_study_set(self, user_id: UUID, study_set: s.StudySet) -> None: ...
+    async def study_sets(self, user_id: UUID) -> list[s.StudySet]: ...
+    async def save_blocks(self, user_id: UUID, blocks: list[s.StudyBlock]) -> None: ...
+    async def blocks(self, user_id: UUID) -> list[s.StudyBlock]: ...
 
 
 class MemoryChatStore:
@@ -44,6 +48,8 @@ class MemoryChatStore:
         self._messages: dict[UUID, list[s.Message]] = {}
         self.runs: dict[UUID, RunLog] = {}
         self._run_owner: dict[UUID, UUID] = {}
+        self._sets: dict[UUID, tuple[UUID, s.StudySet]] = {}
+        self._blocks: dict[UUID, tuple[UUID, s.StudyBlock]] = {}
 
     def _owned(self, user_id: UUID, conversation_id: UUID) -> bool:
         entry = self._convs.get(conversation_id)
@@ -98,3 +104,18 @@ class MemoryChatStore:
         return s.ConversationDetail(
             conversation=self._convs[conversation_id][1], messages=self._messages[conversation_id]
         )
+
+    async def save_study_set(self, user_id: UUID, study_set: s.StudySet) -> None:
+        self._sets[study_set.id] = (user_id, study_set)
+
+    async def study_sets(self, user_id: UUID) -> list[s.StudySet]:
+        mine = [st for owner, st in self._sets.values() if owner == user_id]
+        return sorted(mine, key=lambda st: st.created_at, reverse=True)
+
+    async def save_blocks(self, user_id: UUID, blocks: list[s.StudyBlock]) -> None:
+        for block in blocks:
+            self._blocks[block.id] = (user_id, block)
+
+    async def blocks(self, user_id: UUID) -> list[s.StudyBlock]:
+        mine = [b for owner, b in self._blocks.values() if owner == user_id]
+        return sorted(mine, key=lambda b: b.start_at)

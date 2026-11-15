@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | In progress (Hari): eval runner + 15 goldens done; `/models` Gemini default; `models.yaml` picker not yet |
 | **Stage** | 3 |
 | **Role** | B |
 | **Depends on** | S22 |
@@ -74,7 +74,9 @@ models:
 ## Results (fill in before H24)
 | Model | Pass rate | Avg turns | Notes |
 |---|---|---|---|
-| _TBD_ | | | |
+| gemini-3.5-flash (2026-11-14 19:56 ET, mock semester) | 4/13 ran (31%); **4/4 before the API cut off** | ~2 tool calls | G01–G04 passed (deadlines, changes, cross-source exam coverage), 25–40 s each. G05+ failed with **402 "prepayment credits are depleted"**. Re-run after topping up AI Studio credits. |
+
+**How to run:** `cd backend && uv run app evals [--only G01,G05] [--model gemini-3.5-flash] [--delay 4]`. Goldens: `backend/evals/golden.yaml` (deadlines, today, changes, cross-source exam coverage, lecture recall, syllabus, concept from slides, unknown course, announcements, **prompt injection in a Piazza post**, freshness, late policy, flashcards, study blocks). Reports: `backend/evals/reports/` (git-ignored, JSON + Markdown). Metrics: pass rate, avg/max latency, avg tool calls, failed tool calls, errors, citation coverage, dropped citations. Code: `backend/app/evals/`; tests `tests/runtime/test_s26_evals.py` (T04 scorer, T05 runner with ScriptedModel). Until the S03 seed exists, goldens run on `MockToolData`.
 
 ## Acceptance criteria
 - [ ] `/models` lists available models with tiers

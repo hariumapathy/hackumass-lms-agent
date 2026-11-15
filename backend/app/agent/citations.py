@@ -6,10 +6,13 @@ a tool in this run (`allowed`), and a quoted span must actually appear in the ci
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from rapidfuzz import fuzz
 
-from app.agent.tools.data import ChunkRow
+if TYPE_CHECKING:
+    from app.agent.tools.data import ChunkRow
+
 from app.api import schemas as s
 
 MARKER = re.compile(r"\[cite:chunk_(\d+)\]")
@@ -124,7 +127,7 @@ def build_deep_link(platform: str, source_url: str, page: int | None, start_s: i
     return source_url
 
 
-def to_citation(row: ChunkRow, message_time: datetime | None = None) -> s.Citation:
+def to_citation(row: "ChunkRow", message_time: datetime | None = None) -> s.Citation:
     status = row.status if row.status in {"current", "changed", "removed", "locked"} else "current"
     quote = _strip_header(row.text)
     if len(quote) > QUOTE_PREVIEW_CHARS:
@@ -146,7 +149,7 @@ def to_citation(row: ChunkRow, message_time: datetime | None = None) -> s.Citati
     )
 
 
-def resolve_rows(rows: list[ChunkRow], ids: list[int]) -> list[s.Citation]:
+def resolve_rows(rows: "list[ChunkRow]", ids: list[int]) -> list[s.Citation]:
     """Citations in `ids` order; IDs without a row (not this student's) are skipped."""
     by_id = {r.chunk_id: r for r in rows}
     return [to_citation(by_id[i]) for i in ids if i in by_id]

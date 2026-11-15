@@ -53,4 +53,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Backup demo semester: 4 UMass courses, deadlines, announcements, slides, lecture transcripts, a moved midterm (S03) | ✅ on `dev/neal` (PR #8), loads in ~1 s |
 | AI agent on Gemini: answers deadline + material questions with tools, streams progress (S21, S22) | ✅ on the mock semester (real data after S01/S03) |
 | Verified citations: made-up or unreturned sources are dropped, quotes checked (S23) | ✅ |
+| Flashcards / quizzes / study plans where every item cites a real source (S24) | ✅ backend (UI cards: S33) |
+| Agent evals: 15 golden student questions incl. a prompt-injection test (S26) | ✅ runner; first run 4/4 before credits ran out |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |
