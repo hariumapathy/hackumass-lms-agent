@@ -15,6 +15,8 @@ import type { Message } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { AssistantText } from "./assistant-text";
 import { applyEvent, newTurn, settleStatus, type Turn } from "./chat-state";
+import { StudySetCard } from "@/components/study/study-set-card";
+import { ApprovalCard } from "./approval-card";
 import { StatusList } from "./status-list";
 
 const SUGGESTIONS = ["What's due this week?", "Did anything change?", "Prep me for my next exam"];
@@ -212,6 +214,8 @@ function TurnView({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
             </details>
           ))}
         {text && <AssistantText text={text} citations={turn.citations} streaming={streaming} />}
+        {turn.studySets.map((set) => <StudySetCard key={set.id} set={set} />)}
+        {turn.approval && <ApprovalCard {...turn.approval} />}
         {turn.phase === "stopped" && <p className="text-sm text-muted-foreground">Stopped.</p>}
         {turn.error && (
           <div role="alert" className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/40 px-3 py-2 text-sm">

@@ -30,6 +30,8 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 - **S30 / S32 / S33 (chat part), mock mode** (`653d134`, pushed to `dev/soumith`): Supabase sign-in + demo sign-in, protected shell (sidebar / bottom tabs), typed API client on `schema.d.ts`, SSE parser + `streamChat` (S02-T05/T06 done here), MSW handlers + fixtures, Today view + course page, streaming chat with status list, citation chips/cards, final_text, Try again, Stop, past chats. **30 web tests green; lint, typecheck, `next build` clean.** E2E specs written (S30-T07, S32-T08), not yet run.
 - **Codex brought in** for the rest of role C: brief at [handoff/codex-brief-soumith.md](handoff/codex-brief-soumith.md). Separate worktrees: Claude in `../hackumass-lms-agent-claude` (`soumith/claude`), Codex in `../hackumass-lms-agent-codex` (`soumith/codex`); main checkout stays on `dev/soumith` as merge target. Overlap allowed, merged afterwards. Split: Codex = S33 study cards + approvals, S31 onboarding, then S34 (+ `src/mocks/**`); Claude = shell/Today/course, e2e + browser checks, docs.
 
+**Codex update (soumith/codex):** S33 streamed study-set cards and Add/Skip approval actions implemented tests-first; 34 web tests passing. Study-mode mocks added. Study detail/list pages next. Contract change proposal P7 pending: reloaded approvals cannot show their outcome. Cross-lane change: SSE test expects the study-mode stream for exam prep; no dependencies or contract changes.
+
 **In progress (not finished):** Claude: Playwright e2e + browser check at desktop/375 px. Codex: S33 Stage 2 → S31 → S34.
 
 **Decisions / design changes (Soumith OK'd):**

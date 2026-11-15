@@ -1,5 +1,5 @@
 // One chat turn's state, built from SSE events (S02 event order, S33 rules 2–6). Pure + testable.
-import type { ChatEvent, Citation } from "@/lib/api/types";
+import type { ChatEvent, Citation, StudySet, StudyBlock } from "@/lib/api/types";
 
 export interface StatusItem {
   id: string;
@@ -14,6 +14,8 @@ export interface TurnError {
 }
 
 export interface Turn {
+  studySets: StudySet[];
+  approval: { blocks: StudyBlock[]; summary: string } | null;
   key: string;
   userText: string;
   status: StatusItem[];
@@ -30,7 +32,7 @@ export interface Turn {
 }
 
 export function newTurn(key: string, userText: string): Turn {
-  return { key, userText, status: [], text: "", citations: null, finalText: null, error: null, phase: "streaming", terminal: false };
+  return { key, userText, studySets: [], approval: null, status: [], text: "", citations: null, finalText: null, error: null, phase: "streaming", terminal: false };
 }
 
 export function applyEvent(turn: Turn, ev: ChatEvent): Turn {
@@ -42,6 +44,10 @@ export function applyEvent(turn: Turn, ev: ChatEvent): Turn {
     }
     case "text":
       return { ...turn, text: turn.text + ev.data.delta };
+    case "study_set":
+      return { ...turn, studySets: [...turn.studySets.filter((s) => s.id !== ev.data.study_set.id), ev.data.study_set] };
+    case "approval_required":
+      return { ...turn, approval: ev.data };
     case "citations":
       return { ...turn, citations: ev.data.citations };
     case "done":
@@ -49,7 +55,7 @@ export function applyEvent(turn: Turn, ev: ChatEvent): Turn {
     case "error":
       return { ...turn, error: { ...ev.data }, phase: "error", terminal: true };
     default:
-      // run_started is handled by the screen; study_set / approval_required arrive in Stage 2 (S33 study cards).
+      // run_started is handled by the screen.
       return turn;
   }
 }

@@ -2,7 +2,7 @@
 // Used by the browser in mock mode (NEXT_PUBLIC_API_MOCKS=1) and by tests (msw/node).
 import { http, HttpResponse } from "msw";
 import type { ChatEvent, ChatRequest, ErrorEnvelope } from "@/lib/api/types";
-import { buildFixtures, buildToday, scriptedChat, type Fixtures } from "./fixtures";
+import { buildFixtures, buildToday, scriptedChat, scriptedStudyChat, type Fixtures } from "./fixtures";
 
 export const MOCK_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -55,6 +55,20 @@ export function createHandlers(opts: HandlerOptions = {}) {
   const unauthorized = () => errorResponse(401, "unauthorized", "Sign in again.");
 
   return [
+    http.get(api("/study-sets"), ({ request }) => authed(request)
+      ? HttpResponse.json(f.studySets.map(({ id, type, title, course_id, created_at }) => ({ id, type, title, course_id, created_at }))) : unauthorized()),
+    http.get(api("/study-sets/:id"), ({ request, params }) => {
+      if (!authed(request)) return unauthorized();
+      const set = f.studySets.find((s) => s.id === params.id);
+      return set ? HttpResponse.json(set) : errorResponse(404, "not_found", "Study set not found.");
+    }),
+    http.post(api("/study-blocks/decision"), async ({ request }) => {
+      if (!authed(request)) return unauthorized();
+      const { block_ids, approve } = await request.json() as { block_ids: string[]; approve: boolean };
+      const blocks = f.studyBlocks.filter((b) => block_ids.includes(b.id));
+      for (const b of blocks) if (b.status === "proposed") b.status = approve ? "approved" : "declined";
+      return HttpResponse.json({ blocks });
+    }),
     http.get(api("/health"), () => HttpResponse.json({ status: "ok" })),
 
     http.get(api("/me"), ({ request }) => (authed(request) ? HttpResponse.json(f.me) : unauthorized())),
@@ -137,7 +151,7 @@ export function createHandlers(opts: HandlerOptions = {}) {
       if (!f.conversations.some((c) => c.id === conversationId)) {
         f.conversations.unshift({ id: conversationId, title: body.message.slice(0, 60), updated_at: new Date().toISOString() });
       }
-      return sseResponse(scriptedChat(conversationId, f), { delayMs: opts.chatDelayMs ?? 0 });
+      return sseResponse((/prep|quiz|flashcard|study/i.test(body.message) ? scriptedStudyChat : scriptedChat)(conversationId, f), { delayMs: opts.chatDelayMs ?? 0 });
     }),
   ];
 }
