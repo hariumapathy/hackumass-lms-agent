@@ -1,5 +1,8 @@
-import { Placeholder } from "@/components/states/placeholder";
+"use client";
+import { useParams } from "next/navigation";
+import { StudyDetail } from "@/components/study/study-screen";
 
 export default function StudySetPage() {
-  return <Placeholder title="Study set" />; // S33 study cards (Stage 2)
+  const { studySetId } = useParams<{ studySetId: string }>();
+  return <StudyDetail id={studySetId} />;
 }

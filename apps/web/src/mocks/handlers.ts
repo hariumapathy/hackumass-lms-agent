@@ -1,3 +1,4 @@
+import { studyHandlers } from "./handlers-study";
 // MSW handlers for every Stage 1 endpoint in S02, backed by fixtures.ts.
 // Used by the browser in mock mode (NEXT_PUBLIC_API_MOCKS=1) and by tests (msw/node).
 import { http, HttpResponse } from "msw";
@@ -56,20 +57,7 @@ export function createHandlers(opts: HandlerOptions = {}) {
   const unauthorized = () => errorResponse(401, "unauthorized", "Sign in again.");
 
   return [
-    http.get(api("/study-sets"), ({ request }) => authed(request)
-      ? HttpResponse.json(f.studySets.map(({ id, type, title, course_id, created_at }) => ({ id, type, title, course_id, created_at }))) : unauthorized()),
-    http.get(api("/study-sets/:id"), ({ request, params }) => {
-      if (!authed(request)) return unauthorized();
-      const set = f.studySets.find((s) => s.id === params.id);
-      return set ? HttpResponse.json(set) : errorResponse(404, "not_found", "Study set not found.");
-    }),
-    http.post(api("/study-blocks/decision"), async ({ request }) => {
-      if (!authed(request)) return unauthorized();
-      const { block_ids, approve } = await request.json() as { block_ids: string[]; approve: boolean };
-      const blocks = f.studyBlocks.filter((b) => block_ids.includes(b.id));
-      for (const b of blocks) if (b.status === "proposed") b.status = approve ? "approved" : "declined";
-      return HttpResponse.json({ blocks });
-    }),
+    ...studyHandlers(f),
     http.get(api("/health"), () => HttpResponse.json({ status: "ok" })),
 
     http.get(api("/me"), ({ request }) => (authed(request) ? HttpResponse.json(f.me) : unauthorized())),
