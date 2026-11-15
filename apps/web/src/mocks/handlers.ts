@@ -3,6 +3,7 @@
 import { http, HttpResponse } from "msw";
 import type { ChatEvent, ChatRequest, ErrorEnvelope } from "@/lib/api/types";
 import { buildFixtures, buildToday, scriptedChat, scriptedStudyChat, type Fixtures } from "./fixtures";
+import { accountHandlers } from "./handlers-account";
 
 export const MOCK_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -153,5 +154,7 @@ export function createHandlers(opts: HandlerOptions = {}) {
       }
       return sseResponse((/prep|quiz|flashcard|study/i.test(body.message) ? scriptedStudyChat : scriptedChat)(conversationId, f), { delayMs: opts.chatDelayMs ?? 0 });
     }),
+
+    ...accountHandlers(f, opts),
   ];
 }

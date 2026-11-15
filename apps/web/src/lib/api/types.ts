@@ -27,6 +27,13 @@ export type ChatRequest = S["ChatRequest"];
 export type SyncRequest = S["SyncRequest"];
 export type SyncStartResponse = S["SyncStartResponse"];
 export type SyncStatusResponse = S["SyncStatusResponse"];
+export type MePatch = S["MePatch"];
+export type CanvasConnectRequest = S["CanvasConnectRequest"];
+export type LoginStartResponse = S["LoginStartResponse"];
+export type LoginStatusResponse = S["LoginStatusResponse"];
+export type ModelOption = S["ModelOption"];
+export type ModelsResponse = S["ModelsResponse"];
+export type CalendarFeed = S["CalendarFeed"];
 
 export type Platform = Connection["platform"];
 export type ConnectionStatus = Connection["status"];
