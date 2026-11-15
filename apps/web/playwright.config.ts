@@ -6,6 +6,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // `next dev` compiles each route on its first visit (several seconds on a cold cache).
+  timeout: 60_000,
+  expect: { timeout: 20_000 },
   use: {
     baseURL: "http://localhost:3100",
     trace: "on-first-retry",
