@@ -7,7 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen, CalendarCheck, LogOut, MessageSquare, Settings, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
+import type { CourseSummary } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/auth-context";
+import { splitCourses } from "@/lib/courses";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "./brand-mark";
 import { ExpiryBanner } from "./expiry-banner";
@@ -64,6 +66,7 @@ function Sidebar() {
   const pathname = usePathname();
   const { signOut } = useAuth();
   const courses = useCourses();
+  const split = splitCourses(courses.data ?? []);
   return (
     <nav
       aria-label="Sidebar"
@@ -84,35 +87,16 @@ function Sidebar() {
           <span className="px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Your courses
           </span>
-          <ul className="flex flex-col gap-0.5">
-            {(courses.data ?? []).map((c) => {
-              const active = isActive(pathname, `/courses/${c.id}`);
-              return (
-                <li key={c.id}>
-                  <Link
-                    href={`/courses/${c.id}`}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2",
-                      active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
-                    )}
-                  >
-                    <span
-                      className="size-2.5 shrink-0 rounded-full ring-2 ring-white/70 dark:ring-black/40"
-                      style={{ backgroundColor: c.color ?? "currentColor" }}
-                      aria-hidden
-                    />
-                    <span className="truncate">{c.code}</span>
-                    {c.upcoming_count > 0 && (
-                      <span className="ml-auto rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
-                        {c.upcoming_count}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <CourseLinks courses={split.active} pathname={pathname} />
+          {split.other.length > 0 && (
+            <details className="group" open={split.other.some((c) => isActive(pathname, `/courses/${c.id}`))}>
+              <summary className="cursor-pointer list-none rounded-lg px-3 py-1.5 text-xs text-muted-foreground select-none hover:bg-sidebar-accent">
+                <span className="group-open:hidden">Show</span>
+                <span className="hidden group-open:inline">Hide</span> other courses ({split.other.length})
+              </summary>
+              <CourseLinks courses={split.other} pathname={pathname} />
+            </details>
+          )}
         </div>
       </div>
       <div className="border-t border-sidebar-border p-3">
@@ -121,6 +105,41 @@ function Sidebar() {
         </Button>
       </div>
     </nav>
+  );
+}
+
+function CourseLinks({ courses, pathname }: { courses: CourseSummary[]; pathname: string }) {
+  return (
+    <ul className="flex flex-col gap-0.5">
+      {courses.map((c) => {
+        const active = isActive(pathname, `/courses/${c.id}`);
+        return (
+          <li key={c.id}>
+            <Link
+              href={`/courses/${c.id}`}
+              aria-current={active ? "page" : undefined}
+              title={c.name}
+              className={cn(
+                "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-foreground focus-visible:outline-2",
+                active && "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+              )}
+            >
+              <span
+                className="size-2.5 shrink-0 rounded-full ring-2 ring-white/70 dark:ring-black/40"
+                style={{ backgroundColor: c.color ?? "currentColor" }}
+                aria-hidden
+              />
+              <span className="truncate">{c.code}</span>
+              {c.upcoming_count > 0 && (
+                <span className="ml-auto rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
+                  {c.upcoming_count}
+                </span>
+              )}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

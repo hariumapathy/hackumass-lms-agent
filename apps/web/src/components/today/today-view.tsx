@@ -4,6 +4,7 @@ import { AlertTriangle, MessageSquare } from "lucide-react";
 import { Empty } from "@/components/states/states";
 import { Button } from "@/components/ui/button";
 import type { Change, CourseSummary, Item, Platform, Post, Today } from "@/lib/api/types";
+import { splitCourses } from "@/lib/courses";
 import { formatLocalDay, relative } from "@/lib/time";
 import { FreshnessBar } from "./freshness-bar";
 import { CourseChip, ItemRow, SourceChip, StatusBadge } from "./item-row";
@@ -20,6 +21,7 @@ export interface TodayViewProps {
 /** The deterministic dashboard (S32). Pure: data in, UI out. */
 export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSyncNow }: TodayViewProps) {
   const byId = new Map(courses.map((c) => [c.id, c]));
+  const split = splitCourses(courses);
   const tz = today.timezone;
   const nothingDue =
     today.overdue.length + today.due_today.length + today.due_this_week.length + today.upcoming_exams.length === 0;
@@ -81,21 +83,37 @@ export function TodayView({ today, courses, now, onMarkSeen, markingSeen, onSync
 
       {courses.length > 0 && (
         <Section title="Your courses">
-          <ul className="grid gap-2.5 sm:grid-cols-2">
-            {courses.map((c) => (
-              <li
-                key={c.id}
-                className="relative flex items-center justify-between overflow-hidden rounded-xl border bg-card py-3 pr-3 pl-4 shadow-xs transition-shadow hover:shadow-md"
-              >
-                <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: c.color ?? "var(--primary)" }} />
-                <CourseChip course={c} fallbackCode={c.code} />
-                <span className="text-xs text-muted-foreground">{c.upcoming_count} upcoming</span>
-              </li>
-            ))}
-          </ul>
+          <CourseGrid courses={split.active.length > 0 ? split.active : courses} />
+          {split.active.length > 0 && split.other.length > 0 && (
+            <details className="text-sm">
+              <summary className="cursor-pointer select-none text-muted-foreground hover:text-foreground">
+                Other courses ({split.other.length})
+              </summary>
+              <div className="pt-2.5">
+                <CourseGrid courses={split.other} />
+              </div>
+            </details>
+          )}
         </Section>
       )}
     </div>
+  );
+}
+
+function CourseGrid({ courses }: { courses: CourseSummary[] }) {
+  return (
+    <ul className="grid gap-2.5 sm:grid-cols-2">
+      {courses.map((c) => (
+        <li
+          key={c.id}
+          className="relative flex items-center justify-between gap-2 overflow-hidden rounded-xl border bg-card py-3 pr-3 pl-4 shadow-xs transition-shadow hover:shadow-md"
+        >
+          <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: c.color ?? "var(--primary)" }} />
+          <CourseChip course={c} fallbackCode={c.code} />
+          <span className="shrink-0 text-xs text-muted-foreground">{c.upcoming_count} upcoming</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

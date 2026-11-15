@@ -122,3 +122,10 @@ Submitting anything, downloading submissions, rubric details, grades UI (stretch
 - Today visibly showed Gradescope freshness and two upcoming Gradescope-only deadlines in the merged COMPSCI 311 course. Five sampled extracted-local-time → UTC → canonical-time mappings agreed. Comparing five dates directly against the authenticated source pages remains a manual acceptance check.
 - All 33 focused S13/S14 connector/session tests pass. The login browser is on the API laptop, not embedded in the app. Saved-session reuse via requests works; source HTML/cookies were not committed. Historical student courses are also imported, so sidebar clutter is a follow-up, not a data-merge failure.
 - Operator instructions: [Gradescope runbook](../gradescope-runbook.md).
+
+## Live verification on Windows (2026-11-15 ~00:45 ET, Hari's laptop, Hari's real account)
+- Settings → Connect Gradescope → login window (installed Edge, after the S13 Windows fixes in PR #25) → Hari logged in with NetID + Duo → session saved → `connect` sync **succeeded: 258 new**, 12 seeded fake Gradescope records removed.
+- **18 real courses** (Fall 2024 → Fall 2026), **238 active assignments, all merged into canonical items** (S16). Current-term work shows on Today next to Canvas deadlines (e.g. "COMPSCI 311 Section 01 · Homework 10", due Tue Nov 17 11:59 PM ET, correct local time).
+- **Chat** ("What Gradescope homework do I have due this week?") answered with the real Homework 10 / Challenge Problems 5 and their due times.
+- UI follow-up (PR from `hari/gradescope-live`): years of past courses made the sidebar 25 courses long → courses with no upcoming work now fold under "Show other courses (N)" (sidebar + Today).
+
