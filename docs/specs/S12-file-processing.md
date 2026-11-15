@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Done (pending merge; real-course file check open) |
 | **Stage** | 1 |
 | **Role** | A |
 | **Depends on** | S10 |
@@ -77,8 +77,8 @@ flowchart LR
 
 ## Acceptance criteria
 - [ ] A real lecture PDF and PPTX from our own courses produce chunks with correct page numbers
-- [ ] Re-processing an unchanged file does nothing; a changed file produces a new version with old chunks non-current
-- [ ] Fake embeddings used in all tests
+- [x] Re-processing an unchanged file does nothing; a changed file produces a new version with old chunks non-current
+- [x] Fake embeddings used in all tests
 
 ## Test plan
 | ID | Test | Type |
@@ -97,3 +97,16 @@ flowchart LR
 
 ## Out of scope
 OCR, images/diagrams understanding, audio transcription (Echo360 fallback via speech-to-text is stretch).
+
+## Implementation notes (2026-11-14, Neal)
+- Code: `backend/app/sync/processing/` — `extract.py` (`extract`, `extract_transcript`, `Unit`, `Extracted`, limits), `chunker.py` (`chunk(..., context="CODE · Title")`, `count_tokens`), `process.py` (`process_material`, `process_post`, `MaterialSource`), `storage.py` (`SupabaseStorage`, `http_downloader`, `storage_path`, **`delete_user_files(user_id)`** for S20), `worker.py` (job glue: decrypts the Canvas token, builds downloader/storage/embeddings).
+- **Embeddings decision:** Gemini `gemini-embedding-001` via the OpenAI-compatible endpoint at **1536 dims**, L2-normalized (`core/embeddings.py`, matches `vector(1536)`); `FakeEmbeddings` in all tests. Batches of 100; 429/5xx retried with backoff (S12-T10).
+- **DOCX/HTML without markitdown** (too heavy: many transitive deps): stdlib `zipfile`+XML for DOCX and `html.parser` for HTML, split on headings. Same behavior as the spec, fewer deps.
+- **Download refs reach the job through its payload:** `materials` has no download-URL column, so `run_sync` now passes `source = {download, text, cues}` (from the `NMaterial`) to `process_material(user_id, material_id, source)`. Canvas pages arrive as inline `text` (HTML) and transcripts as `cues`; neither stores an original file.
+- **Posts:** `run_sync(..., process_post=...)` queues a `process_post` job for new/changed posts; one unit `title\nbody` (HTML stripped), header `[CODE · Announcement · Title]` (same as S03 seed). Old post chunks are flipped to non-current, not deleted.
+- Header format matches the seed: `[CODE · Title · p.N]`, `[CODE · Title · m:ss]` for transcripts, `[CODE · Title]` when there's no anchor. The header counts toward `max_tokens`.
+- Versioning: first processing keeps `version` (1); any later processing that yields different chunk text bumps it. Identical chunk text → `unchanged` (no storage write, no embedding). Chunks are inserted then older current chunks flipped in **one transaction**; embedding/storage happen before it, so a failure leaves the previous version searchable (`processing_status = failed`).
+- Storage: Storage REST API with `SUPABASE_SERVICE_ROLE_KEY`; bucket `materials` (private) is created on the first "Bucket not found". Without a service key the worker still processes but doesn't keep the original file.
+- Download 401/403 → `AuthExpired` → connection `needs_reconnect`, material `failed` ("Your sign-in for this site expired."). 5xx/timeouts → `PlatformError` → job retried (2 attempts).
+- PyMuPDF is **AGPL-3.0** (fine for our public repo; listed in THIRD_PARTY_NOTICES). Swap for `pypdf` if that ever matters.
+- Open: acceptance check with a real lecture PDF/PPTX from our own courses (needs a live Canvas sync).
