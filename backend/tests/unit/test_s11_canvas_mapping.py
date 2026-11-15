@@ -5,6 +5,7 @@ import pytest
 from app.connectors.canvas.mapping import (
     html_to_text,
     is_exam_title,
+    is_submitted,
     item_type,
     normalize_course_code,
     supported_file,
@@ -91,3 +92,22 @@ def test_s11_t06_announcement_html_to_clean_text_keeps_links() -> None:
 )
 def test_s11_t08_supported_file_types(name: str, ok: bool) -> None:
     assert supported_file({"display_name": name, "filename": name}) is ok
+
+
+@pytest.mark.parametrize(
+    ("submission", "expected"),
+    [
+        ({"workflow_state": "submitted", "submitted_at": "2026-11-01T00:00:00Z"}, True),
+        ({"workflow_state": "pending_review", "submitted_at": None}, True),
+        ({"workflow_state": "graded", "submitted_at": "2026-11-01T00:00:00Z"}, True),
+        ({"workflow_state": "unsubmitted", "submitted_at": None}, False),
+        # graded as missing (a 0 for no work) is not "submitted"
+        ({"workflow_state": "graded", "submitted_at": None, "missing": True}, False),
+        ({"workflow_state": "unsubmitted", "excused": True}, True),  # excused: nothing to do
+        ({"workflow_state": "weird", "submitted_at": "2026-11-01T00:00:00Z"}, True),
+        (None, False),
+        ({}, False),
+    ],
+)
+def test_submitted_canvas_submission_state(submission: dict | None, expected: bool) -> None:
+    assert is_submitted(submission) is expected

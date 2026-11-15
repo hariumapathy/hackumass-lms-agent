@@ -26,6 +26,7 @@ from app.connectors.gradescope.connector import GradescopeConnector
 from app.connectors.gradescope.login import page_shows_logged_in
 from app.connectors.gradescope.parsers import (
     check_logged_in,
+    gs_submitted,
     item_type,
     parse_assignments,
     parse_course_list,
@@ -205,6 +206,7 @@ def test_s14_t03_to_nitem_maps_title_ids_dates_status_score() -> None:
         "released_at": "2026-09-02T09:00:00-04:00",
         "late_due_at": "2026-09-11T23:59:00-04:00",
         "submission_status": "Submitted",
+        "submitted": True,
         "score": 8.5,
         "max_score": 10.0,
     }
@@ -215,6 +217,7 @@ def test_s14_t03_unsubmitted_and_no_due_date_and_bad_date() -> None:
     lab = items["Lab 2: Greedy Algorithms"]
     assert lab.platform_id == "200002"
     assert lab.raw["submission_status"] == "No Submission"
+    assert lab.raw["submitted"] is False
     assert lab.raw["score"] is None and lab.points is None
     assert lab.due_at == datetime(2026, 11, 21, 4, 59, tzinfo=UTC)  # EST (-05:00)
     proposal = items["Final Project Proposal"]  # not submittable: no Gradescope id in the row
@@ -397,3 +400,21 @@ def test_s14_throttle_waits_between_requests() -> None:
     now[0] += 0.25
     client.get_html("/courses/100001")
     assert slept == [0.75]
+
+
+@pytest.mark.parametrize(
+    ("status", "score", "expected"),
+    [
+        ("Submitted", None, True),
+        ("No Submission", None, False),
+        ("Graded", None, True),
+        ("Late Submission", None, True),
+        ("Ungraded", None, False),
+        ("", 7.0, True),  # a graded row shows the score instead of a status
+        (None, None, False),
+    ],
+)
+def test_submitted_gradescope_status(
+    status: str | None, score: float | None, expected: bool
+) -> None:
+    assert gs_submitted(status, score) is expected

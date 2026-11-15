@@ -89,6 +89,15 @@ class SupabaseStorage:
                 raise StorageError(f"upload failed: {resp.status_code}")
             return
 
+    async def download(self, path: str) -> bytes | None:
+        """One stored object (API file viewer). Missing object or bucket -> None."""
+        resp = await self._request("GET", f"/object/{self.bucket}/{path}")
+        if resp.status_code in {400, 404}:
+            return None
+        if resp.status_code >= 400:
+            raise StorageError(f"download failed: {resp.status_code}")
+        return resp.content
+
     async def _list(self, prefix: str) -> list[str]:
         """All object paths under `prefix` (the list endpoint is one level deep; recurse)."""
         out: list[str] = []

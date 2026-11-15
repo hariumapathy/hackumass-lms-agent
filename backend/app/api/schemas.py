@@ -128,6 +128,7 @@ class Item(BaseModel):
     status: RecordStatus
     sources: list[SourceRef]
     changed_fields: list[str] = []
+    submitted: bool = False  # any live source says the student handed it in (never Overdue)
 
 
 class Post(BaseModel):
@@ -210,6 +211,7 @@ class Citation(BaseModel):
     quote: str
     last_synced_at: datetime
     status: CitationStatus
+    file_id: UUID | None = None  # stored PDF: open in the app via GET /files/{file_id}#page=N
 
 
 class ChatRequest(BaseModel):

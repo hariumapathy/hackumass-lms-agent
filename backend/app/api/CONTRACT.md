@@ -34,7 +34,7 @@ data: <JSON object, single line>
 | `done` | `run_id` uuid, `message_id` uuid, `final_text` string | Last event on success. `final_text` (invalid markers removed) is authoritative |
 | `error` | `code` string, `message` string, `retryable` bool | Last event on failure. Keep partial text visible; offer Retry if `retryable` |
 
-`Citation`: `chunk_id` int, `title`, `kind`, `platform`, `course_code`, `page?`, `start_s?`, `end_s?`, `url`, `deep_link`, `quote`, `last_synced_at`, `status` (`current|changed|removed|locked`).
+`Citation`: `chunk_id` int, `title`, `kind`, `platform`, `course_code`, `page?`, `start_s?`, `end_s?`, `url`, `deep_link`, `quote`, `last_synced_at`, `status` (`current|changed|removed|locked`), `file_id?` (2026-11-15: set when we hold the original PDF; the app shows it in its own viewer via REST `GET /files/{file_id}` with the student's Bearer token, opened at `#page=N`).
 
 ## Ordering guarantees
 1. `run_started` is first.

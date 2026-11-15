@@ -127,6 +127,7 @@ _EXAM = re.compile(r"\b(midterm|exam|final)\b", re.I)
 _QUIZ = re.compile(r"\bquiz(zes)?\b", re.I)
 _LAB = re.compile(r"\blab\b", re.I)
 _PROJECT = re.compile(r"\bproject\b", re.I)
+_SUBMITTED = re.compile(r"\b(submitted|submission|graded)\b")
 
 
 def item_type(title: str) -> ItemType:
@@ -162,6 +163,16 @@ def _num(value: Any) -> float | None:
         return float(value) if value is not None and value != "" else None
     except (TypeError, ValueError):
         return None
+
+
+def gs_submitted(status: str | None, score: float | None) -> bool:
+    """Gradescope's status column: "Submitted" / "No Submission", or the score once graded."""
+    if score is not None:
+        return True
+    text = (status or "").casefold()
+    if not text or "no submission" in text:
+        return False
+    return bool(_SUBMITTED.search(text))
 
 
 def assignment_platform_id(a: Assignment) -> str:
@@ -200,6 +211,7 @@ def to_nitem(
             "released_at": released.isoformat() if released else None,
             "late_due_at": late.isoformat() if late else None,
             "submission_status": status,
+            "submitted": gs_submitted(status, _num(a.grade)),
             "score": _num(a.grade),
             "max_score": _num(a.max_grade),
         },

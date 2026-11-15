@@ -69,6 +69,7 @@ def _item(row: ItemRow, ctx: RunCtx) -> dict:
         "due_in": relative_time(row.due_at, now) if row.due_at else "no due date",
         "points": row.points,
         "status": row.status,
+        "submitted": row.submitted,
         "changed_fields": row.changed_fields,
         "sources": row.platforms,
     }

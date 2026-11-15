@@ -142,6 +142,7 @@ def to_citation(row: "ChunkRow", message_time: datetime | None = None) -> s.Cita
         start_s=row.start_s,
         end_s=row.end_s,
         url=row.source_url,
+        file_id=row.file_id,
         deep_link=build_deep_link(row.platform, row.source_url, row.page, row.start_s),
         quote=quote,
         last_synced_at=row.last_synced_at,

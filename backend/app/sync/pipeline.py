@@ -200,7 +200,11 @@ class _Store:
             return "new", row["id"]
         outcome = classify(ex["content_hash"], h)
         if outcome == "unchanged":
-            await self.touch("item_sources", ex["id"])
+            if (ex["raw"] or {}).get("submitted") != raw.get("submitted"):
+                # Handing work in changes no hashed field, but Today must stop calling it overdue.
+                await self.touch("item_sources", ex["id"], ", raw = %s", (Jsonb(_jsonable(raw)),))
+            else:
+                await self.touch("item_sources", ex["id"])
             return outcome, ex["id"]
         await self.one(
             "update item_sources set raw_title = %s, raw_due_at = %s, raw = %s, source_url = %s, "

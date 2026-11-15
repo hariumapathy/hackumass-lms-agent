@@ -106,6 +106,17 @@ describe("S32 Today view", () => {
     expect(within(bar).queryByText(/echo360/i)).not.toBeInTheDocument();
   });
 
+  it("S32-T11 submitted work is never Overdue and shows a Submitted badge", () => {
+    const f = buildFixtures(NOW);
+    // Mock bucketing mirrors the backend: HW4 (past due) was handed in, so it isn't overdue.
+    expect(f.today.overdue.map((i) => i.title)).not.toContain("HW4");
+    const lab = f.today.due_today.find((i) => i.title === "Lab 4")!;
+    const today = { ...f.today, due_today: f.today.due_today.map((i) => (i === lab ? { ...i, submitted: true } : i)) };
+    renderWithProviders(<TodayView today={today} courses={f.courses} now={NOW} onMarkSeen={noop} onSyncNow={noop} />);
+    const row = screen.getByText("Lab 4").closest("li")!;
+    expect(within(row).getByText(/submitted/i)).toBeInTheDocument();
+  });
+
   it("S32-T07 source chips link to source_url in a new tab", () => {
     const f = buildFixtures(NOW);
     renderWithProviders(<TodayView today={f.today} courses={f.courses} now={NOW} onMarkSeen={noop} onSyncNow={noop} />);

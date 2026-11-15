@@ -23,6 +23,8 @@ _KIND_SQL = {
 _CHUNK_COLUMNS = """
 ch.id as chunk_id, ch.course_id, coalesce(c.code, c.name) as course_code,
        ch.material_id::text as material_id, coalesce(m.title, p.title) as title,
+       case when m.storage_path is not null and (lower(coalesce(m.mime_type, '')) like
+            'application/pdf%%' or lower(m.storage_path) like '%%.pdf') then m.id end as file_id,
        case when ch.post_id is not null then 'post'
             when m.kind = 'transcript' then 'transcript'
             when m.kind = 'syllabus' then 'syllabus'
@@ -65,7 +67,9 @@ async def list_items(
                coalesce(array_agg(distinct s.platform::text)
                         filter (where s.platform is not null), '{}') as platforms,
                coalesce(array_agg(distinct ch.field)
-                        filter (where ch.field is not null), '{}') as changed_fields
+                        filter (where ch.field is not null), '{}') as changed_fields,
+               coalesce(bool_or(s.status <> 'removed' and s.raw->>'submitted' = 'true'), false)
+                        as submitted
         from items i
         join courses c on c.id = i.course_id and c.user_id = i.user_id
         left join item_sources s on s.item_id = i.id and s.user_id = i.user_id
