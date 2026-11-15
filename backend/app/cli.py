@@ -76,6 +76,19 @@ async def _seed_async(args: argparse.Namespace) -> int:
     return 0
 
 
+def _serve(argv: list[str]) -> int:
+    """Run the API without auto-reload on the right event loop (selector on Windows, for psycopg).
+    `make demo-api` uses this: on Windows `uvicorn --reload` can hang or leave a stale server."""
+    import uvicorn
+
+    parser = argparse.ArgumentParser(prog="app serve")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8000)
+    opts = parser.parse_args(argv)
+    server = uvicorn.Server(uvicorn.Config("app.main:app", host=opts.host, port=opts.port))
+    return _run_async(server.serve()) or 0
+
+
 def _worker(argv: list[str]) -> int:
     """S10: run the Procrastinate worker (queues `sync` + `process`) with the periodic schedule."""
     from app.core.crypto import CryptoError
@@ -163,6 +176,7 @@ COMMANDS = {
     "openapi": lambda _argv: _openapi(),
     "seed": _seed,
     "worker": _worker,
+    "serve": _serve,
     "evals": _evals,
 }
 
