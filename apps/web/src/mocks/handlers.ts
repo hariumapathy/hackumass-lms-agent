@@ -3,6 +3,7 @@
 import { http, HttpResponse } from "msw";
 import type { ChatEvent, ChatRequest, ErrorEnvelope } from "@/lib/api/types";
 import { buildFixtures, buildToday, scriptedChat, type Fixtures } from "./fixtures";
+import { accountHandlers } from "./handlers-account";
 
 export const MOCK_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -139,5 +140,7 @@ export function createHandlers(opts: HandlerOptions = {}) {
       }
       return sseResponse(scriptedChat(conversationId, f), { delayMs: opts.chatDelayMs ?? 0 });
     }),
+
+    ...accountHandlers(f, opts),
   ];
 }

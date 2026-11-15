@@ -53,6 +53,13 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 **Gotchas for the next agent:** see brief §5 (Node-20 pins, shadcn `cn` imports, MSW 2 option names, jsdom AbortSignal shim in `tests/setup.ts`, module-level react-markdown config, Suspense for `useSearchParams`).
 
+**Cursor (19:35, branch `soumith/cursor`): S31 onboarding built, S34 not started. Handing the rest to Claude.**
+- Done: `src/components/connect/*` (welcome, guided Canvas paste, Gradescope/Echo360 live login with 2 s polling + 409 resume, calendar step with Google/Apple/Outlook links, "Getting your classes" step polling `/sync/status`, resume from `/me` + localStorage, `?reconnect=` → back to `/settings`), `src/app/onboarding/page.tsx`, `src/mocks/handlers-account.ts` (all §3.B endpoints, incl. `/models` with Gemini default, PATCH `/me`, DELETE `/me/data`, calendar rotate), `src/components/ui/dialog.tsx` (hand-written: the shadcn CLI tries to install `cn`). Cross-lane: additive API methods in `client.ts` (+ optional `ApiError.details`), type re-exports in `types.ts`, one spread line in `handlers.ts`.
+- Verified: `tests/s31-onboarding.test.tsx`, 14 passing (T01–T05, T07, T08). **Not yet run:** full `pnpm test`, `lint`, `typecheck`, `build`, and the e2e `tests/e2e/s31-onboarding.spec.ts` (T06 + a T05 reconnect test). Run these before merging.
+- Left to do: (1) run the checks above and fix anything; (2) **S34 settings** (brief §3.B item 2): mocks and the dialog are ready; reuse `CalendarButtons`/`useCalendarFeed` from `connect/calendar-step.tsx` and `canvasReady`/`LiveLogin` as needed; tests S34-T01…T06; (3) Canvas-expiry banner (< 10 days) also on Today/app shell (S34 rule 1); (4) tick S31 acceptance criteria in the spec.
+- Gaps: no UMass Canvas screenshots for the guide yet (text steps only); the S02 409 response doesn't include the existing `login_id` (UI falls back to the id saved in sessionStorage; ask Hari to add `details.login_id`); P6 (no counts, so the last step shows the class count from `/courses`); P8 (no reason for unavailable models).
+- e2e on Windows here: set `PLAYWRIGHT_BROWSERS_PATH=%LOCALAPPDATA%\ms-playwright` (the sandbox points Playwright at an empty cache).
+
 ---
 
 ## 2026-11-14 17:55 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari · HANDOFF

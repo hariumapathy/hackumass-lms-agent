@@ -2,16 +2,23 @@
 // `api()` returns a singleton; AuthProvider calls `configureApi` with the Supabase token getter.
 import { config } from "@/lib/config";
 import type {
+  CalendarFeed,
+  CanvasConnectRequest,
   Change,
   Citation,
+  Connection,
   ConversationSummary,
   CourseDetail,
   CourseSummary,
   ErrorEnvelope,
   Item,
   ItemType,
+  LoginStartResponse,
+  LoginStatusResponse,
   Me,
+  MePatch,
   Message,
+  ModelsResponse,
   Platform,
   SourceStatus,
   Today,
@@ -21,13 +28,15 @@ export class ApiError extends Error {
   readonly code: string;
   readonly status: number;
   readonly retryable: boolean;
+  readonly details?: unknown;
 
-  constructor(opts: { code: string; message: string; status: number; retryable: boolean }) {
+  constructor(opts: { code: string; message: string; status: number; retryable: boolean; details?: unknown }) {
     super(opts.message);
     this.name = "ApiError";
     this.code = opts.code;
     this.status = opts.status;
     this.retryable = opts.retryable;
+    this.details = opts.details;
   }
 }
 
@@ -69,6 +78,7 @@ export async function toApiError(res: Response): Promise<ApiError> {
         message: body.error.message ?? res.statusText,
         status: res.status,
         retryable: Boolean(body.error.retryable),
+        details: body.error.details,
       });
     }
   } catch {
@@ -141,6 +151,21 @@ export function createApiClient() {
     sync: (body: { platform?: Platform; course_id?: string } = {}) =>
       request<{ sync_run_ids: string[] }>("POST", "/sync", { body }),
     syncStatus: () => request<{ sources: SourceStatus[] }>("GET", "/sync/status"),
+    // Account + connections (S31, S34)
+    patchMe: (body: MePatch) => request<Me>("PATCH", "/me", { body }),
+    deleteMyData: () => request<void>("DELETE", "/me/data"),
+    models: () => request<ModelsResponse>("GET", "/models"),
+    connectCanvas: (body: CanvasConnectRequest) => request<Connection>("POST", "/connections/canvas", { body }),
+    startLogin: (platform: Platform) =>
+      request<LoginStartResponse>("POST", `/connections/${encodeURIComponent(platform)}/login`),
+    loginStatus: (platform: Platform, loginId: string) =>
+      request<LoginStatusResponse>(
+        "GET",
+        `/connections/${encodeURIComponent(platform)}/login/${encodeURIComponent(loginId)}`,
+      ),
+    disconnect: (platform: Platform) => request<void>("DELETE", `/connections/${encodeURIComponent(platform)}`),
+    calendarFeed: () => request<CalendarFeed>("GET", "/calendar/feed"),
+    rotateCalendarFeed: () => request<CalendarFeed>("POST", "/calendar/feed/rotate"),
   };
 }
 
