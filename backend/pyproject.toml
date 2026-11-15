@@ -20,6 +20,8 @@ dependencies = [
     "pymupdf>=2.1",
     "python-pptx>=1.0.2",
     "tiktoken>=0.14.0",
+    "playwright>=1.65.2",
+    "gradescopeapi==1.8.1",
 ]
 
 [dependency-groups]
