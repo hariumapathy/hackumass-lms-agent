@@ -118,7 +118,10 @@ class _Run:
                 ev = await self.client.get(f"/api/v1/calendar_events/{item_id[6:]}")
                 rec = m.event_to_item(ev, course_id, self.base)
             else:
-                a = await self.client.get(f"/api/v1/courses/{course_id}/assignments/{item_id}")
+                a = await self.client.get(
+                    f"/api/v1/courses/{course_id}/assignments/{item_id}",
+                    {"include[]": ["submission"]},
+                )
                 rec = m.to_item(a, course_id, self.base)
         except (CanvasNotFound, CanvasForbidden):
             log.warning("canvas: item %s/%s not available", course_id, item_id)
@@ -180,7 +183,7 @@ class _Run:
             yield rec
 
     async def assignments(self, cid: str) -> AsyncIterator[NormalizedRecord]:
-        params = {"per_page": 100, "order_by": "due_at"}
+        params = {"per_page": 100, "order_by": "due_at", "include[]": ["submission"]}
         async for a in self.client.paginate(f"/api/v1/courses/{cid}/assignments", params):
             yield m.to_item(a, cid, self.base)
 

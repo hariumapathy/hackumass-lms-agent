@@ -36,6 +36,7 @@
           "account"
         ],
         "summary": "Get Me",
+        "description": "DB mode: profile created with defaults on first call. Mock mode: the S02 demo student.",
         "operationId": "get_me_me_get",
         "parameters": [
           {
@@ -143,6 +144,7 @@
           "account"
         ],
         "summary": "Delete My Data",
+        "description": "Deletes every row the student owns (S20 rule 9). Storage objects (S12) and queued jobs\n(S10) are not removed yet. The sign-in account itself stays.",
         "operationId": "delete_my_data_me_data_delete",
         "parameters": [
           {
@@ -234,6 +236,7 @@
           "connections"
         ],
         "summary": "Connect Canvas",
+        "description": "S11: validate the token with Canvas, store it encrypted, queue the first sync.\nThe token is never logged or returned.",
         "operationId": "connect_canvas_connections_canvas_post",
         "parameters": [
           {
@@ -488,6 +491,7 @@
           "connections"
         ],
         "summary": "Start Sync",
+        "description": "Manual \"Refresh\" (S10, trigger=manual): every usable connection, or one platform.",
         "operationId": "start_sync_sync_post",
         "parameters": [
           {
@@ -2224,6 +2228,11 @@
             "type": "array",
             "title": "Changed Fields",
             "default": []
+          },
+          "submitted": {
+            "type": "boolean",
+            "title": "Submitted",
+            "default": false
           }
         },
         "type": "object",

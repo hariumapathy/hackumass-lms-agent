@@ -40,7 +40,11 @@ async def today(
             return s.Today(
                 date=local_today,
                 timezone=profile.timezone,
-                overdue=[i for i in items if i.due_at and at - timedelta(days=7) <= i.due_at < at],
+                overdue=[
+                    i
+                    for i in items
+                    if i.due_at and at - timedelta(days=7) <= i.due_at < at and not i.submitted
+                ],
                 due_today=[i for i in items if i.due_at and at <= i.due_at < end],
                 due_this_week=[i for i in items if i.due_at and end <= i.due_at < week_end],
                 upcoming_exams=[
@@ -61,7 +65,7 @@ async def today(
     return s.Today(
         date=local_today,
         timezone=mock.TZ,
-        overdue=[i for i in items if i.due_at and i.due_at < now],
+        overdue=[i for i in items if i.due_at and i.due_at < now and not i.submitted],
         due_today=[i for i in items if i.due_at and now <= i.due_at < end_of_day],
         due_this_week=[i for i in items if i.due_at and end_of_day <= i.due_at < week_end],
         upcoming_exams=[i for i in items if i.type == "exam" and i.due_at and i.due_at >= now],

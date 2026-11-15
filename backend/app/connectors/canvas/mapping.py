@@ -148,6 +148,23 @@ def _raw(obj: dict[str, Any]) -> dict[str, Any]:
     return {k: obj[k] for k in _RAW_KEYS if k in obj}
 
 
+_SUBMITTED_STATES = {"submitted", "pending_review", "graded"}
+
+
+def is_submitted(submission: dict[str, Any] | None) -> bool:
+    """The student's own submission (`include[]=submission`) says the work is done: handed in,
+    in review, graded with a hand-in, or excused. Graded as missing (a 0 for no work) is not."""
+    if not submission:
+        return False
+    if submission.get("excused"):
+        return True
+    if submission.get("missing") and not submission.get("submitted_at"):
+        return False
+    return bool(submission.get("submitted_at")) or (
+        submission.get("workflow_state") in _SUBMITTED_STATES
+    )
+
+
 def to_item(a: dict[str, Any], course_id: str, base: str) -> NItem:
     points = a.get("points_possible")
     return NItem(
@@ -160,7 +177,7 @@ def to_item(a: dict[str, Any], course_id: str, base: str) -> NItem:
         points=float(points) if points is not None else None,
         source_url=a.get("html_url") or f"{base}/courses/{course_id}/assignments/{a['id']}",
         source_updated_at=parse_dt(a.get("updated_at")),
-        raw=_raw(a),
+        raw={**_raw(a), "submitted": is_submitted(a.get("submission"))},
     )
 
 

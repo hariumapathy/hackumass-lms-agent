@@ -37,7 +37,10 @@ async def items(
                    where ch.user_id = i.user_id and ch.entity_id = i.id
                    and ch.entity_type = 'item' and ch.seen_at is null
                    and ch.detected_at >= %s - interval '14 days'
-                   order by ch.field) as changed_fields
+                   order by ch.field) as changed_fields,
+               exists (select 1 from item_sources src where src.user_id = i.user_id
+                   and src.item_id = i.id and src.status <> 'removed'
+                   and src.raw->>'submitted' = 'true') as submitted
         from items i join courses c on c.id = i.course_id and c.user_id = i.user_id
         where i.user_id = %s and i.status <> 'removed'
           and (%s::uuid is null or i.course_id = %s)

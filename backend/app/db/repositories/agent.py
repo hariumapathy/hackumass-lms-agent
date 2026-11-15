@@ -65,7 +65,9 @@ async def list_items(
                coalesce(array_agg(distinct s.platform::text)
                         filter (where s.platform is not null), '{}') as platforms,
                coalesce(array_agg(distinct ch.field)
-                        filter (where ch.field is not null), '{}') as changed_fields
+                        filter (where ch.field is not null), '{}') as changed_fields,
+               coalesce(bool_or(s.status <> 'removed' and s.raw->>'submitted' = 'true'), false)
+                        as submitted
         from items i
         join courses c on c.id = i.course_id and c.user_id = i.user_id
         left join item_sources s on s.item_id = i.id and s.user_id = i.user_id

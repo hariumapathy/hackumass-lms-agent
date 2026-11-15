@@ -128,6 +128,7 @@ class Item(BaseModel):
     status: RecordStatus
     sources: list[SourceRef]
     changed_fields: list[str] = []
+    submitted: bool = False  # any live source says the student handed it in (never Overdue)
 
 
 class Post(BaseModel):

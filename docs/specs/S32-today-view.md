@@ -33,6 +33,7 @@ The deterministic dashboard: what's overdue, due today, due this week, upcoming 
 3. Each item includes `sources` (all platforms it was merged from) and `changed_fields`.
 4. `sources` freshness from S10 `/sync/status` logic.
 5. Pure query functions with an injected clock (testable).
+6. **Submitted work is done work** (2026-11-15, split doc B1): `Item.submitted` is true when any live source's `item_sources.raw.submitted` is true (Canvas `include[]=submission`; Gradescope status column/score). Submitted items never appear in `overdue`; elsewhere the UI shows a small SUBMITTED badge and no late/soon colouring. The agent's `get_items` returns `submitted` too. No schema change; a resync updates the flag even when the hash is unchanged. Tests: `test_submitted_db.py`, `test_submitted_*` in the S11/S14 connector tests, S32-T11.
 
 ## Frontend behavior (C)
 1. Sections hidden when empty; whole-page empty state when nothing is due ("Nothing due this week 🎉").

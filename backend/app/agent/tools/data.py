@@ -27,6 +27,7 @@ class ItemRow(BaseModel):
     status: str = "active"
     changed_fields: list[str] = []
     platforms: list[str] = []
+    submitted: bool = False
 
 
 class ChangeRow(BaseModel):

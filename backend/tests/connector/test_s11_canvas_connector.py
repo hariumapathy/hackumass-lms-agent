@@ -206,6 +206,12 @@ async def test_s11_full_fetch_maps_everything() -> None:
     assert mid.source_updated_at == datetime(2026, 11, 10, 14, 2, tzinfo=UTC)
     assert items["99816"].due_at is None  # lock_at present but due_at null: don't guess
     assert items["99813"].description == "Covers interval scheduling."
+    # Submission state (include[]=submission) lands on raw.submitted; never the whole object.
+    assert items["80001"].raw["submitted"] is True
+    assert items["99813"].raw["submitted"] is False
+    assert items["99812"].raw["submitted"] is False
+    assert items["event-70001"].raw.get("submitted") is None
+    assert "submission" not in items["80001"].raw
 
     posts = by_type(records, NPost)
     assert [p.platform_id for p in posts] == ["88001", "88002"]
@@ -379,3 +385,23 @@ async def test_s11_announcements_window_and_incremental() -> None:
         mock_canvas(router)
         await collect(connector(incremental_announcements=True), last_success_at=last)
         assert start_dates(router) == {(last - timedelta(days=1)).isoformat()}
+
+
+async def test_submitted_assignments_request_includes_submission() -> None:
+    with respx.mock(assert_all_called=False) as router:
+        mock_canvas(router)
+        await collect(connector())
+        urls = [str(c.request.url) for c in router.calls if "/assignments" in c.request.url.path]
+    assert urls and all("include%5B%5D=submission" in u for u in urls), urls
+
+
+async def test_submitted_item_scope_includes_submission() -> None:
+    with respx.mock(assert_all_called=False) as router:
+        one = router.get(f"{API}/courses/23456/assignments/80001").respond(
+            json=fx("assignments_23456")[0]
+        )
+        records = await collect(
+            connector(), SyncScope(kind="item", course_platform_id="23456", platform_id="80001")
+        )
+        assert "include%5B%5D=submission" in str(one.calls[0].request.url)
+    assert isinstance(records[0], NItem) and records[0].raw["submitted"] is True

@@ -52,6 +52,7 @@ interface ItemSeed {
   status?: Item["status"];
   changed?: string[];
   platforms: Platform[];
+  submitted?: boolean;
 }
 
 const COURSES: Omit<CourseSummary, "upcoming_count">[] = [
@@ -70,7 +71,7 @@ const ITEM_SEEDS: ItemSeed[] = [
   { id: "a0000000-0000-4000-8000-000000000006", course: "cs311", type: "exam", title: "Midterm 1", dueInHours: 6 * 24, points: 100, status: "changed", changed: ["due_at"], platforms: ["canvas"] },
   { id: "a0000000-0000-4000-8000-000000000007", course: "math235", type: "exam", title: "Midterm 2", dueInHours: 18 * 24, points: 100, platforms: ["canvas"] },
   { id: "a0000000-0000-4000-8000-000000000008", course: "stats315", type: "assignment", title: "HW 7", dueInHours: 10 * 24, points: 20, platforms: ["canvas"] },
-  { id: "a0000000-0000-4000-8000-000000000009", course: "cs311", type: "assignment", title: "HW4", dueInHours: -6 * 24, points: 50, platforms: ["canvas", "gradescope"] },
+  { id: "a0000000-0000-4000-8000-000000000009", course: "cs311", type: "assignment", title: "HW4", dueInHours: -6 * 24, points: 50, platforms: ["canvas", "gradescope"], submitted: true },
 ];
 
 function courseOf(key: keyof typeof COURSE_IDS) {
@@ -89,6 +90,7 @@ function buildItem(seed: ItemSeed, now: Date): Item {
     points: seed.points ?? null,
     status: seed.status ?? "active",
     changed_fields: seed.changed ?? [],
+    submitted: seed.submitted ?? false,
     sources: seed.platforms.map((p) => ({
       platform: p,
       source_url:
@@ -292,7 +294,9 @@ export function buildToday(now: Date, items: Item[], changes: Change[], posts: P
   return {
     date: todayStr,
     timezone: TZ,
-    overdue: active.filter((i) => due(i) < now && due(i).getTime() > now.getTime() - 7 * DAY).sort(byDue),
+    overdue: active
+      .filter((i) => !i.submitted && due(i) < now && due(i).getTime() > now.getTime() - 7 * DAY)
+      .sort(byDue),
     due_today: active.filter((i) => due(i) >= now && localDate(due(i)) === todayStr).sort(byDue),
     due_this_week: active
       .filter((i) => localDate(due(i)) > todayStr && due(i).getTime() <= now.getTime() + 7 * DAY && i.type !== "exam")

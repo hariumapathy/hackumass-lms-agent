@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  Check,
   Circle,
   FileText,
   FlaskConical,
@@ -46,6 +47,16 @@ export function StatusBadge({ status }: { status: RecordStatus }) {
   return null;
 }
 
+/** Handed in on Canvas or Gradescope: done, so never shown as late. */
+export function SubmittedBadge() {
+  return (
+    <Badge variant="outline" className="gap-1 border-primary/30 text-[10px] font-semibold tracking-wide text-primary">
+      <Check className="size-3" aria-hidden />
+      SUBMITTED
+    </Badge>
+  );
+}
+
 export function CourseChip({ course, fallbackCode }: { course?: CourseSummary; fallbackCode: string }) {
   const content = (
     <>
@@ -66,8 +77,8 @@ export function CourseChip({ course, fallbackCode }: { course?: CourseSummary; f
 export function ItemRow({ item, course, tz, now }: { item: Item; course?: CourseSummary; tz: string; now: Date }) {
   const Icon = TYPE_ICON[item.type];
   const dueMs = item.due_at ? new Date(item.due_at).getTime() - now.getTime() : null;
-  const soon = dueMs !== null && dueMs >= 0 && dueMs < 24 * 3600_000;
-  const late = dueMs !== null && dueMs < 0;
+  const soon = dueMs !== null && dueMs >= 0 && dueMs < 24 * 3600_000 && !item.submitted;
+  const late = dueMs !== null && dueMs < 0 && !item.submitted;
   return (
     <li className="relative flex flex-col gap-2 overflow-hidden rounded-xl border bg-card py-3 pr-3 pl-4 shadow-xs transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:gap-3">
       <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: course?.color ?? "var(--primary)" }} />
@@ -80,6 +91,7 @@ export function ItemRow({ item, course, tz, now }: { item: Item; course?: Course
             <CourseChip course={course} fallbackCode={item.course_code} />
             <span className={item.status === "removed" ? "font-medium line-through" : "font-medium"}>{item.title}</span>
             <StatusBadge status={item.status} />
+            {item.submitted && <SubmittedBadge />}
           </div>
           <span className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
             {item.due_at ? (

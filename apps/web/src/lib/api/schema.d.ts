@@ -28,7 +28,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Me */
+        /**
+         * Get Me
+         * @description DB mode: profile created with defaults on first call. Mock mode: the S02 demo student.
+         */
         get: operations["get_me_me_get"];
         put?: never;
         post?: never;
@@ -52,7 +55,11 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete My Data */
+        /**
+         * Delete My Data
+         * @description Deletes every row the student owns (S20 rule 9). Storage objects (S12) and queued jobs
+         *     (S10) are not removed yet. The sign-in account itself stays.
+         */
         delete: operations["delete_my_data_me_data_delete"];
         options?: never;
         head?: never;
@@ -85,7 +92,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Connect Canvas */
+        /**
+         * Connect Canvas
+         * @description S11: validate the token with Canvas, store it encrypted, queue the first sync.
+         *     The token is never logged or returned.
+         */
         post: operations["connect_canvas_connections_canvas_post"];
         delete?: never;
         options?: never;
@@ -153,7 +164,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Start Sync */
+        /**
+         * Start Sync
+         * @description Manual "Refresh" (S10, trigger=manual): every usable connection, or one platform.
+         */
         post: operations["start_sync_sync_post"];
         delete?: never;
         options?: never;
@@ -686,6 +700,11 @@ export interface components {
              * @default []
              */
             changed_fields: string[];
+            /**
+             * Submitted
+             * @default false
+             */
+            submitted: boolean;
         };
         /** LoginStartResponse */
         LoginStartResponse: {
