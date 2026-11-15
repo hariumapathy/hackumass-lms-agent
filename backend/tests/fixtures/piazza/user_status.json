@@ -1,0 +1,36 @@
+{
+  "result": {
+    "id": "fakeuid000student",
+    "name": "Jordan Fakename",
+    "email": "jfake@example.edu",
+    "networks": [
+      {
+        "id": "fakecs311nid",
+        "name": "Introduction to Algorithms",
+        "term": "Fall 2026",
+        "course_number": "COMPSCI 311",
+        "prof_hash": {
+          "fakeuid900prof": "1"
+        },
+        "status": "active"
+      },
+      {
+        "id": "fakecs220nid",
+        "name": "Programming Methodology",
+        "term": "Fall 2026",
+        "course_number": "CS 220",
+        "prof_hash": {},
+        "status": "active"
+      },
+      {
+        "id": "fakeoldnid",
+        "name": "Old Course",
+        "term": "Spring 2025",
+        "course_number": "CS 121",
+        "prof_hash": {},
+        "status": "inactive"
+      }
+    ]
+  },
+  "error": null
+}

@@ -1,0 +1,50 @@
+{
+  "result": {
+    "feed": [
+      {
+        "id": "fakecid0003",
+        "nr": 3,
+        "type": "note",
+        "subject": "Midterm 1 logistics",
+        "content_snip": "Midterm 1 is cumulative through DP",
+        "updated": "2026-11-12T15:00:00Z",
+        "tags": [
+          "instructor-note"
+        ],
+        "folders": [
+          "midterm"
+        ]
+      },
+      {
+        "id": "fakecid0002",
+        "nr": 2,
+        "type": "question",
+        "subject": "Is BFS on the midterm?",
+        "content_snip": "Lecture 9 started graphs",
+        "updated": "2026-11-10T18:30:00Z",
+        "tags": [
+          "student"
+        ],
+        "folders": [
+          "midterm"
+        ]
+      },
+      {
+        "id": "fakecid0001",
+        "nr": 1,
+        "type": "question",
+        "subject": "Memoization on HW 5",
+        "content_snip": "Can we use memoization",
+        "updated": "2026-11-01T12:00:00Z",
+        "tags": [
+          "student"
+        ],
+        "folders": [
+          "hw5"
+        ]
+      }
+    ],
+    "more": false
+  },
+  "error": null
+}

@@ -1,6 +1,6 @@
 # Soumith: progress
 
-**Branch:** `dev/soumith` · **Role:** C (frontend and product) · **Last updated:** 2026-11-14 ~20:20 ET
+**Branch:** `dev/soumith` · **Role:** C (frontend and product) · **Last updated:** 2026-11-15 00:30 ET (handoff)
 
 _Only Soumith (or Soumith's agent) edits this file. Keep it short; replace stale lines._
 
@@ -10,13 +10,17 @@ _Only Soumith (or Soumith's agent) edits this file. Keep it short; replace stale
 - Frontend runbook: [`apps/web/README.md`](../../apps/web/README.md) (screens, mock vs real mode, real-backend checklist, gotchas).
 - ~20:20 sync with `main` @ `a081914` (S01–S03, S10–S14, S16, S20–S24, S26 landed): UI unchanged and green; UMass login endpoints are now live (S13). One fix since: the Canvas guide step rendered one word per line on phones.
 
-## In progress
-- Nothing half-built. The parallel-agent setup (Codex, Cursor) is finished; their branches are fully merged.
+- 2026-11-14/15 night: this laptop now runs the full stack (uv, Python 3.12, make, Docker, gh). **S25 calendar verified live** and wording fixed (`codex/calendar-piazza-ui`). On `neal/s17-piazza`: **Connect Piazza** UI, **Echo360 hidden**, calendar branch merged in; all tests green. Soumith approved merging both into main (Neal's review gate).
 
-## Next (frontend, in order)
-1. **Run the UI against the real API** (`make api`) on a laptop with Python + keys: walk the demo script, fix any drift. Steps in `apps/web/README.md` § B. Can't be done on Soumith's laptop (no Python).
-2. As each endpoint below goes live, re-run `make types`, then `pnpm typecheck && pnpm test` in `apps/web`.
-3. Demo rehearsal at 375 px and laptop width; screenshots for the Devpost gallery.
+## In progress
+- PRs to open/merge on github.com (agent's `gh` not logged in): calendar first, then Piazza. Links in the newest devlog entry.
+- Live Piazza login/import: not run yet (stack was ready; session ended).
+
+## Next (in order)
+1. Merge the two PRs (calendar → Piazza), then merge main into `dev/soumith`.
+2. Live Piazza check (S17 "UI + verification"); if it fails, hide Piazza again via `CONNECTABLE_PLATFORMS`.
+3. Real Canvas on a non-demo account + full 3-minute demo rehearsal (375 px and laptop) incl. calendar Add → Download.
+4. S35 UI polish only if time remains before the 08:00 freeze.
 
 ## Blocked on / needs from others (what the UI is waiting for)
 The UI is done; these make it show **live** data instead of the demo semester:

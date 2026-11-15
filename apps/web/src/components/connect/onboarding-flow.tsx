@@ -150,8 +150,7 @@ function ReconnectView({ platform, pollMs }: { platform: Platform; pollMs?: numb
             Reconnect {label}
           </h1>
           <p className="text-muted-foreground">
-            Log in again with your UMass NetID so we can keep your {label} classes up to date. We never see your
-            password.
+            Log in to {label} again so we can keep your classes up to date. We never see your password.
           </p>
           <LiveLogin platform={platform} pollMs={pollMs} onConnected={done} />
         </section>

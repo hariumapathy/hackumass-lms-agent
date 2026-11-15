@@ -9,7 +9,7 @@ import { isConnected, LOGIN_PLATFORMS } from "./progress";
 
 const WHY: Partial<Record<Platform, string>> = {
   gradescope: "Homework scores and Gradescope due dates",
-  echo360: "Lecture recordings, so you can ask about what was said in class",
+  piazza: "Class Q&A, so you can ask what your professor or TAs answered",
 };
 
 interface Props {
@@ -19,17 +19,17 @@ interface Props {
   onNext: () => void;
 }
 
-/** S31 step 3: optional UMass logins for Gradescope and Echo360. */
+/** S31 step 3: optional logins for Gradescope and Piazza. */
 export function UmassStep({ me, pollMs, onConnected, onNext }: Props) {
   const anyConnected = LOGIN_PLATFORMS.some((p) => isConnected(me, p));
   return (
     <section aria-labelledby="umass-step-heading" className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 id="umass-step-heading" className="text-2xl font-semibold tracking-tight">
-          Connect Gradescope and Echo360
+          Connect Gradescope and Piazza
         </h1>
         <p className="text-muted-foreground">
-          Optional. Log in once with your UMass NetID and we&apos;ll stay logged in for you. We never see your password.
+          Optional. Log in once and we&apos;ll stay logged in for you. We never see your password.
         </p>
       </div>
 

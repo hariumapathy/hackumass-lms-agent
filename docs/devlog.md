@@ -23,6 +23,27 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-15 00:30 ET · Soumith's laptop · Claude Code (Opus 5.5) · HANDOFF (Soumith pauses; next laptop continues)
+**Hour:** ~H28. Final submission **Sun 09:00**, code freeze **08:00**, judging 12:30.
+**Done this session:**
+- **S25 calendar: done + live-verified** on `codex/calendar-piazza-ui` (`22bf8aa`, pushed). Details in the entry below and in S25.
+- **S17 Piazza branch `neal/s17-piazza`:** merged the calendar branch in (conflicts in pyproject/notices/devpost/S17 resolved keeping both), relocked. **Connect Piazza** added to Settings + onboarding (Piazza login wording), **Echo360 hidden** everywhere (`CONNECTABLE_PLATFORMS` in `apps/web/src/lib/platforms.ts`), tests first (S31-T09, S32-T10, S34-T01, e2e S31-T05/T06). 477 backend / 1 skip / 1 xfail with DB; web 75 + 6 e2e; lint/format/pyright/eslint/tsc clean. Docs: S17, spec index, pitch, live-test-bugs, decisions, feature-work-plan.
+- Soumith approved merging both branches into main on Neal's behalf (decisions.md).
+**Not done / not verified:**
+- **Live Piazza login + import never ran** (session ended at the Canvas step of a fresh `live@example.com` account). Pitch marks Piazza 🟡 "don't demo live until verified".
+- Manual import of the downloaded `.ics` into Google/Apple Calendar.
+- PRs: `gh` was not logged in on this laptop, so PRs were **not opened by the agent**; Soumith opens/merges them on github.com (links in the final message / below).
+**State of main:** `0176e57` (unchanged). To merge, **in this order**: 1) PR `codex/calendar-piazza-ui` → main; 2) PR `neal/s17-piazza` → main (contains the calendar commits too, so after #1 its diff is only Piazza + UI). Then `dev/soumith` merges main.
+- Calendar PR: https://github.com/hariumapathy/hackumass-lms-agent/compare/main...codex/calendar-piazza-ui?expand=1
+- Piazza PR: https://github.com/hariumapathy/hackumass-lms-agent/compare/main...neal/s17-piazza?expand=1
+**Next steps (in order) for the next laptop:**
+1. `/start`, confirm both PRs are merged into main (merge them if green and still open).
+2. **Live Piazza check** (S17 "UI + verification" section): demo-runbook stack, a non-demo account, Settings → Connect Piazza, the student logs in themselves; check posts show on Today/course pages with working links and the chat can cite one. Record results in S17 + pitch. If it fails, keep Piazza hidden for the demo (remove it from `CONNECTABLE_PLATFORMS`).
+3. Real Canvas on that same account (student pastes their own code in onboarding), then **rehearse the 3-minute demo** (pitch.md) end to end incl. calendar: ask to schedule a study session → Add → Settings → Download calendar.
+4. Optional: import the `.ics` into a test Google Calendar (calendar-runbook.md); S35 UI polish only if time remains before 08:00 freeze.
+5. Devpost: final text must match pitch "What actually works" (calendar ✅, Piazza only if step 2 passes, Echo360 future work).
+**Gotchas (Windows):** see the 23:40 entry: killing `uvicorn --reload` orphans its worker (`spawn_main(parent_pid=…)`) which keeps serving :8000 with **old code**: after any branch switch, kill every python `uvicorn|spawn_main|app.exe` process and check `netstat -ano | findstr :8000`. `supabase_vector` restart loop is harmless. Docker CLI may not be on PATH (`%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`). Stop the worker during `pytest` with the DB. Strip BOMs if editing docs with PowerShell 5. Secrets pasted in chat this session (Canvas token, Gemini key, Supabase secret) should be **rotated after the event**; only the Gemini key + Supabase secret are in this laptop's git-ignored `.env`.
+
 ## 2026-11-14 23:40 ET · Soumith's laptop · Claude Code (Opus 5.5) · branch codex/calendar-piazza-ui → main
 **Hour:** ~H27 (final submission Sun 09:00, freeze 08:00, judging 12:30).
 **Setup:** this laptop now has uv + Python 3.12 + make + Docker Desktop + gh; local Supabase via `make demo-db`-equivalent; API/worker/web from `scripts/demo-local.sh` with real Gemini.

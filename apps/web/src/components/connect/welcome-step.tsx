@@ -10,7 +10,7 @@ export function WelcomeStep({ onStart }: { onStart: () => void }) {
           Your classes, all in one place
         </h1>
         <p className="text-lg text-muted-foreground">
-          We bring your Canvas, Gradescope and Echo360 deadlines, slides and lectures together. See what&apos;s due
+          We bring your Canvas, Gradescope and Piazza deadlines, slides and class Q&amp;A together. See what&apos;s due
           today, ask questions about your classes, and get study plans with links back to the source.
         </p>
       </div>

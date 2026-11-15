@@ -9,6 +9,7 @@ import { CanvasStep } from "@/components/connect/canvas-step";
 import { LiveLogin } from "@/components/connect/live-login";
 import { OnboardingFlow } from "@/components/connect/onboarding-flow";
 import { saveProgress } from "@/components/connect/progress";
+import { UmassStep } from "@/components/connect/umass-step";
 import { buildFixtures, type Fixtures } from "@/mocks/fixtures";
 import { createHandlers, errorResponse, MOCK_API_URL } from "@/mocks/handlers";
 import { navState, routerMock } from "./next-navigation";
@@ -127,15 +128,15 @@ describe("S31 onboarding", () => {
   it("S31-T02 live login: expired shows Try again, which starts a new login", async () => {
     let starts = 0;
     server.use(
-      http.post(api("/connections/echo360/login"), () => {
+      http.post(api("/connections/piazza/login"), () => {
         starts += 1;
         return HttpResponse.json({ login_id: `2222222${starts}-2222-4222-8222-222222222222`, mode: "local" });
       }),
-      http.get(api("/connections/echo360/login/:id"), () => HttpResponse.json({ state: "expired", error: null })),
+      http.get(api("/connections/piazza/login/:id"), () => HttpResponse.json({ state: "expired", error: null })),
     );
-    renderWithProviders(<LiveLogin platform="echo360" pollMs={10} onConnected={() => {}} />);
+    renderWithProviders(<LiveLogin platform="piazza" pollMs={10} onConnected={() => {}} />);
 
-    await userEvent.click(screen.getByRole("button", { name: /connect echo360/i }));
+    await userEvent.click(screen.getByRole("button", { name: /connect piazza/i }));
     expect(await screen.findByText(/the login timed out/i)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /try again/i }));
     await waitFor(() => expect(starts).toBe(2));
@@ -160,6 +161,20 @@ describe("S31 onboarding", () => {
     expect(polled).toEqual([existing]);
   });
 
+  it("S31-T09 Piazza login asks for the Piazza login (not NetID/Duo); Echo360 is not offered", async () => {
+    server.use(
+      http.post(api("/connections/piazza/login"), () =>
+        HttpResponse.json({ login_id: "44444444-4444-4444-8444-444444444444", mode: "local" }),
+      ),
+      http.get(api("/connections/piazza/login/:id"), () => HttpResponse.json({ state: "pending", error: null })),
+    );
+    renderWithProviders(<UmassStep me={canvasOnly().me} pollMs={10} onConnected={() => {}} onNext={() => {}} />);
+    expect(screen.queryByText(/echo360/i)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /connect piazza/i }));
+    expect(await screen.findByText(/log in to piazza/i)).toBeInTheDocument();
+    expect(screen.queryByText(/netid/i)).not.toBeInTheDocument();
+  });
+
   it("S31-T03 a new student can skip the optional steps and reach the last step, then go to Today", async () => {
     server.use(...createHandlers({ fixtures: newStudent() }));
     renderWithProviders(<OnboardingFlow {...FAST} />);
@@ -168,7 +183,7 @@ describe("S31 onboarding", () => {
     await paste(await screen.findByLabelText(/paste your canvas code/i), "1234~abcdefghijklmnop");
     await userEvent.click(await screen.findByRole("button", { name: /continue/i }));
 
-    expect(await screen.findByRole("heading", { name: /gradescope and echo360/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /gradescope and piazza/i })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /skip for now/i }));
 
     expect(await screen.findByRole("heading", { name: /calendar/i })).toBeInTheDocument();
@@ -184,7 +199,7 @@ describe("S31 onboarding", () => {
   it("S31-T03 Go to Today stays disabled until the first Canvas load finishes", async () => {
     const f = canvasOnly();
     f.sources[0] = { ...f.sources[0], last_sync_at: null, running: true };
-    saveProgress("u-test", { welcomed: true, skipped: ["gradescope", "echo360"], calendar: "skipped" });
+    saveProgress("u-test", { welcomed: true, skipped: ["gradescope", "piazza"], calendar: "skipped" });
     server.use(...createHandlers({ fixtures: f }));
     renderWithProviders(<OnboardingFlow {...FAST} />);
 
@@ -203,22 +218,22 @@ describe("S31 onboarding", () => {
 
     server.use(...createHandlers({ fixtures: canvasOnly() }));
     const second = renderWithProviders(<OnboardingFlow {...FAST} />);
-    expect(await screen.findByRole("heading", { name: /gradescope and echo360/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /gradescope and piazza/i })).toBeInTheDocument();
     second.unmount();
 
-    saveProgress("u-test", { welcomed: true, skipped: ["gradescope", "echo360"] });
+    saveProgress("u-test", { welcomed: true, skipped: ["gradescope", "piazza"] });
     renderWithProviders(<OnboardingFlow {...FAST} />);
     expect(await screen.findByRole("heading", { name: /calendar/i })).toBeInTheDocument();
   });
 
   it("S31-T05 reconnect mode jumps to that platform and returns to settings after success", async () => {
-    navState.search = "reconnect=echo360";
+    navState.search = "reconnect=piazza";
     server.use(...createHandlers({ fixtures: buildFixtures(NOW) }));
     renderWithProviders(<OnboardingFlow {...FAST} />);
 
-    expect(await screen.findByRole("heading", { name: /reconnect echo360/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /reconnect piazza/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /connect gradescope/i })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /connect echo360/i }));
+    await userEvent.click(screen.getByRole("button", { name: /connect piazza/i }));
     await waitFor(() => expect(routerMock.push).toHaveBeenCalledWith("/settings"));
   });
 
