@@ -11,18 +11,9 @@ Living document: **update it whenever a feature lands or changes** (AGENTS.md ru
 UMass students juggle Canvas, Gradescope, Piazza, Echo360 and email every week. Deadlines move, slides are scattered, and ChatGPT knows none of it unless you upload everything by hand. We built an agent that **syncs your courses automatically**, shows **one Today view** of what's due and what changed, and helps you **study with answers that cite the exact slide or lecture timestamp**, and those links are verified so the AI can't make them up.
 
 ## 3-minute demo script (live)
-| Time | Show | Say |
-|---|---|---|
-| 0:00 | Title slide | The problem **every UMass student knows**: Canvas, Gradescope, Piazza, Echo360, UMass email; scattered deadlines, manual studying |
-| 0:20 | Onboarding: guided "Link your Canvas" (1 minute) → "4 classes found" | Built for any student, not just CS majors: no installs, plain language; we never store passwords |
-| 0:45 | **Today view**: due today/this week, a **"CHANGED: Midterm moved"** badge, source chips | Deterministic, from synced data; changes detected automatically |
-| 1:20 | Chat: **"Prep me for my CS 311 midterm"** → status steps stream → study plan + quiz + flashcards | Agent uses tools over our synced database |
-| 2:00 | Click a **citation chip** → opens the exact slide / lecture moment | Links come from synced data and are validated; the AI never writes URLs |
-| 2:20 | "Add these study sessions?" → **Add** → calendar feed | Writes need the student's click |
-| 2:40 | Architecture slide | Sync worker → Supabase → agent (any model) → Next.js. **UMass adoption path:** an official LTI 1.3 app with a UMass IT Canvas key, data on UMass infrastructure, a campus-hosted model |
-| 2:55 | Close | "One login, every class." |
+Full click-by-click script with lines to say: **[demo-script.md](demo-script.md)** (about 2:45, Hari's real live data: Today → Chat study set with verified citations + in-app PDF → Sessions → calendar Add → close).
 
-**Backup:** if live sync or wifi fails, switch to the **seeded demo account** (S03). Rehearse both paths.
+**Backup:** press Try again once, then continue from Sessions with a rehearsal study set; if the stack is down, play the recorded video. Never reset the database on demo day.
 
 ## Architecture (for the slide)
 See the diagram in [03-architecture.md](../03-architecture.md#system-diagram). Talking points:

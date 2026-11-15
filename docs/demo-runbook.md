@@ -2,6 +2,38 @@
 
 Verified on Neal's laptop on 2026-11-14: email-link sign-in → fresh account → real Canvas connection → eight imported courses → Today with actual deadlines → real Gemini answers with syllabus and announcement citations. The production web server avoids compilation on page switches. Everything uses **local** Supabase; the hosted project is not needed.
 
+## 🎤 Demo day on Hari's laptop (already set up: your real data is in the local DB)
+The judged demo uses **Hari's personal live data** (`humapathy@umass.edu`), never the seeded demo student. Script: [pitch/demo-script.md](pitch/demo-script.md).
+
+**30 minutes before** (in this order):
+1. **Docker Desktop** is running (whale icon steady). Then, in Git Bash in the repo folder:
+   ```bash
+   git checkout main && git pull
+   ```
+   ```bash
+   make db
+   ```
+   `make db` only starts the database and **keeps your data**. Never run `make demo-db` or `make demo-real-wipe` today: both delete your imports.
+2. **Three terminals**, one command each, leave them open:
+   ```bash
+   make demo-real-api
+   ```
+   ```bash
+   make demo-real-worker
+   ```
+   ```bash
+   make demo-real-web
+   ```
+   Wait for **"Ready"** in the web terminal (it builds first, about a minute).
+3. **Sign in** at http://localhost:3000 (not 127.0.0.1) with `humapathy@umass.edu` → **Email me a link** → open the local inbox http://127.0.0.1:54324 → click the newest "Your sign-in link". If the app signs you out right away, the browser held an old session: just sign in again.
+4. **Settings → every source must say "Updated … ago", not "Reconnect".** If one says Reconnect (it happens when `ENCRYPTION_KEY` in `.env` changed since you connected; the old login can't be read), reconnect it: Canvas = fresh access code from Canvas settings; Gradescope / Piazza = login window, NetID + Duo yourself. Your imported deadlines and files stay; only new updates need the reconnect. Then press **Refresh** and wait until all three show "Updated just now".
+5. **Warm-up:** ask one throwaway chat question (the first answer is the slowest), then delete that chat from **Sessions → … → Delete**. Also delete old test chats so Sessions looks clean.
+6. **Browser:** one window, zoom 110–125 % so the room can read it, close other tabs, notifications off. Keep http://127.0.0.1:54324 (Mailpit) in a second tab in case you need a new sign-in link.
+
+**If something breaks on stage:** chat error → press **Try again** once, then move on to the next step of the script. Whole stack down → play the recorded demo video. Do **not** reset the database to recover.
+
+**After the event:** delete the Canvas access code in Canvas settings.
+
 ## ⭐ Real-data demo: only your own Canvas, Gradescope and Piazza (no demo data)
 Use this for judging and the demo video. Everything you see comes from your real accounts, and every link opens the real Canvas/Gradescope/Piazza page. Real mode never falls back to the canned demo answer: if the AI fails you get an honest error with Retry.
 
@@ -32,11 +64,12 @@ Use this for judging and the demo video. Everything you see comes from your real
    - **Piazza:** **Connect Piazza** → log in in the window yourself.
    - **Calendar:** skip or download; then wait on "Getting your classes" until it says you're set.
 6. **Let the first import finish** (several minutes for Canvas files; deadlines appear first, files become searchable after). Settings shows each source as "Updated X m ago" when done.
-7. **Demo it:** Today (your real deadlines, changes, announcements; source chips open the real pages) → a course page → Chat, e.g. *"What's due this week?"*, *"What does my <course> syllabus say about late work?"*, *"Make 5 flashcards from my <course> slides"*, *"Schedule a 1-hour study session tomorrow at 3 PM"* → Add → Settings → Download calendar.
+7. **Demo it:** follow [pitch/demo-script.md](pitch/demo-script.md): Today (your real deadlines; submitted work is not "Overdue"; source chips open the real pages) → Chat (study set with citations; **View** opens a cited PDF inside the app) → **Sessions** (the chat with its flashcards / quiz chips; rename it) → a study session → **Add** → Settings → Download calendar.
 
 **Don't** run `make demo-db` or `make demo-real-wipe` after importing unless you want to start over. If port 3000/8000 is busy from an earlier run: `netstat -ano | findstr :3000` then `taskkill /PID <pid> /F` (PowerShell/cmd; in Git Bash use `//PID` and `//F`).
 
-## Quick start with the seeded demo student (backup demo)
+## Quick start with the seeded demo student (other laptops only)
+> ⚠ `make demo-db` **resets the whole local database**. Never run it on the laptop that holds your real imports.
 ```bash
 make demo-db        # 1. start the local database (+ demo semester). Skip if it's already running and you want to keep data
 make demo-api       # 2. terminal 2: API + AI (keep open)
@@ -92,7 +125,9 @@ For real-quality search on real data, run steps 2–3 with `EMBEDDINGS_PROVIDER=
 ## If something goes wrong
 | Symptom | Fix |
 |---|---|
-| "Local Supabase isn't running" | Start Docker Desktop, then `make demo-db` |
+| "Local Supabase isn't running" | Start Docker Desktop, then `make db` (keeps data). `make demo-db` only for the seeded backup: it **resets** the database |
+| Settings says **Reconnect** for Canvas / Gradescope / Piazza | The stored login can't be read (usually `ENCRYPTION_KEY` in `.env` changed) or expired. Reconnect it in Settings; imported data stays. Don't change `ENCRYPTION_KEY` once you've connected |
+| App signs you out right after a page loads / chat says sign in again | The browser kept a session for an account that isn't in this database. Sign in again with your email (Mailpit link) |
 | Chat answers with the same canned text every time | `GEMINI_API_KEY` is empty in `.env` (the scripted backup answer is used); add it and restart `make demo-api` |
 | Chat error "The AI service had a problem" | Gemini credits/quota (402/429 in the API terminal). Top up in AI Studio, or for a guaranteed demo set `CHAT_MODE=scripted make demo-api` |
 | Sign-in link opens but you stay on the sign-in page | Use `http://localhost:3000` (not 127.0.0.1); request a new link |
