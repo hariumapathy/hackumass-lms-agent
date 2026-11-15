@@ -1,0 +1,149 @@
+{
+  "3": {
+    "result": {
+      "id": "fakecid0003",
+      "nr": 3,
+      "type": "note",
+      "tags": [
+        "instructor-note"
+      ],
+      "folders": [
+        "midterm"
+      ],
+      "created": "2026-11-09T14:00:00Z",
+      "updated": "2026-11-12T15:00:00Z",
+      "status": "active",
+      "history": [
+        {
+          "subject": "Midterm 1 logistics",
+          "content": "<p>Midterm 1 is <b>cumulative</b> through dynamic programming. Room: <a href=\"https://example.piazza.com/rooms\">ILC S131</a>.</p>",
+          "created": "2026-11-12T15:00:00Z",
+          "uid": "fakeuid900prof",
+          "anon": "no"
+        },
+        {
+          "subject": "Midterm 1 logistics",
+          "content": "<p>Midterm 1 is cumulative.</p>",
+          "created": "2026-11-09T14:00:00Z",
+          "uid": "fakeuid900prof",
+          "anon": "no"
+        }
+      ],
+      "children": []
+    },
+    "error": null
+  },
+  "2": {
+    "result": {
+      "id": "fakecid0002",
+      "nr": 2,
+      "type": "question",
+      "tags": [
+        "student"
+      ],
+      "folders": [
+        "midterm"
+      ],
+      "created": "2026-11-10T16:00:00Z",
+      "updated": "2026-11-10T18:30:00Z",
+      "status": "active",
+      "history": [
+        {
+          "subject": "Is BFS on the midterm?",
+          "content": "<p>Is BFS/DFS on the midterm since Lecture 9 started graphs?</p>",
+          "created": "2026-11-10T16:00:00Z",
+          "uid": "fakeuid000student",
+          "anon": "stud"
+        }
+      ],
+      "change_log": [
+        {
+          "uid": "fakeuid000student",
+          "anon": "stud",
+          "type": "create",
+          "when": "2026-11-10T16:00:00Z"
+        }
+      ],
+      "children": [
+        {
+          "type": "s_answer",
+          "id": "fakechild1",
+          "created": "2026-11-10T17:00:00Z",
+          "history": [
+            {
+              "content": "<p>I think graphs are on Midterm 2.</p>",
+              "uid": "fakeuid001classmate",
+              "anon": "no",
+              "created": "2026-11-10T17:00:00Z"
+            }
+          ],
+          "children": []
+        },
+        {
+          "type": "i_answer",
+          "id": "fakechild2",
+          "created": "2026-11-10T18:30:00Z",
+          "history": [
+            {
+              "content": "<p>The midterm covers material through dynamic programming, not graphs.</p>",
+              "uid": "fakeuid900prof",
+              "anon": "no",
+              "created": "2026-11-10T18:30:00Z"
+            }
+          ],
+          "children": []
+        },
+        {
+          "type": "followup",
+          "id": "fakechild3",
+          "subject": "<p>Thanks, makes sense.</p>",
+          "created": "2026-11-10T19:00:00Z",
+          "uid": "fakeuid000student",
+          "children": []
+        }
+      ]
+    },
+    "error": null
+  },
+  "1": {
+    "result": {
+      "id": "fakecid0001",
+      "nr": 1,
+      "type": "question",
+      "tags": [
+        "student"
+      ],
+      "folders": [
+        "hw5"
+      ],
+      "created": "2026-11-01T11:00:00Z",
+      "updated": "2026-11-01T12:00:00Z",
+      "status": "active",
+      "history": [
+        {
+          "subject": "Memoization on HW 5",
+          "content": "<p>Will we lose points for using memoization instead of a bottom-up table?</p>",
+          "created": "2026-11-01T11:00:00Z",
+          "uid": "fakeuid002classmate",
+          "anon": "no"
+        }
+      ],
+      "children": [
+        {
+          "type": "i_answer",
+          "id": "fakechild4",
+          "created": "2026-11-01T12:00:00Z",
+          "history": [
+            {
+              "content": "<p>No. Either is fine as long as you state the recurrence.</p>",
+              "uid": "fakeuid900prof",
+              "anon": "no"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    "error": null
+  }
+}

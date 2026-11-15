@@ -87,9 +87,23 @@ describe("S32 Today view", () => {
     const f = buildFixtures(NOW);
     renderWithProviders(<TodayView today={f.today} courses={f.courses} now={NOW} onMarkSeen={noop} onSyncNow={noop} />);
     const bar = screen.getByRole("region", { name: /sources/i });
-    const reconnect = within(bar).getByRole("link", { name: /reconnect echo360/i });
-    expect(reconnect).toHaveAttribute("href", "/onboarding?reconnect=echo360");
+    const reconnect = within(bar).getByRole("link", { name: /reconnect piazza/i });
+    expect(reconnect).toHaveAttribute("href", "/onboarding?reconnect=piazza");
     expect(within(bar).queryByRole("link", { name: /reconnect canvas/i })).not.toBeInTheDocument();
+  });
+
+  it("S32-T10 platforms without a connector (Echo360) are not shown in the sources bar", () => {
+    const f = buildFixtures(NOW);
+    const today = {
+      ...f.today,
+      sources: [
+        ...f.today.sources,
+        { platform: "echo360" as const, connection_status: "needs_reconnect" as const, last_sync_at: null, running: false, stale: true },
+      ],
+    };
+    renderWithProviders(<TodayView today={today} courses={f.courses} now={NOW} onMarkSeen={noop} onSyncNow={noop} />);
+    const bar = screen.getByRole("region", { name: /sources/i });
+    expect(within(bar).queryByText(/echo360/i)).not.toBeInTheDocument();
   });
 
   it("S32-T07 source chips link to source_url in a new tab", () => {

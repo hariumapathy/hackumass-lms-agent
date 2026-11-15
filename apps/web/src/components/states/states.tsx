@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/api/client";
 import type { SourceStatus } from "@/lib/api/types";
-import { PLATFORM_LABEL } from "@/lib/platforms";
+import { isConnectable, PLATFORM_LABEL } from "@/lib/platforms";
 
 export function Loading({ label = "Loading…", rows = 3 }: { label?: string; rows?: number }) {
   return (
@@ -49,7 +49,7 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
 
 /** Banner for sources that are stale or need a reconnect (shown above content that may be out of date). */
 export function StaleBanner({ sources }: { sources: SourceStatus[] }) {
-  const bad = sources.filter((s) => s.stale || s.connection_status === "needs_reconnect");
+  const bad = sources.filter((s) => isConnectable(s.platform) && (s.stale || s.connection_status === "needs_reconnect"));
   if (bad.length === 0) return null;
   return (
     <div role="status" className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm">

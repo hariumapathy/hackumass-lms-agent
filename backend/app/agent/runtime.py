@@ -350,7 +350,12 @@ class ChatRuntime:
             if ctx.proposed_blocks:
                 yield s.ApprovalRequiredEvent(
                     blocks=ctx.proposed_blocks,
-                    summary=ctx.block_summary or f"Add {len(ctx.proposed_blocks)} study sessions?",
+                    summary=ctx.block_summary
+                    or (
+                        "Add this study session?"
+                        if len(ctx.proposed_blocks) == 1
+                        else f"Add these {len(ctx.proposed_blocks)} study sessions?"
+                    ),
                 )
             yield s.CitationsEvent(citations=citations, dropped=checked.dropped_ids)
             message = s.Message(

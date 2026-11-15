@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Platform, SourceStatus } from "@/lib/api/types";
-import { PLATFORM_LABEL } from "@/lib/platforms";
+import { isConnectable, PLATFORM_LABEL } from "@/lib/platforms";
 import { shortAgo } from "@/lib/time";
 
 /** Per-source freshness (S32 rule 4): age, Reconnect for expired sessions, Refresh when stale. */
@@ -17,7 +17,7 @@ export function FreshnessBar({
 }) {
   return (
     <section aria-label="Sources" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-      {sources.map((s) => {
+      {sources.filter((s) => isConnectable(s.platform)).map((s) => {
         const label = PLATFORM_LABEL[s.platform];
         const reconnect = s.connection_status === "needs_reconnect";
         return (

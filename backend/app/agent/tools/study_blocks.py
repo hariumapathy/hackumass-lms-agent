@@ -85,7 +85,8 @@ async def add_study_block(ctx: RunCtx, args: AddStudyBlockArgs) -> ToolResult:
                     "title": block.title,
                     "start_at": block.start_at.isoformat(),
                     "end_at": block.end_at.isoformat(),
-                    "status": "proposed, awaiting student approval",
+                    "status": "proposed; the student adds it with the Add button shown "
+                    "under your answer (not in their calendar app)",
                 }
             ]
         )

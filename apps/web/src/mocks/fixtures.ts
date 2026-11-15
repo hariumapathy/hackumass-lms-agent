@@ -110,13 +110,13 @@ export function buildFixtures(now: Date = new Date()) {
   const connections: Connection[] = [
     { platform: "canvas", status: "active", expires_at: iso(at(now, 60 * DAY)), last_sync_at: iso(at(now, -12 * 60_000)), account_label: "Demo Student" },
     { platform: "gradescope", status: "active", last_sync_at: iso(at(now, -40 * 60_000)) },
-    { platform: "echo360", status: "needs_reconnect", last_sync_at: iso(at(now, -3 * DAY)), last_error: "Session expired" },
+    { platform: "piazza", status: "needs_reconnect", last_sync_at: iso(at(now, -3 * DAY)), last_error: "Session expired" },
   ];
 
   const sources: SourceStatus[] = [
     { platform: "canvas", connection_status: "active", last_sync_at: connections[0].last_sync_at, running: false, stale: false },
     { platform: "gradescope", connection_status: "active", last_sync_at: connections[1].last_sync_at, running: false, stale: false },
-    { platform: "echo360", connection_status: "needs_reconnect", last_sync_at: connections[2].last_sync_at, running: false, stale: true },
+    { platform: "piazza", connection_status: "needs_reconnect", last_sync_at: connections[2].last_sync_at, running: false, stale: true },
   ];
 
   const me: Me = {

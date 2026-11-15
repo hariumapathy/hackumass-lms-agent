@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Implemented on review branch; external calendar import check pending (Neal, 2026-11-14) |
+| **Status** | Done: live-verified end to end 2026-11-14 (Soumith); Google/Apple file import still a manual check |
 | **Stage** | 2 |
 | **Role** | B |
 | **Depends on** | S22 |
@@ -103,4 +103,5 @@ Writing directly to Google/Outlook calendars (OAuth), editing blocks after appro
 - Initial new S25 tests failed against the old stubs before implementation. Database tests now cover owner isolation, proposal persistence/overlap, decisions/expiry, feed contents, stable IDs/sequences, escaping and link rotation.
 - Unit tests cover valid/past/future proposals, maximum count, overlap, DST ambiguity/nonexistence and private access-log redaction. Scripted runtime exercises the actual proposal tool and a single approval event.
 - Full backend suite: 452 passed, 1 skipped, 1 expected failure before the additional actual-tool runtime case; that runtime suite rerun is recorded in the devlog. Frontend: 72 passed; browser: 6 passed; lint/types/build passed.
+- Live check 2026-11-14 (Soumith's laptop, local stack, real Gemini): the chat proposed a session, the feed did **not** contain it before Add; after **Add** the feed went 24 → 25 events with the correct UTC time (3 PM ET = 20:00Z); a second proposal was **Skipped** and stayed out. Fixed during the check: the card read "Add 1 study sessions?" (now "Add this study session?") and the answer told students to approve "in your calendar" (tool result + prompt now say "click Add below"); onboarding Download now counts as added.
 - Pending: manual import into Google and Apple; automatic subscriptions require public HTTPS hosting. No direct Google OAuth integration is claimed. See [calendar runbook](../calendar-runbook.md).

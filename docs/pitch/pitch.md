@@ -27,7 +27,7 @@ UMass students juggle Canvas, Gradescope, Piazza, Echo360 and email every week. 
 ## Architecture (for the slide)
 See the diagram in [03-architecture.md](../03-architecture.md#system-diagram). Talking points:
 - **Sync first, agent second:** a worker copies course data into one database; the AI only reads that database.
-- **No passwords:** Canvas token; Gradescope/Echo360 via a one-time browser login with Duo.
+- **No passwords:** Canvas token; Gradescope via a one-time browser login with Duo; Piazza via its own login window (saved session).
 - **Verified citations:** the model cites chunk IDs; our code resolves them to real links.
 - **Any model:** Google Gemini by default (free tier), OpenAI/Claude optional, all tested with a golden-question script.
 
@@ -59,6 +59,8 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Demo mode with no backend at all ("Continue with demo data"): the backup demo always works | ✅ |
 | Live Canvas connection → worker → database → Today/course pages; disconnect and automatic view refresh | ✅ verified on Neal's laptop with eight real courses; correct UMass host; production navigation |
 | Real material citations | ✅ Gemini answer with a real syllabus page and announcement citation verified |
-| Calendar subscription and saved study-session approvals (S25) | ⬜ still stubs; skip in live-data demo |
+| Calendar file and saved study-session approvals (S25) | ✅ verified live 2026-11-14 (Soumith): real Gemini proposes → Add puts it in the private calendar file, Skip keeps it out. Local demo = download + import; auto-subscribe needs a public HTTPS API |
 | Live Gradescope login + imports (S13/S14) | ✅ saved session imported 20 student courses and 238 assignments; three courses and five deadlines merged with Canvas |
+| Piazza posts (S17): read-only connector + **Connect Piazza** in Settings/onboarding | 🟡 built and tested with saved fixtures + local DB (477 backend tests); **live Piazza login not yet verified**, don't demo it live until it is |
+| Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

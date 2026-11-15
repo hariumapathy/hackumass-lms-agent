@@ -5,7 +5,7 @@ import { CheckCircle2, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api/client";
 import type { LoginStartResponse, Platform } from "@/lib/api/types";
-import { PLATFORM_LABEL } from "@/lib/platforms";
+import { LOGIN_HINT, PLATFORM_LABEL } from "@/lib/platforms";
 
 type State =
   | { kind: "idle" }
@@ -110,11 +110,11 @@ export function LiveLogin({ platform, onConnected, pollMs = 2000 }: Props) {
         </p>
         {state.mode === "local" ? (
           <p className="text-sm text-muted-foreground">
-            A browser window opened on this computer. Log in with your NetID and approve Duo.
+            A browser window opened on this computer. {LOGIN_HINT[platform] ?? "Log in the way you normally do."}
           </p>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Log in with your NetID and approve Duo.{" "}
+            {LOGIN_HINT[platform] ?? "Log in the way you normally do."}{" "}
             {state.liveViewUrl && (
               <a className="inline-flex items-center gap-1 underline" href={state.liveViewUrl} target="_blank" rel="noopener noreferrer">
                 Open the UMass login <ExternalLink className="size-3" aria-hidden />

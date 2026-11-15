@@ -6,7 +6,7 @@ export const STEPS = ["welcome", "canvas", "umass", "calendar", "finishing"] as 
 export type Step = (typeof STEPS)[number];
 
 /** Optional live-login platforms on the UMass step. */
-export const LOGIN_PLATFORMS = ["gradescope", "echo360"] as const satisfies readonly Platform[];
+export const LOGIN_PLATFORMS = ["gradescope", "piazza"] as const satisfies readonly Platform[];
 
 export interface OnboardingProgress {
   welcomed?: boolean;

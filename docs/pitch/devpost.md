@@ -3,7 +3,7 @@ Draft must exist Sat Nov 14 by 23:59 ET; final deadline Sun Nov 15 09:00 ET.
 Add Hari Umapathy, Neal Patel and Soumith Madadi as contributors.
 Use the public GitHub URL under Try it out. Category: Best UMass Hack.
 This copy distinguishes live-verified Canvas/Gradescope from planned integrations.
-Credits below list actual reused code; Piazza helpers remain planned, not copied.
+Credits below list actual reused code; Piazza helpers are vendored on the S17 branch.
 -->
 
 # HackUMass LMS Agent
@@ -80,4 +80,4 @@ Python, FastAPI, Google Gemini API, OpenAI Agents SDK, Next.js, React, TypeScrip
 
 We built the app and integration pipeline using open-source frameworks and libraries. These include Next.js/create-next-app, React, Tailwind CSS, shadcn/ui and Radix UI, TanStack Query, Supabase tooling, FastAPI, Pydantic, Uvicorn, the OpenAI Agents SDK and OpenAI Python client, Procrastinate, Playwright, httpx, requests, Beautiful Soup, python-dateutil, PyJWT, cryptography, psycopg, RapidFuzz, PyYAML, PyMuPDF, python-pptx, tiktoken, and the BSD-2-Clause icalendar library (calendar work on the review branch). Tests use pytest, pytest-asyncio, respx, Vitest, Testing Library, MSW, and Playwright.
 
-For Gradescope, we reused MIT-licensed course-list parsing and session-expiry helpers from Yuanpeng Li's gradescope-mcp at commit f8a46c8, with modifications documented in the vendored files, and the MIT-licensed gradescopeapi 1.8.1 student assignment parser. We did not reuse their password-login flows. canvas-mcp was consulted as a reference; no code was copied from it. PyMuPDF is licensed under AGPL-3.0. Detailed notices and licenses are in THIRD_PARTY_NOTICES.md.
+For Gradescope, we reused MIT-licensed course-list parsing and session-expiry helpers from Yuanpeng Li's gradescope-mcp at commit f8a46c8, with modifications documented in the vendored files, and the MIT-licensed gradescopeapi 1.8.1 student assignment parser. We did not reuse their password-login flows. For Piazza, we vendored the MIT-licensed read-only client wrapper, post normalizer and models from mkslge's piazza-mcp at commit 782f62c and use the MIT-licensed piazza-api 0.16.0 client with the student's saved browser session; its password login is never called. canvas-mcp was consulted as a reference; no code was copied from it. PyMuPDF is licensed under AGPL-3.0. Detailed notices and licenses are in THIRD_PARTY_NOTICES.md.

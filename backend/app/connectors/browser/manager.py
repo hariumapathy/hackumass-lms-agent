@@ -30,7 +30,10 @@ OnSuccess = Callable[[UUID, str, dict[str, Any]], Awaitable[None]]
 Sleep = Callable[[float], Awaitable[None]]
 
 # Platforms that connect through the live login; value = "module:attribute" of its LoginSpec.
-_LOGIN_SPECS = {"gradescope": "app.connectors.gradescope.login:GRADESCOPE_LOGIN"}
+_LOGIN_SPECS = {
+    "gradescope": "app.connectors.gradescope.login:GRADESCOPE_LOGIN",
+    "piazza": "app.connectors.piazza.login:PIAZZA_LOGIN",
+}
 
 WINDOW_CLOSED = "The login window was closed before you finished. Try again."
 CANCELLED = "Login cancelled."
