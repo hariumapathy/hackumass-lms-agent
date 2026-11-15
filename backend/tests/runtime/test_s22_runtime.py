@@ -55,6 +55,36 @@ def types(events: list[s.ChatEvent]) -> list[str]:
     return [e.type for e in events]
 
 
+async def test_S25_T01_T09_real_tool_persists_and_emits_one_approval() -> None:
+    local_start = (NOW + timedelta(days=1)).replace(tzinfo=None).isoformat()
+    model = ScriptedModel(
+        [
+            [
+                function_call(
+                    "add_study_block",
+                    {
+                        "title": "Review algorithms",
+                        "start_local": local_start,
+                        "duration_min": 30,
+                        "course": None,
+                        "item_id": None,
+                    },
+                    call_id="schedule",
+                )
+            ],
+            [assistant_message("Please approve this study session.")],
+        ]
+    )
+    store = MemoryChatStore()
+    events = await collect(runtime(model, store=store), "Plan study time tomorrow.")
+    approvals = [e for e in events if isinstance(e, s.ApprovalRequiredEvent)]
+    assert len(approvals) == 1 and len(approvals[0].blocks) == 1
+    saved = await store.blocks(TEST_USER_ID)
+    assert saved == approvals[0].blocks and saved[0].status == "proposed"
+    assert types(events).index("text") < types(events).index("approval_required")
+    assert types(events)[-1] == "done"
+
+
 # --- S22-T01: system prompt ---------------------------------------------------------------------
 
 

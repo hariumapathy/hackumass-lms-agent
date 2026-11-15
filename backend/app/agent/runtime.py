@@ -275,7 +275,9 @@ class ChatRuntime:
                 needs_reconnect=coverage.needs_reconnect,
             )
         )
-        ctx = RunCtx(user_id=user.user_id, timezone=tz, clock=self.clock, data=data)
+        ctx = RunCtx(
+            user_id=user.user_id, timezone=tz, clock=self.clock, data=data, block_store=store
+        )
         state = RunState(specs={t.name: t for t in self.tools})
         agent = build_agent(model, [to_function_tool(t) for t in self.tools], instructions)
         result = Runner.run_streamed(

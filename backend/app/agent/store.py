@@ -44,6 +44,7 @@ class ChatStore(Protocol):
     async def study_sets(self, user_id: UUID) -> list[s.StudySet]: ...
     async def save_blocks(self, user_id: UUID, blocks: list[s.StudyBlock]) -> None: ...
     async def blocks(self, user_id: UUID) -> list[s.StudyBlock]: ...
+    async def propose_block(self, user_id: UUID, block: s.StudyBlock, now: datetime) -> bool: ...
 
 
 class MemoryChatStore:
@@ -54,6 +55,7 @@ class MemoryChatStore:
         self._run_owner: dict[UUID, UUID] = {}
         self._sets: dict[UUID, tuple[UUID, s.StudySet]] = {}
         self._blocks: dict[UUID, tuple[UUID, s.StudyBlock]] = {}
+        self._block_created: dict[UUID, datetime] = {}
 
     def _owned(self, user_id: UUID, conversation_id: UUID) -> bool:
         entry = self._convs.get(conversation_id)
@@ -123,3 +125,19 @@ class MemoryChatStore:
     async def blocks(self, user_id: UUID) -> list[s.StudyBlock]:
         mine = [b for owner, b in self._blocks.values() if owner == user_id]
         return sorted(mine, key=lambda b: b.start_at)
+
+    async def propose_block(self, user_id: UUID, block: s.StudyBlock, now: datetime) -> bool:
+        from datetime import timedelta
+
+        for bid, (owner, old) in self._blocks.items():
+            fresh = self._block_created.get(bid, now) >= now - timedelta(hours=24)
+            if (
+                owner == user_id
+                and (old.status == "approved" or (old.status == "proposed" and fresh))
+                and old.start_at < block.end_at
+                and old.end_at > block.start_at
+            ):
+                return False
+        self._blocks[block.id] = (user_id, block)
+        self._block_created[block.id] = now
+        return True

@@ -6,7 +6,7 @@ import { CalendarPlus, CheckCircle2 } from "lucide-react";
 import { ErrorState, Loading } from "@/components/states/states";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
-import { calendarLinks } from "./calendar-links";
+import { calendarLinks, canSubscribeRemotely } from "./calendar-links";
 
 export function useCalendarFeed() {
   return useQuery({ queryKey: ["calendar-feed"], queryFn: () => api().calendarFeed(), staleTime: Infinity });
@@ -15,6 +15,12 @@ export function useCalendarFeed() {
 /** Google / Apple / Outlook buttons for a feed URL. The raw URL is never shown (S31 rule 8). */
 export function CalendarButtons({ feedUrl, onAdded }: { feedUrl: string; onAdded?: () => void }) {
   const links = calendarLinks(feedUrl);
+  if (!canSubscribeRemotely(feedUrl)) return (
+    <div className="flex flex-col gap-3">
+      <Button asChild size="lg" className="w-fit"><a href={feedUrl} download="class-calendar.ics">Download calendar</a></Button>
+      <p className="text-sm text-muted-foreground">This demo runs on your laptop. Download the file, then import it into Google Calendar under Settings → Import &amp; export. Download it again after changes.</p>
+    </div>
+  );
   return (
     <div className="flex flex-col gap-3">
       <Button asChild size="lg" className="w-fit">
@@ -50,8 +56,7 @@ export function CalendarStep({ onDone }: { onDone: (result: "added" | "skipped")
           Add your deadlines to your calendar
         </h1>
         <p className="text-muted-foreground">
-          Your deadlines and the study sessions you approve appear in the calendar app you already use, and stay up to
-          date on their own.
+          Bring your deadlines and approved study sessions into the calendar app you already use.
         </p>
       </div>
 

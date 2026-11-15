@@ -33,7 +33,7 @@ export function accountHandlers(f: Fixtures, opts: AccountMockOptions = {}) {
   const pendingPolls = opts.loginPendingPolls ?? 1;
   const logins = new Map<string, { platform: Platform; polls: number }>();
   let feedVersion = 0;
-  const feedUrl = () => `${MOCK_API_URL}/calendar/demo-feed${feedVersion ? `-${feedVersion}` : ""}.ics`;
+  const feedUrl = () => `https://calendar.example.edu/calendar/demo-feed${feedVersion ? `-${feedVersion}` : ""}.ics`;
 
   function upsertConnection(conn: Connection, running: boolean) {
     f.me.connections = [...f.me.connections.filter((c) => c.platform !== conn.platform), conn];
