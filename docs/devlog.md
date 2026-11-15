@@ -28,9 +28,10 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 - Synced `dev/soumith` with `main` (`478380a`). Earlier Stage 1 work from before PR #1 was ported onto main's scaffold; the old local branch is kept only as a local backup (not pushed).
 - **S02 reviewed from the frontend side: approved.** Generated types cover what the UI needs; remaining gaps are Stage 2/3 follow-ups (P6–P9 in [progress/soumith.md](progress/soumith.md)), not blockers.
 - **S30 / S32 / S33 (chat part), mock mode** (`653d134`, pushed to `dev/soumith`): Supabase sign-in + demo sign-in, protected shell (sidebar / bottom tabs), typed API client on `schema.d.ts`, SSE parser + `streamChat` (S02-T05/T06 done here), MSW handlers + fixtures, Today view + course page, streaming chat with status list, citation chips/cards, final_text, Try again, Stop, past chats. **30 web tests green; lint, typecheck, `next build` clean.** E2E specs written (S30-T07, S32-T08), not yet run.
-- **Codex brought in** for the rest of role C: brief at [handoff/codex-brief-soumith.md](handoff/codex-brief-soumith.md). Separate worktrees: Claude in `../hackumass-lms-agent-claude` (`soumith/claude`), Codex in `../hackumass-lms-agent-codex` (`soumith/codex`); main checkout stays on `dev/soumith` as merge target. Overlap allowed, merged afterwards. Split: Codex = S33 study cards + approvals, S31 onboarding, then S34 (+ `src/mocks/**`); Claude = shell/Today/course, e2e + browser checks, docs.
+- **Three agents in parallel on role C** (Claude Code, Codex, Cursor): shared brief [handoff/soumith-agents-brief.md](handoff/soumith-agents-brief.md). One worktree + branch each: `../hackumass-lms-agent-claude` (`soumith/claude`), `../hackumass-lms-agent-codex` (`soumith/codex`), `../hackumass-lms-agent-cursor` (`soumith/cursor`); the main checkout stays on `dev/soumith` as merge target. Overlap allowed, merged afterwards. Lanes: **Codex** = S33 study sets + approvals; **Cursor** = S31 onboarding → S34 settings; **Claude** = shell/Today/course QA, merges, docs.
+- **E2E green** (`e266eb5`): S30-T07 and S32-T08 pass in mock mode (Playwright Chromium installed). Next 16 dev-only instant-navigation checks limited to opted-in segments (`manual-warning`), since every screen waits for the browser-side sign-in.
 
-**In progress (not finished):** Claude: Playwright e2e + browser check at desktop/375 px. Codex: S33 Stage 2 → S31 → S34.
+**In progress (not finished):** Codex: S33 Stage 2. Cursor: S31 → S34. Claude: mock-mode hang when the service worker can't register (seen in the Claude desktop browser pane; Playwright Chromium is fine), browser QA at 375 px.
 
 **Decisions / design changes (Soumith OK'd):**
 - Frontend REST types are re-exports of generated `schema.d.ts`; only SSE event types are hand-written (from CONTRACT.md).
@@ -45,8 +46,8 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 **State of main:** `478380a`; `dev/soumith` is ahead with `653d134` (web green). Not merged to main yet.
 
 **Next steps (in order):**
-1. Claude: run e2e (`pnpm test:e2e`), check desktop + 375 px, fix issues; then PR `dev/soumith` → `main` when green.
-2. Codex: S33 study sets + approval card → S31 onboarding → S34 settings (brief §3).
+1. Codex: S33 study sets + approval card (brief §3.A). Cursor: S31 onboarding → S34 settings (brief §3.B).
+2. Claude: mock-mode service-worker failure message, 375 px QA, merge green agent branches into `dev/soumith`, then PR `dev/soumith` → `main` (brief §3.C).
 3. Hari: S20 auth (then real sign-in can be tested with the publishable key), answer S02 follow-ups P6–P9.
 4. Anyone with Python: run the web app against `make api` (set `NEXT_PUBLIC_API_MOCKS=0`, `NEXT_PUBLIC_API_URL=http://localhost:8000`) to catch mock/backend drift.
 

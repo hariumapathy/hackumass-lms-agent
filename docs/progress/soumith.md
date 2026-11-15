@@ -9,8 +9,10 @@ _Only Soumith (or Soumith's agent) edits this file. Keep it short; replace stale
 - **S30 shell + auth, S32 Today + course page, S33 chat (Stage 1 part)**, all in mock mode: `653d134` on `dev/soumith`. 30 web tests, lint, typecheck, `next build` green.
 
 ## In progress
-- **Claude:** e2e (S30-T07, S32-T08) + browser check at desktop and 375 px; then PR `dev/soumith` → `main`.
-- **Codex (parallel, branch `soumith/codex`):** S33 study cards + approvals → S31 onboarding → S34 settings. Brief: [handoff/codex-brief-soumith.md](../handoff/codex-brief-soumith.md).
+Three agents in parallel, one worktree each. Brief: [handoff/soumith-agents-brief.md](../handoff/soumith-agents-brief.md).
+- **Claude Code** (`soumith/claude`): e2e S30-T07/S32-T08 green; next: mock-mode service-worker failure message, 375 px QA, merging the other branches, docs, PR → `main`.
+- **Codex** (`soumith/codex`): S33 study sets + approval card.
+- **Cursor** (`soumith/cursor`): S31 onboarding → S34 settings.
 
 ## Next
 - Try the web app against Hari's `make api` stubs (needs a laptop with Python/uv).
