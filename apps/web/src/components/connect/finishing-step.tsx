@@ -7,7 +7,7 @@ import { ErrorState, Loading } from "@/components/states/states";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import type { SourceStatus } from "@/lib/api/types";
-import { PLATFORM_LABEL } from "@/lib/platforms";
+import { isConnectable, PLATFORM_LABEL } from "@/lib/platforms";
 
 const isLoading = (s: SourceStatus) => s.running || !s.last_sync_at;
 const hasProblem = (s: SourceStatus) => s.connection_status === "needs_reconnect" || s.connection_status === "error";
@@ -52,7 +52,7 @@ export function FinishingStep({ pollMs = 3000, onDone }: { pollMs?: number; onDo
       </div>
 
       <ul aria-live="polite" className="flex flex-col gap-2">
-        {status.data.sources.map((s) => (
+        {status.data.sources.filter((s) => isConnectable(s.platform)).map((s) => (
           <li key={s.platform} className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
             <span className="font-medium">{PLATFORM_LABEL[s.platform]}</span>
             {hasProblem(s) ? (

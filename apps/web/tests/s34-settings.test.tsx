@@ -34,9 +34,11 @@ describe("S34 Settings", () => {
   it("S34-T01 shows each connection's status; Reconnect goes to onboarding", async () => {
     setup();
     renderWithProviders(<SettingsScreen />);
-    const echo = await screen.findByRole("listitem", { name: /echo360/i });
-    expect(within(echo).getByText(/needs reconnecting/i)).toBeInTheDocument();
-    expect(within(echo).getByRole("link", { name: /reconnect echo360/i })).toHaveAttribute("href", "/onboarding?reconnect=echo360");
+    const piazza = await screen.findByRole("listitem", { name: /piazza/i });
+    expect(within(piazza).getByText(/needs reconnecting/i)).toBeInTheDocument();
+    expect(within(piazza).getByRole("link", { name: /reconnect piazza/i })).toHaveAttribute("href", "/onboarding?reconnect=piazza");
+    // Echo360 has no connector yet: never offered.
+    expect(screen.queryByRole("listitem", { name: /echo360/i })).not.toBeInTheDocument();
     expect(within(card(/canvas/i)).getByText(/^connected/i)).toBeInTheDocument();
     expect(within(card(/canvas/i)).getByText(/access ends in \d+ days/i)).toBeInTheDocument();
     expect(within(card(/gradescope/i)).getByText(/^connected/i)).toBeInTheDocument();

@@ -27,7 +27,7 @@ These were identified while inspecting the live rehearsal's screens and backing 
 | P1, needs reproduction | Account switching may reuse another account's cached views | Browser QueryClient is shared; query keys such as `me`/`courses` omit user ID and `auth-provider.tsx` does not clear the cache on sign-out/account changes. Add a two-user regression, cancel in-flight queries and clear/scope caches. This is a code finding, not a demonstrated cross-user DB leak |
 | ~~P2~~ fixed (S25) | Calendar UI offers sample-data subscriptions for live accounts | Visible Settings/onboarding links contain `demo-token`; `calendar.py` builds the feed from mock items. Complete S25 or hide the controls for the live demo |
 | ~~P2~~ fixed (S25, live-verified 2026-11-14) | Study-session approval is not persisted | `study.py` decision endpoint changes copies of mock blocks only. Complete S25 before claiming Add/Skip saves real study sessions |
-| P2 | Echo360 Connect is shown despite missing backend support | Live onboarding/Settings show it; `LoginManager` only registers Gradescope and returns 422 for Echo360. Hide/label unavailable while S15 remains stretch |
+| ~~P2~~ fixed 2026-11-14 (Echo360 hidden in Settings, onboarding and the sources bar) | Echo360 Connect is shown despite missing backend support | Live onboarding/Settings show it; `LoginManager` only registers Gradescope and returns 422 for Echo360. Hide/label unavailable while S15 remains stretch |
 | P2 | Already-open tabs can retain the previous UI after a rebuild | This follow-up saw the old Canvas settings link until page reload; the fresh page had the corrected link. Reload rehearsal tabs after restarting/rebuilding; consider a deployment/version refresh notice |
 
 ## Demo verification and limits

@@ -21,10 +21,10 @@ import { Input } from "@/components/ui/input";
 import { api, ApiError } from "@/lib/api/client";
 import type { Connection, Me, Platform } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/auth-context";
-import { PLATFORM_LABEL } from "@/lib/platforms";
+import { CONNECTABLE_PLATFORMS, PLATFORM_LABEL } from "@/lib/platforms";
 import { shortAgo } from "@/lib/time";
 
-const PLATFORMS: Platform[] = ["canvas", "gradescope", "echo360"];
+const PLATFORMS: readonly Platform[] = CONNECTABLE_PLATFORMS;
 const DAY = 86_400_000;
 
 const errorText = (e: unknown) => (e instanceof ApiError ? e.message : "Something went wrong. Try again.");

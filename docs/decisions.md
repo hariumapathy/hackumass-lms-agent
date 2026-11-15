@@ -48,3 +48,4 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 
 - 2026-11-14 (Neal, user workflow override): new features share `codex/calendar-piazza-ui`, one verified commit each; user reviews before merge. S25 keeps the specified private ICS approach; localhost offers download/manual import, public HTTPS is required for subscription. Ambiguous/nonexistent DST times are rejected.
 - 2026-11-14 (Soumith): reviewed and approved merging `codex/calendar-piazza-ui` (S25) and `neal/s17-piazza` into main on Neal's behalf, each only after live end-to-end checks + green tests; one PR per feature.
+- 2026-11-14 (Soumith): Echo360 is hidden in the UI (no connector; S15 stays stretch). Piazza gets a Connect option in Settings/onboarding with its own login wording. `CONNECTABLE_PLATFORMS` in `apps/web/src/lib/platforms.ts` is the single list. No API/schema change.
