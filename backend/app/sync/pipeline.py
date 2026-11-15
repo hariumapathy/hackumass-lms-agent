@@ -34,7 +34,9 @@ from app.sync.diff import changed_fields, classify, meaningful_fields, record_ha
 log = logging.getLogger("app.sync")
 
 SOURCE_TABLES = ("course_links", "item_sources", "materials", "posts")
-ProcessMaterial = Callable[[UUID, UUID], Awaitable[None]]
+# (user_id, material_id, source): source = the record's download/text/cues for S12 (not in the DB)
+ProcessMaterial = Callable[[UUID, UUID, dict[str, Any]], Awaitable[None]]
+ProcessPost = Callable[[UUID, UUID], Awaitable[None]]
 
 
 @dataclass
@@ -45,6 +47,8 @@ class SyncOutcome:
     )
     skipped: int = 0
     materials_to_process: list[UUID] = field(default_factory=list)
+    material_sources: dict[UUID, dict[str, Any]] = field(default_factory=dict)
+    posts_to_process: list[UUID] = field(default_factory=list)
     error: str | None = None
 
 
@@ -377,6 +381,7 @@ async def run_sync(
     clock: Clock,
     final_attempt: bool = True,
     process_material: ProcessMaterial | None = None,
+    process_post: ProcessPost | None = None,
 ) -> SyncOutcome:
     """Run one sync. Never raises for platform problems: returns the outcome (`retry` means the
     caller should re-raise so the queue retries; only returned when `final_attempt` is False)."""
@@ -410,6 +415,11 @@ async def run_sync(
             out.stats[outcome] += 1
             if isinstance(rec, NMaterial) and outcome in {"new", "changed"}:
                 out.materials_to_process.append(row_id)
+                out.material_sources[row_id] = rec.model_dump(
+                    mode="json", include={"download", "text", "cues"}
+                )
+            if isinstance(rec, NPost) and outcome in {"new", "changed"}:
+                out.posts_to_process.append(row_id)
         if scope.kind == "full":
             async with conn.transaction():
                 out.stats["removed"] = await store.mark_removed(seen)
@@ -434,6 +444,9 @@ async def run_sync(
         await repo.set_connection_status(conn, user_id, platform, "active", synced_at=finished)
         if process_material:
             for material_id in out.materials_to_process:
-                await process_material(user_id, material_id)
+                await process_material(user_id, material_id, out.material_sources[material_id])
+        if process_post:
+            for post_id in out.posts_to_process:
+                await process_post(user_id, post_id)
     await repo.mark_run(conn, user_id, run_id, out.status, finished, out.stats, out.error)
     return out

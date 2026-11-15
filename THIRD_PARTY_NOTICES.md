@@ -18,6 +18,9 @@ Copied files live in `backend/app/connectors/<platform>/_vendored/`, each with a
 | FastAPI, Pydantic, httpx, uvicorn, OpenAI Agents SDK, Procrastinate, Playwright | MIT / Apache-2.0 / BSD | Backend |
 | [PyJWT](https://github.com/jpadilla/pyjwt) + [cryptography](https://github.com/pyca/cryptography) | MIT / Apache-2.0 or BSD | Verifying Supabase sign-in tokens (S20) |
 | [psycopg 3](https://www.psycopg.org/) + psycopg-pool | LGPL-3.0 (used unmodified as a library) | Postgres access (S20) |
+| [PyMuPDF](https://github.com/pymupdf/PyMuPDF) | AGPL-3.0 (used unmodified as a library; our repo is public) | PDF text extraction per page (S12) |
+| [python-pptx](https://github.com/scanny/python-pptx) | MIT | Slide text + speaker notes extraction (S12) |
+| [tiktoken](https://github.com/openai/tiktoken) | MIT | Token counting for chunking (`cl100k_base`, S12) |
 | pytest, pytest-asyncio, respx, ruff, pyright | MIT / Apache-2.0 / BSD | Backend tests and linting (dev only) |
 | Next.js (create-next-app template), React, Tailwind, Vitest, Testing Library | MIT | Frontend |
 | Supabase CLI | MIT | Local database |

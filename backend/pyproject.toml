@@ -14,6 +14,9 @@ dependencies = [
     "psycopg[binary,pool]>=3.2",
     "procrastinate>=3.0",
     "cryptography>=43",
+    "pymupdf>=2.1",
+    "python-pptx>=1.0.2",
+    "tiktoken>=0.14.0",
 ]
 
 [dependency-groups]
