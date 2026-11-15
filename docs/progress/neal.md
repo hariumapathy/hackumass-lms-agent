@@ -12,7 +12,7 @@
 - Checks: 440 backend passed, 1 skipped, 1 expected failure; 71 frontend; 6 browser tests; lint/format/types and production build green.
 
 ## In progress
-- Final production restart and manual Refresh check; saving verified work on main as requested.
+- None. Production stack left running; manual Refresh completed (323 unchanged records, 125 canonical deadlines), and Today updated its freshness indicator without a page reload.
 
 ## Next
 1. Rehearse the local live-data demo using `docs/demo-runbook.md`; keep API, worker and production web running.
