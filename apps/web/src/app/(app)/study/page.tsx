@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/states/placeholder";
+import { StudyList } from "@/components/study/study-screen";
 
 export default function StudyPage() {
-  return <Placeholder title="Study sets" />; // S33 study cards (Stage 2)
+  return <StudyList />;
 }

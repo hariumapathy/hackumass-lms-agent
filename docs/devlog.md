@@ -33,6 +33,8 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 **Codex update (soumith/codex):** S33 streamed study-set cards and Add/Skip approval actions implemented tests-first; 34 web tests passing. Study-mode mocks added. Study detail/list pages next. Contract change proposal P7 pending: reloaded approvals cannot show their outcome. Cross-lane change: SSE test expects the study-mode stream for exam prep; no dependencies or contract changes.
 
+**Codex study-page update (soumith/codex):** Checkpoint 3fb81e0 committed before fetching/merging origin/dev/soumith (already current, no conflicts). Read the three-agent brief; only section 3.A owned. Finished /study list and plan/quiz/flashcard detail pages, local plan progress, keyboard controls, resolved-map/fallback citation lookup, malformed-payload and fetch-error states. Study REST handlers isolated in handlers-study.ts. Tests-first: missing study-screen import failed before implementation; now 41 unit/component tests + all 3 Chromium e2e tests pass (S33-T11 at 375 px), lint/typecheck/production build pass. Build via node node_modules/next/dist/bin/next build: npm wrapper hit a Turbopack subprocess error; direct Node succeeded. Installed pinned Playwright Chromium locally. No dependencies/contracts changed. P7 approval outcomes on conversation reload still pending. Ready for Claude to merge and update spec/pitch/progress status per the shared brief.
+
 **In progress (not finished):** Codex: S33 Stage 2. Cursor: S31 → S34. Claude: mock-mode hang when the service worker can't register (seen in the Claude desktop browser pane; Playwright Chromium is fine), browser QA at 375 px.
 
 **Decisions / design changes (Soumith OK'd):**
