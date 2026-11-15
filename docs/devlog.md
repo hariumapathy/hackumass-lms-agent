@@ -21,6 +21,24 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 ---
 
+## 2026-11-14 20:25 ET · Hari's laptop · Claude Code (Opus 5.5) · branch dev/hari
+**Hour:** ~H24 (Devpost draft due 23:59; final submission Sun 09:00, freeze 08:00; judging 12:30)
+**Done (PRs #9, #11 merged; newer commits on dev/hari → next PR):**
+- **S22 agent runtime on Gemini** (`app/agent/runtime.py`): SSE events, max turns, timeout, cancel on disconnect, tracing off. Default model **`gemini-3.5-flash`** (2.5 closed to new keys; 3.8 overloaded). **Gemini stream fix** (`app/agent/gemini.py`): tool calls arrive with `index: null`, which broke parallel calls. `CHAT_MODE=auto|agent|scripted` (scripted = demo backup).
+- **S21 tools** (six read tools) on `ToolData`: `MockToolData` (S02 mock semester) and **`DbToolData`** (hybrid search on the S01 schema; `fetch_latest` via S10 jobs).
+- **S23 citations**: allowed IDs only, quote check (rapidfuzz), lenient markers (`[cite: chunk_N]`), deep links, DB resolution (user-scoped).
+- **S24 `create_study_set`** (plan/quiz/flashcards, citation filter, date range). **S26 evals**: `uv run app evals [--db]`, 15 goldens incl. prompt injection.
+- **DB mode** `DATA_SOURCE=db`: `DbChatStore` (conversations, messages, runs, study sets), `/me` routes on `profiles` (S20 DB parts), agent uses the profile timezone/model.
+- Local Supabase running on Hari's laptop (`make db`), seeded with fake embeddings (`uv run app seed --embeddings fake`, env pointed at the local DB). **256 backend tests pass with the DB.** `tests/conftest.py` now pins `DATABASE_URL` to the local DB at import time (fixed Neal's S10-T06 picking up the hosted URL).
+**Eval (seed DB, gemini-3.5-flash): 13/14 pass (93%)**, 0 errors, avg 9.2 s; injection ignored; flashcards OK; G04 uncited. Cost: ~9.6k input + 620 output tokens per question → roughly half a cent at Flash-class prices; Hari loaded $5 prepaid (enough for 1,000+ questions).
+**Roadblocks / human items:** Gemini prepaid credits had run out (402) → Hari topped up. The agent may not run `gh pr merge` (permission check): Hari merges PRs. Hari shared a real Canvas token in chat: **not used or stored**; the plan is to connect through the app's Connect Canvas step once Neal's S11 is on main, with a **fresh** token (revoke the pasted one).
+**Next steps (in order):**
+1. Hari: merge the open dev/hari PR. Devpost draft before 23:59.
+2. Hari's agent: dashboard endpoints on the DB (`/today`, `/courses`, `/items`, `/changes`, `/citations`) in DB mode; `POST /sync` + `GET /sync/status` via S10; S25 `add_study_block` + decision + ICS feed.
+3. When Neal's S11 + S12 land on main: run the real pipeline locally (API `DATA_SOURCE=db` + worker), Hari connects Canvas with a fresh token in the app, then re-run the evals on real courses.
+4. Before the demo: decide hosted vs local DB for the demo (hosted needs migrations + seed applied by Neal), and set `DATA_SOURCE=db` in that environment.
+**Gotchas:** psycopg async on Windows needs a selector loop: scripts use `asyncio.run(..., loop_factory=asyncio.SelectorEventLoop)`; tests that call the app over HTTP with the DB use `httpx.ASGITransport` (not TestClient). Seed with fake embeddings ⇒ run the agent with `EMBEDDINGS_PROVIDER=fake` locally, or vector search mismatches. Bash heredocs with quotes failed in this tool: write edit scripts to files.
+
 ## 2026-11-14 19:25 ET · Neal's laptop · Claude Code (Opus 5.5) · branch dev/neal
 **Hour:** ~H23 (Devpost draft due 23:59 tonight; final submission Sun 09:00, freeze 08:00)
 **Start check:** main = c9acce2 (fast-forwarded into dev/neal); `make test` green (60 pass, 2 skip pending S01). Local Supabase started (Docker).

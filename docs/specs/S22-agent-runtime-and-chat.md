@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): runtime + streaming live on Gemini over mock data; DB persistence (T09 integration) + profile model/timezone wait for S01 |
+| **Status** | In progress (Hari): done on mock + DB (DbChatStore, profile tz/model); S22-T09 passes on the DB; live eval 13/14 |
 | **Stage** | 1 |
 | **Role** | B |
 | **Depends on** | S02, S21 (S23 for citation post-processing) |
@@ -127,5 +127,7 @@ Multi-agent handoffs, voice, memory beyond the conversation, MCP server (stretch
 - **Tool data:** tools read through `ToolData` (`app/agent/tools/data.py`). Until S01/S03 the runtime uses `MockToolData`, built from the S02 mock semester (same courses/IDs) plus a few hand-written slide/transcript chunks, so the agent answers for real before the DB exists. After S01: a `DbToolData` with the same methods, scoped to the user.
 - **Persistence:** `MemoryChatStore` (per process) until S01's `conversations`/`messages`/`agent_runs`; `GET /conversations[/{id}]` read it in agent mode. Run logs hold tool names, durations, ok flags and dropped citation IDs, never content.
 - **Special tool outputs** (for S24/S25): `create_study_set` returns `{"study_set": StudySet}`; `add_study_block` returns `{"blocks": [StudyBlock], "summary": str}`. The runtime emits `study_set` / one `approval_required` after the answer.
-- **Profile:** timezone fixed to America/New_York and model = default until S01's `profiles` exists.
+- **Profile:** in DB mode the runtime loads the student's timezone + `model_choice` (falls back to the default if that model has no key).
+- **DB mode** (`DATA_SOURCE=db`): `DbChatStore` (`app/agent/db_store.py`, `app/db/repositories/chat.py`) saves conversations, messages (`content` = text, citations, study_set_ids, block_ids), agent_runs (tool names + durations, allowed chunk IDs, no content), study sets. Cancelled runs are stored as `error` + `cancelled` (the column allows running/done/error).
+- **Token usage:** `ModelSettings(include_usage=True)` (Gemini only reports usage on streams when asked); recorded on the run log for evals.
 - Errors: `model_error` (provider), `max_turns`, `timeout` (90 s), all `retryable`. Messages are plain language; provider details only go to logs (exception type only).

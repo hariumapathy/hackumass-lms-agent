@@ -51,8 +51,8 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Real sign-in checks on every API call: Supabase tokens, chat rate limit, private logs (S20) | ✅ (profile storage waits for the DB schema) |
 | Database with per-student privacy rules (S01) | ✅ on `dev/neal` (PR #8) |
 | Backup demo semester: 4 UMass courses, deadlines, announcements, slides, lecture transcripts, a moved midterm (S03) | ✅ on `dev/neal` (PR #8), loads in ~1 s |
-| AI agent on Gemini: answers deadline + material questions with tools, streams progress (S21, S22) | ✅ on the mock semester (real data after S01/S03) |
+| AI agent on Gemini: answers deadline + material questions with tools, streams progress (S21, S22) | ✅ on the seeded semester in the DB (and the mock); real Canvas data after S11 lands |
 | Verified citations: made-up or unreturned sources are dropped, quotes checked (S23) | ✅ |
 | Flashcards / quizzes / study plans where every item cites a real source (S24) | ✅ backend (UI cards: S33) |
-| Agent evals: 15 golden student questions incl. a prompt-injection test (S26) | ✅ runner; first run 4/4 before credits ran out |
+| Agent evals: 15 golden student questions incl. a prompt-injection test (S26) | ✅ **13/14 pass on the seed (93%)**, ~9 s per answer, ~half a cent per question |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

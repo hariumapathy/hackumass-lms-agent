@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In progress (Hari): tool, validation, citation filter, SSE event, routes done (in-memory store); DB save waits for S01 |
+| **Status** | In progress (Hari): done on mock + DB; saved payload lacks a resolved citations map |
 | **Stage** | 2 |
 | **Role** | B |
 | **Depends on** | S22, S23 |
