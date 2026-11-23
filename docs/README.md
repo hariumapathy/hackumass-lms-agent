@@ -1,6 +1,6 @@
 # Planning docs
 
-> **Status: planning done; specs drafted for review.** Review specs and mark them `Ready` before building (see [08](08-development-workflow.md)).
+> **Current phase (2026-11-23): post-hackathon deployment planning.** Read the [current audit, design and implementation plans](post-hackathon/README.md). The numbered docs and hackathon timeline below preserve earlier context; new work remains Draft until reviewed.
 
 | Doc | What's in it |
 |---|---|

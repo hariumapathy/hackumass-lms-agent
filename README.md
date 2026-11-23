@@ -2,7 +2,7 @@
 
 **One login, every class.** An AI study partner that already knows your Canvas, Gradescope, Piazza, Echo360 lectures and more. Built at HackUMass 2026.
 
-> **Status: planning done, feature specs drafted, no code yet.** Builders (and your coding agents): start with [AGENTS.md](AGENTS.md).
+> **Status (2026-11-23): working local hackathon prototype; post-hackathon deployment planning is under review.** Start with the [current plan and audit](docs/post-hackathon/README.md), then [AGENTS.md](AGENTS.md). No production launch is claimed. Feature descriptions below include the original scope; see the current audit for implemented versus proposed capabilities.
 
 ## For builders
 | Start here | |

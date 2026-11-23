@@ -53,3 +53,7 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-15 (Soumith, Session B): in-app file viewer = `GET /files/{material_id}` streams the student's own stored original (row-scoped, storage path from the DB row, never from the request); citations get `file_id` only for stored PDFs. The web app fetches it with the Bearer token into a blob URL and shows the browser's PDF viewer in a dialog at `#page=N` (no new library).
 - 2026-11-15 (Hari, Session A): "Study" tab → **Sessions** (`/sessions`; `/study` redirects, `/study/[id]` kept). Additive API: `ConversationSummary.study_sets`, `StudySetSummary.conversation_id`, `PATCH`/`DELETE /conversations/{id}`; deleting a chat keeps its study sets (S36).
 - 2026-11-15 (Soumith): the agent web-search tool (split doc Session B task 3) is **dropped**: answers stay grounded in the student's own course sources only.
+
+- 2026-11-23 (user): begin post-hackathon **planning only**, with delegated code audits on `post-hackathon-plan/changes`; produce design and implementation/test plans before any application code. Provider/hosting/feature sequencing remains proposed pending review.
+
+- 2026-11-23 (user planning amendment): include General and course-specific chats, optional coursework projects, aligned context/memory/tools and student-first responsive modern maroon UX; add research-backed design skill candidates and usability tests. Documentation only; no feature code authorized.
