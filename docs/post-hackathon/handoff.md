@@ -2,6 +2,8 @@
 
 Date: **2026-11-23**. Work branch: **`post-hackathon-plan/changes`**, forked from fetched `origin/main` **`be13793`**. Read the [packet index](README.md), [design](design-plan.md) and [implementation sequence](implementation-plan.md). This phase is **planning only**. Do not implement, migrate, deploy, merge or purchase anything until the user reviews the plan. Proposed P packages are not Ready specs.
 
+Planning checkpoint: **`679c1d6`**, pushed. Review: [draft PR #33](https://github.com/hariumapathy/hackumass-lms-agent/pull/33), intentionally unmerged. The follow-up documentation commit records this link; use `git log -2 --oneline` for the final tip.
+
 ## What was completed
 
 Three delegated source audits (deployment/auth; connectors/onboarding; RAG/sync), official provider/Google/UMass research, consolidated design, P00–P14 implementation/test plan, model/hosting cost scenarios and review decisions. Cross-review added explicit inline-file security tests and aligned all model comparisons to the same 120-question retrieval corpus. Only Markdown documentation changed. No secrets or real student data were inspected.
