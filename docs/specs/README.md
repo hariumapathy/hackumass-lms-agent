@@ -1,5 +1,7 @@
 # Feature specs
 
+> **Post-hackathon planning (2026-11-23):** proposed deployment/auth, onboarding, Google integrations and RAG/sync hardening work is indexed in [the new implementation plan](../post-hackathon/implementation-plan.md). It is Draft, not Ready. The original stage tables below are historical and not a launch-readiness certification.
+
 Every feature is specified here **before** it is built. Workflow: [08-development-workflow.md](../08-development-workflow.md). New spec: copy [_TEMPLATE.md](_TEMPLATE.md).
 
 **Status:** `Draft` (being written) → `Ready` (reviewed by a teammate; agents may implement) → `In progress` → `Done` (merged to `main`).

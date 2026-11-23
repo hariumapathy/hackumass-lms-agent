@@ -1,5 +1,7 @@
 # Feature work plan and review branch
 
+> Historical hackathon work list. Superseded for new work by the [2026-11-23 post-hackathon plan](post-hackathon/README.md); several items below were subsequently merged and live-checked (see devlog).
+
 All unfinished/new feature changes live on **`codex/calendar-piazza-ui`**. Each feature gets its own commit after design plan → implementation plan → failing tests → code → verification. Do not merge this branch until Neal reviews it. The earlier Devpost/Gradescope documentation checkpoint is already on main.
 
 | Order | Feature | State | Spec / deliverable |
