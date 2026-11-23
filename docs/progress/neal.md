@@ -6,10 +6,11 @@
 - Fetched main `be13793`, confirmed clean start and created the user-requested planning branch.
 - Coordinated three source audits and cross-reviews; wrote [design, implementation/test plans and cost scenarios](../post-hackathon/README.md).
 - Existing baseline: backend offline 419 pass / 1 skip / 96 integration deselected; frontend 92 pass; backend/frontend lint/format/types pass. No application changes or fresh live/DB/load checks.
+- Added user-requested General/course/project chat, server-enforced context, controlled memory and student-first maroon responsive UX plans (P15/P16); researched UI skills, none installed.
 - Corrected documentation entry points that still claimed no code/Stage 0. Historical hackathon changes remain on main.
 
 ## In progress
-- Planning packet ready for user/team review. All P00–P14 packages remain Draft, not Ready for implementation.
+- Planning packet ready for user/team review. All P00–P16 packages remain Draft, not Ready for implementation.
 
 ## Next
 1. Review scale/budget, minimum hosted platforms, identity eligibility, professor scope and calendar directions.

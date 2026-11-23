@@ -34,6 +34,14 @@ Evidence details and code references: [deployment/auth audit](audit-deployment-a
 5. **Enter Today.** Each selected source shows connection/import/organization/search readiness separately. A failed optional connector does not block the whole workspace. A read-only dashboard remains useful during model outages or exhausted AI budgets. Deadlines come from deterministic source records; uncertain email-derived dates appear as suggestions requiring confirmation.
 6. **Manage later.** Settings supports adding sources/classes, reconnect, scope changes and calendar direction. Distinguish disconnect (stop updates and forget grant), remove retained source data, clear workspace, and delete account. Explain what already-exported calendar events or backup retention cannot retract immediately.
 
+## Course workspaces and student-first interaction
+
+The user explicitly requested General Chat plus course-specific chats/projects and a responsive modern maroon interface. [Course chats and UX](course-chats-and-ux.md) owns the detailed design. Retain Today first; add a direct “Ask about this class” path without requiring project setup. Each course can group chats and optional coursework projects with saved study tools. General Chat handles cross-course requests. Keep the active course/term or General scope visible at the composer.
+
+Course context is loaded from an owned persisted conversation and enforced across every relevant tool/query/citation/artifact, not merely written in the prompt. Course chats do not inherit unrelated chat history or hidden cross-course memory. Student-approved course/project memory is inspectable and removable; bounded conversation summaries do not become invisible global memory. Fresh source facts take precedence over remembered notes. Existing chats migrate to explicit General scope; they are not silently assigned to guessed courses. New contracts require review before code.
+
+Use the existing S35 Tailwind/shadcn/UMass-maroon foundation and S36 conversation/study-set behavior. Prioritize novice student task success, accessible controls, phone keyboard/composer fit, useful empty states, source visibility, smooth SSE and retained navigation state. Visual-direction, interface-review, React-performance and browser-testing skill candidates are recorded in the detailed brief; none installed. P15 (context/workspaces/memory) and P16 (student UX) are part of the proposed pilot gates, with a prototype/usability loop before implementation.
+
 ## Architecture and trust boundaries
 
 ```mermaid
@@ -107,7 +115,7 @@ Measure before replacing working RAG/queue components. Existing vector/full-text
 
 Choose one default chat model using the cost/quality procedure in [models and costs](models-and-costs.md). Persist exact model/provider/price versions and all billed usage. Use shared per-user/global admission budgets, bounded input/output/turns/retries/concurrency and circuit breakers. Show a clear retry/budget state; do not silently change who receives student data. Keep raw course/mail text and secrets out of logs/traces/analytics.
 
-Proposed pilot gates: two-user isolation across all surfaces; complete and recoverable deletion; crash-safe imports/indexing; production configuration and issuer enforcement; reachable HTTPS/callbacks/feed; source-provenance and model-quality tests; staged SSE/load tests; per-user cost caps; restore drill; named incident/support owners. No audit document asserts these gates already pass. Target service levels must be approved and measured, not promised from the old demo test counts.
+Proposed pilot gates: two-user isolation across all surfaces; complete and recoverable deletion; crash-safe imports/indexing; production configuration and issuer enforcement; reachable HTTPS/callbacks/feed; source-provenance and model-quality tests; enforced General/course/project context and novice-student usability; staged SSE/load tests; per-user cost caps; restore drill; named incident/support owners. No audit document asserts these gates already pass. Target service levels must be approved and measured, not promised from the old demo test counts.
 
 ## Decisions still required
 

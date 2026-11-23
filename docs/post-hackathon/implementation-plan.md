@@ -1,6 +1,6 @@
 # Implementation plan after design approval
 
-**Draft, planning only — 2026-11-23.** Read [design-plan.md](design-plan.md) first. No work package below is Ready and no application code is authorized in this phase. P IDs are planning work packages, not replacements for existing S specs. Before implementation, map each package to a reviewed S37+ spec or a narrow amendment to an existing spec, using the next available IDs at that time.
+**Draft, planning only — 2026-11-23.** Read [design-plan.md](design-plan.md) first. No work package below is Ready and no application code is authorized in this phase. P00–P16 IDs are planning work packages, not replacements for existing S specs. Before implementation, map each package to a reviewed S37+ spec or a narrow amendment to an existing spec, using the next available IDs at that time.
 
 ## Required workflow for every feature
 
@@ -29,6 +29,12 @@ flowchart TD
   P05 --> PILOT[Canvas-first invited pilot gate]
   P08 --> PILOT
   P09 --> PILOT
+  P08 --> P15[Course chats / projects / scoped memory]
+  P04 --> P15
+  P15 --> P16[Student-first responsive UX]
+  P00 --> PROTO[Prototype and novice usability study]
+  PROTO --> P16
+  P16 --> PILOT
   P00 --> EXTERNAL[Google / UMass / platform approval discovery]
   EXTERNAL --> P10[Hosted Gradescope / Piazza]
   P08 --> P10
@@ -132,10 +138,30 @@ Design: preserve S18/S15 as separate access/rights feasibility projects, no unsu
 
 Tests: P14-T01 supported enrolled-course read-only source access and normal auth; P14-T02 source/citation/date fidelity and expiry/rate-limit tests; P14-T03 instructor role cannot access student-private mail/grades/chats, and removal/revocation takes effect. Depends separate Ready specs and institutional/vendor decisions. Outside the initial pilot critical path unless product review promotes it.
 
+### P15 — General Chat, course workspaces, projects and scoped memory
+
+Design: [course-chats-and-ux.md](course-chats-and-ux.md). Preserve current S36 IDs/history/study sets while adding explicit General/course scope and optional one-level course projects. The server owns conversation scope; memory and tools inherit it. Keep first-use simple and allow a course chat without creating a project. Split into P15a scope/data contracts and migration, P15b course/project organization and saved-tool association, P15c student-controlled memory and token budgets. Each gets a reviewed spec and separate commit; no implicit global memory feature.
+
+Preparation: inspect conversation schema/store/API/UI and course aliases/permissions, design backward-compatible owner/course/project constraints and scope-aware list/create/read behavior, generated types and SSE context consistency. Existing conversations become explicit General; keep URLs and saved outputs intact. Persist course/term/project context, validate membership, and bind all read/refresh/study tools and citation/file resolution to allowed scope. Propose reviewable memory provenance/version/retention and cache invalidation contracts. Keep learning preferences separate from authoritative source facts. A scope switch initially creates a new chat; do not relabel mixed history.
+
+Failing-first tests: P15-T01 existing conversations migrate/resume as General with original IDs/study sets; P15-T02 own-course chat creation and cross-user/course/project mismatches rejected; P15-T03 omitted tool course defaults to persisted scope, explicit conflicting course and guessed chunks/items/files/citations rejected; P15-T04 course refresh, coverage and study artifacts stay scoped and calendars expose only authorized availability/approved writes; P15-T05 General can answer an authorized cross-course question without inheriting hidden project memory; P15-T06 switch/new chat preserves old draft/history and context cannot change mid-stream; P15-T07 approved course/project memory is visible/editable/deletable, summaries stay chat-local, current deadlines outrank old notes; P15-T08 cache/history/summary/retrieval keys separate user/course/project/memory/index generation and deletion/revocation invalidates derived context; P15-T09 project/chat deletion and saved-tool retention obey explicit S36-compatible policy; P15-T10 two near-identical course names/terms and malicious source/model arguments cannot widen scope; P15-T11 canonical course merges preserve validated owner-scoped bindings and late stream responses land only in the originating chat. Add retrieval/evidence cases with course-confusion tags without changing the shared benchmark denominator.
+
+Depends P00 contract review, P01 isolation/deletion, P04 retrieval/embedding boundaries and P08 course selection. Memory features remain off unless their own controls and gates pass. **Proposed pilot gate for scoped chats; optional memory/project conveniences can ship behind separate flags without blocking direct course questions.**
+
+### P16 — Student-first modern maroon UI and usability
+
+Design: detailed interface/skill references and task study in [course-chats-and-ux.md](course-chats-and-ux.md). Extend S35; preserve its working streaming/source/approval behavior. Split into P16a task prototype + usability review, P16b navigation/course/chat surfaces, P16c responsive/accessibility/streaming polish. Prototype work can begin after P00 before backend packages; live scoped behavior depends P15. No new chat SDK or framework migration assumed.
+
+Preparation: audit current tokens/components/Next16 local docs; sketch desktop/phone Today → course → chat → project/saved quiz; show active scope and one clear action; validate wording with non-technical students. Research/review/pin the selected design and review skills before applying them; use assistant-ui/Vercel examples as patterns unless a separately justified dependency proposal passes. Retain current maroon #840028 identity, test contrast and theme variants, avoid dense admin controls, and keep Advanced provider settings outside the main flow.
+
+Failing-first tests: P16-T01 at 320/375/768/1280px plus phone keyboard/zoom/long titles no horizontal overflow, hidden composer or inaccessible source/approval controls; P16-T02 keyboard/screen-reader scope chooser, tabs/dialog focus/return, meaningful labels, contrast and reduced-motion checks; P16-T03 SSE progressive rendering, Stop/retry/error/partial answer, scoped chat switching and no per-token full-transcript remount; P16-T04 scrolling up is respected, Jump to latest works and announcements do not read every token; P16-T05 route changes retain correct owned scope/draft/scroll without stale-account cache or page-wide blank flashes; P16-T06 empty/missing-source/import/error states have clear examples/status and a recovery action; P16-T07 existing Sessions links and generated quiz/flashcard/approval/citation behavior remain usable; P16-T08 representative novice-student study (at least five participants, proposed four-of-five unaided success per core task) records task time/scope confusion and drives iteration. Confirm layout visually and behaviorally; tests do not establish usability merely by finding a button.
+
+Use a WCAG 2.2 AA review target and manual assistive-technology checks; don't claim conformance from automated checks alone. Measure scope-switch/render responsiveness and agreed P06 latency under realistic load; SSE is not a guarantee of live platform freshness. Depends P08/P15 for final behavior and P06 staged browser setup. **Proposed pilot gate.**
+
 ## Pilot rollout, optimization and rollback
 
 1. Ephemeral CI/staging with synthetic users and a frozen retrieval/evidence corpus; no production student data in tests or arbitrary provider experiments.
-2. Team-only staging with consenting real accounts; verify Google redirects and Canvas/course selection, Today, citations, approval/feed, disconnect/deletion. Track source→metadata→organized→searchable latency separately.
+2. Team-only staging with consenting real accounts; verify Google redirects and Canvas/course selection, Today, General/course/project chat scope, controlled memory, citations, approval/feed, disconnect/deletion. Include the P16 novice-student task study. Track source→metadata→organized→searchable latency separately.
 3. Invite 5 students, then the agreed 25 only after observed error/freshness/cost/deletion gates hold. Define a named on-call/support owner and manual connector/model disable switch. Proposed observation window: seven days, subject to team approval.
 4. Benchmark the existing architecture before batching/pooling/caching/query/index changes. RAG audit's 120-question corpus and proposed recall/latency/load gates are the shared benchmark. Measure per-category quality and total successful-answer cost, not only token price. No new vector database, microservice split or shared cross-student cache is presumed necessary.
 5. Promote immutable tested artifacts. Roll back application/index generations compatibly; never roll back deletion/grant revocation. Outbox/job replay must be idempotent. For destructive schema changes, document restore or roll-forward before executing them.

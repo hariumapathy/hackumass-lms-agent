@@ -6,9 +6,13 @@ Planning checkpoint: **`679c1d6`**, pushed. Review: [draft PR #33](https://githu
 
 ## What was completed
 
-Three delegated source audits (deployment/auth; connectors/onboarding; RAG/sync), official provider/Google/UMass research, consolidated design, P00–P14 implementation/test plan, model/hosting cost scenarios and review decisions. Cross-review added explicit inline-file security tests and aligned all model comparisons to the same 120-question retrieval corpus. Only Markdown documentation changed. No secrets or real student data were inspected.
+Three delegated source audits (deployment/auth; connectors/onboarding; RAG/sync), official provider/Google/UMass research, consolidated design, P00–P16 implementation/test plan, model/hosting cost scenarios and review decisions. Cross-review added explicit inline-file security tests and aligned all model comparisons to the same 120-question retrieval corpus. Only Markdown documentation changed. No secrets or real student data were inspected.
 
 Baseline checks: backend offline `uv run pytest -m 'not integration' -q --tb=short` → 419 pass, 1 skip, 96 deselected; frontend Vitest → 92 pass. Ruff lint/format, pyright, ESLint and Next typegen/TypeScript pass. No current DB integration/build/E2E/live/load/provider evaluation was run. Do not promote old hackathon check counts into current launch evidence.
+
+## Course-chat / UX amendment
+
+User additionally requested General Chat plus course-bound chats, optional coursework projects, aligned memory/tools and a modern responsive maroon interface for non-technical students. Read [course-chats-and-ux.md](course-chats-and-ux.md), updated design-plan and **P15/P16** in implementation-plan. Persist/enforce scope server-side; avoid accidental cross-course history/memory, preserve S36 URLs/study tools and keep direct course questions free of project setup. Skills were researched (Anthropic visual direction, Vercel interface/performance, curated Figma/browser testing) but none installed. New usability/phone/SSE/accessibility and scope/memory tests are future plans, not tests already run. This amendment remains documentation-only and does not authorize implementation.
 
 ## Exact next steps
 
