@@ -1,5 +1,7 @@
 # Post-hackathon planning packet
 
+> **Implementation authorized 2026-11-24:** active work is now on `codex/post-hackathon-implementation`; see the [overnight checkpoint](../handoff/overnight-2026-11-24.md). The packet below preserves the original design; individual Ready specs now govern each implemented fix. Never merge main until user explicitly says done.
+
 **2026-11-23 · Draft for review · Branch `post-hackathon-plan/changes` · Baseline `be13793`**
 
 The hackathon is over; the user reports the team presented to judges, received encouraging feedback and wants a deployable student/professor product. This packet records a fresh code audit, current primary-source research, a proposed design and a sequenced implementation plan. **No application/configuration/test code was changed, no deployment was made and no provider was purchased.** All proposed work is Draft until reviewed.

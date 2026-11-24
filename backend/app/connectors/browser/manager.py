@@ -184,8 +184,10 @@ def get_login_manager() -> LoginManager:
         from app.connectors.browser.store import save_login
         from app.core.settings import get_settings
 
-        if get_settings().browser_provider == "hosted":
-            log.warning("BROWSER_PROVIDER=hosted is not built yet (S13 stretch); using local")
+        if get_settings().browser_provider != "local":
+            raise AppError(
+                "validation_error", "Live account login is unavailable on this server.", 503
+            )
         _manager = LoginManager(LocalPlaywrightProvider(), save_login)
     return _manager
 

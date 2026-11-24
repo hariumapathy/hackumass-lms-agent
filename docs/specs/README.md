@@ -53,6 +53,12 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 ## Stage 4: Stretch (only after H24, in order)
 [S17 Piazza connector](S17-piazza-connector.md) (A, built: fixture + DB tests green, Connect Piazza in the UI; **live login check pending**) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.
 
+## Post-hackathon implementation (2026-11-24)
+
+| ID | Feature | Status |
+|---|---|---|
+| S37 | [Production startup guards](S37-production-startup-guards.md) | Implemented on review branch; unmerged |
+
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)
 - Every table has `user_id` + Row Level Security; every query and tool is scoped to the authenticated user.
