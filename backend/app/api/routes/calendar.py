@@ -7,15 +7,16 @@ from fastapi import APIRouter, Depends, Request, Response
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, data_user
 from app.calendar.ics import render_feed
 from app.core.errors import not_found
 from app.core.settings import get_settings
+from app.db.deletion import user_work
 from app.db.pool import connection
 from app.db.repositories import calendar as repo
 
 router = APIRouter(tags=["calendar"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
 
 
 def _feed_url(token: str) -> str:
@@ -55,11 +56,14 @@ async def ics_feed(token: str, request: Request) -> Response:
             user_id = await repo._feed_owner(conn, token)
             if user_id is None:
                 raise not_found("Calendar")
-            data = render_feed(
-                await repo.feed_items(conn, user_id, now),
-                await repo.approved_blocks(conn, user_id),
-                now,
-            )
+            async with user_work(conn, user_id):
+                if await repo._feed_owner(conn, token) != user_id:
+                    raise not_found("Calendar")
+                data = render_feed(
+                    await repo.feed_items(conn, user_id, now),
+                    await repo.approved_blocks(conn, user_id),
+                    now,
+                )
         return Response(
             data,
             media_type="text/calendar; charset=utf-8",

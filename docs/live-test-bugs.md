@@ -40,3 +40,8 @@ These were identified while inspecting the live rehearsal's screens and backing 
 - Canvas updates are periodic (about 20 minutes) plus manual Refresh, not a Canvas Live Events feed. Search currently uses fake embeddings with keyword retrieval in the local demo; Gemini chat is real.
 - Gradescope/Duo login is still a manual verification task, not a demonstrated failure. Echo360 is unimplemented stretch work.
 - Hosted Supabase secret is unnecessary for this run: API, worker, Auth and Storage target the local Docker stack; its local keys are obtained by the demo launcher.
+
+
+## Post-hackathon deletion regressions — review branch, 2026-11-24
+
+Synthetic local accounts reproduced clear-data returning success while leaving files, ignoring Storage failure, replaying a deleted sync and stale merge, duplicate browser starts after a delayed generation lookup, and stale writes after lock loss/child-task request exit. S40 now covers these with durable retry, user work barriers, generation checks and guarded DB leases. Settings still offers deletion when loading is blocked. Backend588 pass/1 optional skip; the optional actual local Storage round-trip passed separately; frontend102 and6 mock browser E2E pass. No real student's data was cleared. [Spec](specs/S40-complete-data-deletion.md), [recovery and remaining Storage fault gate](deployment/data-deletion.md). These changes are on the implementation branch, not main.

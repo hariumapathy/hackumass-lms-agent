@@ -75,6 +75,3 @@ async def test_s20_t07_delete_my_data_removes_only_that_users_rows(conn) -> None
         cur = await conn.execute(f"select count(*) as n from {table} where user_id = %s", (a,))
         row = await cur.fetchone()
         assert row and row["n"] == 0, table
-    pytest.xfail(
-        "Storage objects under users/{user_id}/ are deleted once S12's storage helper exists"
-    )

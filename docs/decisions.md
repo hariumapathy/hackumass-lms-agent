@@ -59,3 +59,5 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-23 (user planning amendment): include General and course-specific chats, optional coursework projects, aligned context/memory/tools and student-first responsive modern maroon UX; add research-backed design skill candidates and usability tests. Documentation only; no feature code authorized.
 
 - 2026-11-24 (user): implement one fix at a time through spec/tests/design/implementation/verification and feature commits on `codex/post-hackathon-implementation`; keep Gemini now, prepare handoff before 07:00 ET, and **never merge main until user explicitly says done**. S37 adds an explicit production Settings gate and disabled browser mode, with no existing contract changes.
+
+- 2026-11-24 (S40 review branch): durable clear-data generation/checkpoint, shared/exclusive user barriers with request-bound DB leases, idempotent file/job cleanup and worker recovery; Auth retained. Additive migration0003 requires team review before merge; object-upload orphan reconciliation remains a public-launch gate.

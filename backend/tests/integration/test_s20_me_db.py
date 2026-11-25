@@ -23,6 +23,10 @@ async def conn():  # noqa: ANN201
 
 
 async def test_s20_me_routes_use_profiles_table(conn, monkeypatch) -> None:  # noqa: ANN001
+    from app.sync.processing import storage
+    from tests.integration.test_s40_deletion import FakeStorage
+
+    monkeypatch.setattr(storage, "get_storage", lambda: FakeStorage())
     uid = await create_auth_user(conn)
     monkeypatch.setenv("DATA_SOURCE", "db")
     get_settings.cache_clear()

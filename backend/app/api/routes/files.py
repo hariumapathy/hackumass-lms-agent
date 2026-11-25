@@ -10,13 +10,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Response
 
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, data_user
 from app.core.errors import not_found
 from app.core.settings import get_settings
 from app.db.pool import connection
 
 router = APIRouter(tags=["files"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
 
 
 class FileStorage(Protocol):

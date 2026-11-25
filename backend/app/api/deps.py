@@ -57,3 +57,15 @@ async def chat_rate_limit(
             status=429,
             retryable=True,
         )
+
+
+async def data_user(
+    user: Annotated[UserCtx, Depends(current_user)],
+) -> AsyncIterator[UserCtx]:
+    if get_settings().data_source != "db":
+        yield user
+        return
+    from app.db.deletion import user_session
+
+    async with user_session(user.user_id):
+        yield user

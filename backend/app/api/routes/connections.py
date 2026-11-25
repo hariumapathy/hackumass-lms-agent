@@ -10,7 +10,7 @@ from psycopg import AsyncConnection
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, data_user
 from app.connectors.browser.manager import LoginManager, get_login_manager
 from app.core.errors import AppError, not_found
 from app.core.settings import get_settings
@@ -19,7 +19,7 @@ from app.db.repositories import profiles
 from app.db.repositories import sync as sync_repo
 
 router = APIRouter(tags=["connections"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
 Logins = Annotated[LoginManager, Depends(get_login_manager)]
 
 

@@ -25,7 +25,7 @@ Keep the working stack. Correct data isolation/deletion, import recovery/removal
 
 Choose the cheapest model that passes a controlled course-evidence/tool/streaming evaluation. Prefer one provider initially; consider OpenRouter when one chat invoice plus several approved models is worth its routing/privacy complexity. Do not choose purely by nationality, advertised rate limit or per-token price. No provider has passed the proposed new benchmark yet.
 
-## Highest-priority findings
+## Highest-priority findings (original audit; implementation status below)
 
 - Hosted browser login is unimplemented and falls back to opening a browser on the server machine.
 - Workspace deletion leaves Storage/jobs; account switching has an unproven cache-disclosure risk needing a two-user regression.
@@ -36,6 +36,8 @@ Choose the cheapest model that passes a controlled course-evidence/tool/streamin
 - Usage is counted in memory but not persisted for dependable per-student cost caps.
 
 These are source-level findings, not claims that a hosted exploit was reproduced. Evidence and required tests are in the three audits.
+
+Implementation review status: S37 startup/hosted-browser guards, S38 issuer binding, S39 account isolation and S40 resumable deletion are now verified on `codex/post-hackathon-implementation` / PR34, unmerged. See [overnight checkpoint](../handoff/overnight-2026-11-24.md); deployment still requires the remaining plan gates, including Storage orphan reconciliation.
 
 ## Review decisions
 

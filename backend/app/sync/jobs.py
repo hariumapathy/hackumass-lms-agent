@@ -22,6 +22,7 @@ from app.connectors.base import PlatformError, SyncScope, get_connector
 from app.core.clock import Clock, SystemClock
 from app.core.crypto import CryptoError, decrypt, get_fernet
 from app.core.settings import get_settings
+from app.db.deletion import generation, retry_pending_deletions, user_work
 from app.db.repositories import sync as repo
 from app.sync.pipeline import run_sync
 
@@ -78,7 +79,8 @@ async def sync_platform(context: JobContext, job: dict[str, Any]) -> None:
     sj = SyncJob.model_validate(job)
     attempts = context.job.attempts if context.job else 0
     async with await _connect() as conn:
-        await execute_sync(conn, sj, final_attempt=attempts >= MAX_RETRIES)
+        async with user_work(conn, sj.user_id):
+            await execute_sync(conn, sj, final_attempt=attempts >= MAX_RETRIES)
 
 
 async def execute_sync(
@@ -86,6 +88,9 @@ async def execute_sync(
 ) -> str:
     """Decrypt the secret, run the pipeline, queue follow-up jobs. Raises PlatformError to retry."""
     clock = clock or SystemClock()
+    if await repo.get_run(conn, sj.user_id, sj.sync_run_id) is None:
+        return "deleted"
+    epoch = await generation(conn, sj.user_id)
     ciphertext = await repo.get_secret(conn, sj.user_id, sj.platform)
     if ciphertext is None:
         await repo.mark_run(
@@ -120,7 +125,7 @@ async def execute_sync(
     if outcome.status == "succeeded":
         await _defer(
             merge_user,
-            {"user_id": str(sj.user_id)},
+            {"user_id": str(sj.user_id), "expected_generation": epoch},
             lock=f"merge:{sj.user_id}",
             priority=PRIORITY["manual"],
         )
@@ -141,7 +146,8 @@ async def process_material(
     from app.sync.processing.worker import run_process_material
 
     async with await _connect() as conn:
-        await run_process_material(conn, UUID(user_id), UUID(material_id), source)
+        async with user_work(conn, UUID(user_id)):
+            await run_process_material(conn, UUID(user_id), UUID(material_id), source)
 
 
 @app.task(name="process_post", queue="process")
@@ -150,16 +156,20 @@ async def process_post(user_id: str, post_id: str) -> None:
     from app.sync.processing.worker import run_process_post
 
     async with await _connect() as conn:
-        await run_process_post(conn, UUID(user_id), UUID(post_id))
+        async with user_work(conn, UUID(user_id)):
+            await run_process_post(conn, UUID(user_id), UUID(post_id))
 
 
 @app.task(name="merge_user", queue="sync")
-async def merge_user(user_id: str) -> None:
+async def merge_user(user_id: str, expected_generation: int = 0) -> None:
     """S16: merge courses/items across platforms and write canonical item changes."""
     from app.sync import merge
 
     async with await _connect() as conn:
-        stats = await merge.merge_user(conn, UUID(user_id))
+        async with user_work(conn, UUID(user_id)) as epoch:
+            if epoch != expected_generation:
+                return
+            stats = await merge.merge_user(conn, UUID(user_id))
     log.info("merge_user %s: %s", user_id, stats.model_dump())
 
 
@@ -281,9 +291,25 @@ async def due_connections(conn: AsyncConnection[Any], now: datetime) -> list[tup
 @app.task(name="schedule_syncs", queue="sync", queueing_lock="schedule_syncs")
 async def schedule_syncs(timestamp: int) -> None:
     async with await _connect() as conn:
+        await retry_pending_deletions(conn)
         now = SystemClock().now()
         for user_id, platform in await due_connections(conn, now):
-            await enqueue_sync(conn, user_id, platform, SyncScope(kind="full"), "schedule")
+            from app.core.errors import AppError
+
+            try:
+                async with user_work(conn, user_id):
+                    # The due snapshot can predate deletion/disconnect; re-read inside the gate.
+                    connection = await repo.get_connection(conn, user_id, platform)
+                    if (
+                        connection
+                        and connection.status == "active"
+                        and await repo.get_secret(conn, user_id, platform)
+                    ):
+                        await enqueue_sync(
+                            conn, user_id, platform, SyncScope(kind="full"), "schedule"
+                        )
+            except AppError:
+                continue
 
 
 def check_worker_config() -> None:
