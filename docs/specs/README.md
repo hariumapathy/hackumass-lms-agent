@@ -61,6 +61,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S38 | [JWT issuer binding](S38-jwt-issuer-binding.md) | Implemented on review branch; unmerged |
 | S39 | [Browser account isolation](S39-browser-account-isolation.md) | Implemented on review branch; unmerged |
 | S40 | [Complete data deletion](S40-complete-data-deletion.md) | Implemented on review branch; unmerged; Storage fault reconciliation remains a launch gate |
+| S41 | [Current retrieval eligibility](S41-current-retrieval-eligibility.md) | Implemented on review branch; unmerged |
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)

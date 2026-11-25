@@ -5,13 +5,13 @@
 ## Done
 - Planning/audit packet and user-authorized overnight workflow; Gemini retained.
 - S37 production startup guards `87617f2`; S38 JWT issuer checks `9c74f17`; S39 account/cache/request isolation `a12f52c`, all pushed.
-- S40 resumable data/file/job cleanup and old-work barriers verified; separate commit/push next. Backend588 + separately optional local Storage round-trip; frontend102,6 browser E2E, build/static checks green.
+- S40 resumable data/file/job cleanup and old-work barriers committed/pushed `6b970ee`. Backend588 + separately optional local Storage round-trip; frontend102,6 browser E2E, build/static checks green.
 
 ## In progress
-- Finish S40 commit/push, then one sync/RAG fix at a time through spec/cases/design/plan/red tests/code/checks.
+- S41 current retrieval eligibility verified (11 new DB cases; current-feature review no blocking issue), finishing full/static checks and separate commit/push.
 
 ## Next
-1. Removed-source retrieval, then capped listings/restoration/import recovery in audited priority order; specify only the next fix.
+1. Commit/push S41, then Canvas capped listing/removal safety, restoration/import recovery in audited priority order; specify only the next fix.
 2. Continue remaining approved plan until time/usage limit, retaining exact evidence and feature commits.
 3. Restart/verify stable local demo and produce handoff before07:00 ET or usage cutoff.
 

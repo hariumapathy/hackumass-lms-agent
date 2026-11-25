@@ -45,3 +45,8 @@ These were identified while inspecting the live rehearsal's screens and backing 
 ## Post-hackathon deletion regressions — review branch, 2026-11-24
 
 Synthetic local accounts reproduced clear-data returning success while leaving files, ignoring Storage failure, replaying a deleted sync and stale merge, duplicate browser starts after a delayed generation lookup, and stale writes after lock loss/child-task request exit. S40 now covers these with durable retry, user work barriers, generation checks and guarded DB leases. Settings still offers deletion when loading is blocked. Backend588 pass/1 optional skip; the optional actual local Storage round-trip passed separately; frontend102 and6 mock browser E2E pass. No real student's data was cleared. [Spec](specs/S40-complete-data-deletion.md), [recovery and remaining Storage fault gate](deployment/data-deletion.md). These changes are on the implementation branch, not main.
+
+
+## Post-hackathon retrieval regressions — review branch, 2026-11-24
+
+Synthetic searches returned removed materials/posts and direct reads exposed removed material excerpts; six initial assertions failed. S41 filters owned non-removed parents before lexical/vector candidate limits and direct reads.11 focused cases now pass, including vector crowding and a foreign-parent mismatch. Historical citation resolution deliberately remains available with changed/removed status, and current tool results retain changed status. No live course sources/model calls; no claim that the later embedding/publication/freshness plan is complete.

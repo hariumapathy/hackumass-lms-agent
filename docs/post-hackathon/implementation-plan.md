@@ -1,5 +1,7 @@
 # Implementation plan after design approval
 
+> **Current authorization (2026-11-24):** user approved sequential implementation on `codex/post-hackathon-implementation`, one S37+ spec/test/design/code/check/commit cycle at a time. Keep Gemini and never merge main until explicitly told done. The original planning-only language below records the review baseline; [overnight checkpoint](../handoff/overnight-2026-11-24.md) records actual completed work.
+
 **Draft, planning only — 2026-11-23.** Read [design-plan.md](design-plan.md) first. No work package below is Ready and no application code is authorized in this phase. P00–P16 IDs are planning work packages, not replacements for existing S specs. Before implementation, map each package to a reviewed S37+ spec or a narrow amendment to an existing spec, using the next available IDs at that time.
 
 ## Required workflow for every feature

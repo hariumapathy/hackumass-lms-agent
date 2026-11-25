@@ -46,6 +46,8 @@ left join materials m on m.id = ch.material_id and m.user_id = ch.user_id
 left join posts p on p.id = ch.post_id and p.user_id = ch.user_id
 """
 _CHUNK_SELECT = f"select {_CHUNK_COLUMNS} {_CHUNK_FROM}"
+# Only discovery/direct reads use this. Historical citation IDs retain their original rows/status.
+_CURRENT_CHUNK = "ch.is_current and coalesce(m.status, p.status) <> 'removed'"
 
 
 async def list_courses(conn: AsyncConnection[Any], user_id: UUID) -> list[dict[str, Any]]:
@@ -137,7 +139,7 @@ async def search_chunks(
     Vector hits under the similarity floor are ignored (rule 8). SQL text is built only from the
     fixed fragments in this module; every value is a bound parameter."""
     where, params = _filters(kind, source, course_id)
-    base = f"where ch.user_id = %s and ch.is_current{where}"
+    base = f"where ch.user_id = %s and {_CURRENT_CHUNK}{where}"
     ranks: dict[int, float] = {}
     rows: dict[int, dict[str, Any]] = {}
     if query_vec is not None:
@@ -168,7 +170,7 @@ async def material_chunks(
     conn: AsyncConnection[Any], user_id: UUID, material_id: UUID
 ) -> list[dict[str, Any]]:
     cur = await conn.execute(
-        f"{_CHUNK_SELECT} where ch.user_id = %s and ch.is_current and ch.material_id = %s "
+        f"{_CHUNK_SELECT} where ch.user_id = %s and {_CURRENT_CHUNK} and ch.material_id = %s "
         "order by ch.page nulls last, ch.start_s nulls last, ch.id",
         (user_id, material_id),
     )

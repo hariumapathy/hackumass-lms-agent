@@ -116,3 +116,8 @@ Built so far (`backend/app/agent/tools/`, tests in `tests/unit/test_s21_tools.py
 **DB (done 2026-11-14):** `DbToolData` (`tools/db_source.py`) + `app/db/repositories/agent.py`: user-scoped SQL, hybrid search (vector top 30 with a 0.2 similarity floor + full-text top 30 → RRF k=60), misses rows, `fetch_latest` via S10 `enqueue_sync(trigger="agent")` + `wait_for_sync(15 s)`. Integration tests on a freshly seeded student: `tests/integration/test_s21_s22_db.py` (T02–T06, T09–T11). Turned on with `DATA_SOURCE=db`.
 
 **Old next list (kept for history):** `DbToolData` (SQL: hybrid search with RRF, misses rows, user scoping), `fetch_latest` via S10's `enqueue_sync`/`wait_for_sync`, and the seed-based integration versions of T02, T04–T06, T09–T11.
+
+
+## Post-hackathon amendment — S41 (review branch)
+
+Current retrieval/direct material reads require a current chunk and an owned non-removed parent. Search eligibility is applied before ranking/candidate limits. Internal chunk results and overview syllabus chunks now retain the existing `status` (`current`/`changed`) field. A changed source is not proof its saved excerpt matches the newest platform version. Historical citation lookup remains owner-scoped and can resolve removed/old evidence with its original status badge. No public API/SSE/seed changes. See [S41](S41-current-retrieval-eligibility.md).

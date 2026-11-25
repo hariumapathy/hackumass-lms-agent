@@ -59,5 +59,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Built-in PDF viewer: a citation's **View** opens the cited lecture PDF inside the app at the cited page | ✅ live-verified 2026-11-15 (real Canvas lecture, opened at p. 2 of 61; phone + laptop). Mobile Safari may not render PDFs inline: "Open in Canvas" is always in the viewer |
 | **Sessions** (S36): every chat with the flashcards / quizzes / plans made in it; rename and delete chats (study sets stay) | ✅ verified in the browser 2026-11-15 on the real-data stack (laptop + 375 px); 7 tests |
 | Post-hackathon privacy hardening (S37–S40) | Review branch only: production guards, issuer checks, browser account isolation, resumable row/file/job cleanup with old-work fences; unmerged and not a public-deployment claim |
+| Removed-source retrieval (S41) | Review branch only: removed sources excluded from new search/reads; historical citations retain status; synthetic DB tests, unmerged |
 | Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

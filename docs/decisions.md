@@ -61,3 +61,5 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-24 (user): implement one fix at a time through spec/tests/design/implementation/verification and feature commits on `codex/post-hackathon-implementation`; keep Gemini now, prepare handoff before 07:00 ET, and **never merge main until user explicitly says done**. S37 adds an explicit production Settings gate and disabled browser mode, with no existing contract changes.
 
 - 2026-11-24 (S40 review branch): durable clear-data generation/checkpoint, shared/exclusive user barriers with request-bound DB leases, idempotent file/job cleanup and worker recovery; Auth retained. Additive migration0003 requires team review before merge; object-upload orphan reconciliation remains a public-launch gate.
+
+- 2026-11-24 (S41 review branch): current retrieval/direct reads exclude removed parents before ranking; historical citations remain owner-scoped and resolvable with status; read tools retain existing changed/current metadata. Narrow RS01 fix precedes independent listing/restoration fixes; no public contracts changed.

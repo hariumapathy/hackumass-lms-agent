@@ -23,6 +23,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-24 · Neal's laptop · Codex · S41 current-source retrieval
+**Done:** current lexical/vector/hybrid search and direct material reads exclude owned removed parents before candidate limits; historical citation lookup unchanged. Internal read/overview results retain changed/current source status. No public API/SSE/schema/seed changes; Gemini unchanged.
+**Evidence:** initial6 source/metadata regressions failed, historical resolution guard passed. Final11 new cases (including nearest-vector crowding, foreign-parent mismatch and changed posts) and full backend599 pass/1 optional Storage skip; Ruff/format/pyright green. Optional actual local Storage check passed at S40 separately. Previous frontend102/6 E2E/build remains applicable; no frontend change. Current-feature RAG review found no blocking defect.
+**Next:** commit/push S41 separately; Canvas incomplete-listing/removal safety next through its own spec/cases/design/plan/red-tests/code workflow. S40 pushed `6b970ee`; PR34 remains draft/unmerged. Reapply no resets and respect recorded Storage failure/backup deployment gates.
+
 ## 2026-11-24 · Neal's laptop · Codex · S40 complete saved-data cleanup
 **Done:** additive internal migration0003, durable pending/complete generation, resumable rows/files/job cleanup, worker recovery and acknowledgment-safe running-job redaction. Auth retained. Protected request/SSE/tool leases share the guarded DB session; active child leases drain before release; escaped tasks are refused. Old sync/merge/login attempts cannot revive deleted work; stale scheduler and public feed paths recheck ownership. Settings retains privacy retry when /me fails.
 **Red/green evidence:** first6 DB cases failed against old code; further red regressions caught old login/merge, duplicate windows, killed-lock writes, child lease writes and inaccessible Settings retry. Final33 focused tests pass; full backend588 pass/1 optional skip, then actual local Storage synthetic two-user round-trip passed separately. Frontend102 tests,6 mock browser E2E, build/lint/types and backend Ruff/format/pyright pass. Independent security re-review no further blocking defect.
