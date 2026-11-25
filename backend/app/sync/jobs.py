@@ -150,7 +150,15 @@ async def process_material(
             await run_process_material(conn, UUID(user_id), UUID(material_id), source)
 
 
-@app.task(name="process_post", queue="process")
+@app.task(
+    name="process_post",
+    queue="process",
+    retry=RetryStrategy(
+        max_attempts=MAX_RETRIES,
+        exponential_wait=5,
+        retry_exceptions={PlatformError},
+    ),
+)
 async def process_post(user_id: str, post_id: str) -> None:
     """S12: chunk + embed a new/changed post (announcement, Piazza, email)."""
     from app.sync.processing.worker import run_process_post
@@ -194,15 +202,7 @@ async def _defer_process_post(user_id: UUID, post_id: UUID) -> None:
         await dispatch_parent(conn, user_id, post_id=post_id)
 
 
-@app.task(
-    name="process_intent",
-    queue="process",
-    retry=RetryStrategy(
-        max_attempts=MAX_RETRIES,
-        exponential_wait=5,
-        retry_exceptions={PlatformError},
-    ),
-)
+@app.task(name="process_intent", queue="process")
 async def process_intent(user_id: str, intent_id: str, revision: str) -> None:
     from app.sync.intents import execute
 
@@ -309,7 +309,15 @@ async def schedule_syncs(timestamp: int) -> None:
     async with await _connect() as conn:
         await retry_pending_deletions(conn)
         from app.sync.intents import dispatch_pending
+        from app.sync.recovery import (
+            recover_legacy_materials,
+            recover_legacy_posts,
+            recover_stalled,
+        )
 
+        await recover_stalled(conn)
+        await recover_legacy_posts(conn)
+        await recover_legacy_materials(conn)
         await dispatch_pending(conn)
         now = SystemClock().now()
         for user_id, platform in await due_connections(conn, now):

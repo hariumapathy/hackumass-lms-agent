@@ -36,18 +36,26 @@ async def run_process_material(
     try:
         storage = get_storage()
     except StorageError:
-        log.warning("process_material: no service key; original file not stored")
-        storage = None
+        if src.download is not None:
+            from app.sync.processing.failures import ProcessingFailure
+
+            raise ProcessingFailure("configuration", "storage_configuration") from None
+        storage = None  # inline text/transcripts have no binary original to upload
     return await process_material(
         conn,
         user_id,
         material_id,
         source=src,
-        embeddings=get_embeddings(),
+        embeddings=get_embeddings(max_retries=0),
         downloader=http_downloader(token),
         storage=storage,
     )
 
 
 async def run_process_post(conn: AsyncConnection[Any], user_id: UUID, post_id: UUID) -> str:
-    return await process_post(conn, user_id, post_id, embeddings=get_embeddings())
+    from app.sync.processing.failures import classify
+
+    try:
+        return await process_post(conn, user_id, post_id, embeddings=get_embeddings(max_retries=0))
+    except Exception as error:
+        raise classify(error) from None

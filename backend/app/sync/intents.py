@@ -2,7 +2,8 @@
 
 import json
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -92,48 +93,101 @@ async def dispatch_parent(
         await dispatch_one(conn, user_id, row["id"])
 
 
+@asynccontextmanager
+async def intent_lock(
+    conn: AsyncConnection[Any], intent_id: UUID, *, wait: bool = True
+) -> AsyncIterator[bool]:
+    key = f"index-work:{intent_id}"
+    try:
+        if wait:
+            await conn.execute("select pg_advisory_lock(hashtextextended(%s,0))", (key,))
+        else:
+            row = await (
+                await conn.execute(
+                    "select pg_try_advisory_lock(hashtextextended(%s,0)) as locked", (key,)
+                )
+            ).fetchone()
+            if not row or not row["locked"]:
+                yield False
+                return
+    except BaseException:
+        await conn.close()  # acquisition may have completed just as cancellation arrived
+        raise
+    try:
+        yield True
+    finally:
+        if not conn.closed:
+            try:
+                await conn.execute("select pg_advisory_unlock(hashtextextended(%s,0))", (key,))
+            except BaseException:
+                await conn.close()
+                raise
+
+
 async def execute(
-    conn: AsyncConnection[Any],
-    *,
-    user_id: str,
-    intent_id: str,
-    revision: str,
+    conn: AsyncConnection[Any], *, user_id: str, intent_id: str, revision: str
 ) -> str:
     from app.sync.processing import worker
+    from app.sync.processing.failures import ProcessingFailure, RetryableProcessingError, classify
 
     uid, iid, expected = UUID(user_id), UUID(intent_id), UUID(revision)
-    key = f"index-work:{iid}"
-    async with user_work(conn, uid):
-        await conn.execute("select pg_advisory_lock(hashtextextended(%s,0))", (key,))
+    async with user_work(conn, uid), intent_lock(conn, iid):
+        row = await repo.get(conn, uid, iid)
+        if not row:
+            return "missing"
+        if row["revision"] != expected:
+            return "superseded"
+        if row["completed_at"]:
+            return "already_complete"
+        if (
+            row["parent_status"] not in {"active", "changed"}
+            or row["parent_hash"] != row["source_hash"]
+        ):
+            await repo.reset(conn, uid, iid, expected)
+            return "unavailable"
+        if row["blocked_reason"] or row["attempts"] >= 4:
+            return "blocked"
+        if await repo.claim(conn, uid, iid, expected) is None:
+            latest = await repo.get(conn, uid, iid)
+            return "superseded" if latest and latest["revision"] != expected else "deferred"
         try:
-            row = await repo.get(conn, uid, iid)
-            if not row:
-                return "missing"
-            if row["revision"] != expected:
-                return "superseded"
-            if row["completed_at"]:
-                return "already_complete"
-            if (
-                row["parent_status"] not in {"active", "changed"}
-                or row["parent_hash"] != row["source_hash"]
-            ):
-                await repo.reset(conn, uid, iid, expected)
-                return "unavailable"
             if row["material_id"]:
                 payload = row["payload_ciphertext"]
                 if payload is None:
-                    raise RuntimeError("Pending index work has no saved source.")
+                    raise ProcessingFailure("configuration", "missing_source")
                 source = json.loads(decrypt(bytes(payload)))
                 result = await worker.run_process_material(conn, uid, row["material_id"], source)
             else:
                 result = await worker.run_process_post(conn, uid, row["post_id"])
             if result in {"done", "unchanged", "skipped", "empty"}:
                 await repo.complete(conn, uid, iid, expected)
-            return result
-        finally:
-            if not conn.closed:
-                try:
-                    await conn.execute("select pg_advisory_unlock(hashtextextended(%s,0))", (key,))
-                except BaseException:
-                    await conn.close()
-                    raise
+                return result
+            if result == "needs_reconnect":
+                raise ProcessingFailure("source_auth", "source_access")
+            if result == "missing":
+                await repo.reset(conn, uid, iid, expected)
+                return "unavailable"
+            raise RetryableProcessingError("processing_failed")
+        except Exception as error:
+            failure = classify(error)
+            applied = await repo.fail(conn, uid, iid, expected, failure.kind, failure.code)
+            if not applied:
+                return "superseded"
+            return "retry_scheduled" if failure.kind == "retry" else "blocked"
+
+
+async def recover_stalled(conn: AsyncConnection[Any], *, user_id: UUID | None = None) -> int:
+    from app.sync.recovery import recover_stalled as recover
+
+    return await recover(conn, user_id=user_id)
+
+
+async def resume(conn: AsyncConnection[Any], user_id: UUID) -> int:
+    async with user_work(conn, user_id):
+        return await repo.resume(conn, user_id)
+
+
+async def recover_legacy_posts(conn: AsyncConnection[Any], *, user_id: UUID | None = None) -> int:
+    from app.sync.recovery import recover_legacy_posts as recover
+
+    return await recover(conn, user_id=user_id)

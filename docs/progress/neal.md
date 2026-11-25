@@ -8,10 +8,10 @@
 - S40 resumable data/file/job cleanup and old-work barriers committed/pushed `6b970ee`. Backend588 + separately optional local Storage round-trip; frontend102,6 browser E2E, build/static checks green.
 
 ## In progress
-- S41 pushed `73ffe9a`, S42 `4385cb1`, S43 `5ff4d95`. S44 durable encrypted indexing delivery verified (16 new/644 full backend, static green), commit/push next.
+- S41 pushed `73ffe9a`, S42 `4385cb1`, S43 `5ff4d95`, S44 `1bacbb9`. S45 bounded retries/repair verified (32 new/full676 backend, static green), commit/push next.
 
 ## Next
-1. Commit/push S44, restart worker checkpoint; S45 failed/stuck processing retries next through its own workflow.
+1. Commit/push S45; restart API/worker checkpoint; RS06 source execution/publication fencing next through its own workflow.
 2. Continue remaining approved plan until time/usage limit, retaining exact evidence and feature commits.
 3. Restart/verify stable local demo and produce handoff before07:00 ET or usage cutoff.
 

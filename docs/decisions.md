@@ -70,3 +70,5 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 
 - 2026-11-25 (user): continue SDE workflow overnight; discretionary green merges allowed, but hold related foundations until integration gates pass; implement remaining requested features while deferring model-cost/provider changes and keeping Gemini.
 - 2026-11-25 (S44 review branch): transactional encrypted processing outbox and expiring dispatch leases; ID-only at-least-once delivery with execution/completion guards, no queueing lock after a real framework retry/replay uniqueness failure. Internal migration0004; no public contract changes.
+
+- 2026-11-25 (S45 review branch): bounded per-revision processing attempts/backoff, content-free failure categories, file-level access errors, owner-scoped repair and legacy refresh budgets; no nested worker-provider retry loop. Internal0005 only. Successful publication/active-worker takeover/disconnect remain RS06 gates.

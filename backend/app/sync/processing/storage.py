@@ -11,7 +11,7 @@ from urllib.parse import quote
 
 import httpx
 
-from app.connectors.base import AuthExpired, DownloadRef, PlatformError
+from app.connectors.base import DownloadRef, PlatformError, SourceAccessError
 from app.core.settings import Settings, get_settings
 from app.sync.processing.extract import MAX_BYTES, ExtractError, SkipProcessing
 
@@ -38,7 +38,9 @@ class Storage(Protocol):
 
 
 class StorageError(RuntimeError):
-    pass
+    def __init__(self, message: str, *, status_code: int | None = None):
+        self.status_code = status_code
+        super().__init__(message)
 
 
 class SupabaseStorage:
@@ -72,7 +74,7 @@ class SupabaseStorage:
             "POST", "/bucket", json={"id": self.bucket, "name": self.bucket, "public": False}
         )
         if resp.status_code >= 400 and "already exists" not in resp.text.lower():
-            raise StorageError(f"could not create bucket: {resp.status_code}")
+            raise StorageError("could not create bucket", status_code=resp.status_code)
 
     async def upload(self, path: str, data: bytes, content_type: str) -> None:
         for attempt in range(2):
@@ -86,7 +88,7 @@ class SupabaseStorage:
                 await self.ensure_bucket()
                 continue
             if resp.status_code >= 400:
-                raise StorageError(f"upload failed: {resp.status_code}")
+                raise StorageError("upload failed", status_code=resp.status_code)
             return
 
     async def download(self, path: str) -> bytes | None:
@@ -95,7 +97,7 @@ class SupabaseStorage:
         if resp.status_code in {400, 404}:
             return None
         if resp.status_code >= 400:
-            raise StorageError(f"download failed: {resp.status_code}")
+            raise StorageError("download failed", status_code=resp.status_code)
         return resp.content
 
     async def _list(self, prefix: str) -> list[str]:
@@ -111,7 +113,7 @@ class SupabaseStorage:
             if self._bucket_missing(resp):
                 return []
             if resp.status_code >= 400:
-                raise StorageError(f"list failed: {resp.status_code}")
+                raise StorageError("list failed", status_code=resp.status_code)
             entries = resp.json()
             for e in entries:
                 full = f"{prefix.rstrip('/')}/{e['name']}"
@@ -130,7 +132,7 @@ class SupabaseStorage:
                 "DELETE", f"/object/{self.bucket}", json={"prefixes": paths[i : i + 1000]}
             )
             if resp.status_code >= 400:
-                raise StorageError(f"delete failed: {resp.status_code}")
+                raise StorageError("delete failed", status_code=resp.status_code)
         return len(paths)
 
 
@@ -162,8 +164,8 @@ def http_downloader(
         try:
             async with c.stream("GET", ref.url, headers=headers, follow_redirects=True) as resp:
                 if resp.status_code in {401, 403}:
-                    raise AuthExpired("download not authorized")
-                if resp.status_code == 429 or resp.status_code >= 500:
+                    raise SourceAccessError("This file is unavailable.")
+                if resp.status_code in {408, 409, 425, 429} or resp.status_code >= 500:
                     raise PlatformError(f"download failed: {resp.status_code}")
                 if resp.status_code >= 400:
                     raise ExtractError(f"download failed: {resp.status_code}")

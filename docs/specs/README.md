@@ -64,7 +64,8 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S41 | [Current retrieval eligibility](S41-current-retrieval-eligibility.md) | Implemented on review branch; unmerged |
 | S42 | [Canvas listing completeness](S42-canvas-listing-completeness.md) | Implemented on review branch; unmerged |
 | S43 | [Source presence restoration](S43-source-presence-restoration.md) | Implemented on review branch; unmerged |
-| S44 | [Durable processing intents](S44-durable-processing-intents.md) | Implemented on review branch; unmerged; failed-processor retry is next |
+| S44 | [Durable processing intents](S44-durable-processing-intents.md) | Implemented on review branch; unmerged |
+| S45 | [Processing retries and repair](S45-processing-retries-and-recovery.md) | Implemented on review branch; unmerged; success-publication fencing is next |
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)

@@ -112,24 +112,28 @@ async def upsert_connection_secret(
     account_label: str | None = None,
 ) -> UUID:
     """Create/replace the connection + its encrypted secret; status back to `active`."""
-    cur = await conn.execute(
-        "insert into connections (user_id, platform, status, expires_at, account_label) "
-        "values (%s, %s, 'active', %s, %s) on conflict (user_id, platform) do update set "
-        "status = 'active', expires_at = excluded.expires_at, "
-        "account_label = coalesce(excluded.account_label, connections.account_label), "
-        "last_error = null returning id",
-        (user_id, platform, expires_at, account_label),
-    )
-    row = await cur.fetchone()
-    assert row is not None
-    connection_id: UUID = row["id"]
-    await conn.execute(
-        "insert into connection_secrets (connection_id, ciphertext, kind) values (%s, %s, %s) "
-        "on conflict (connection_id) do update set ciphertext = excluded.ciphertext, "
-        "kind = excluded.kind",
-        (connection_id, ciphertext, kind),
-    )
-    return connection_id
+    async with conn.transaction():
+        cur = await conn.execute(
+            "insert into connections (user_id, platform, status, expires_at, account_label) "
+            "values (%s, %s, 'active', %s, %s) on conflict (user_id, platform) do update set "
+            "status = 'active', expires_at = excluded.expires_at, "
+            "account_label = coalesce(excluded.account_label, connections.account_label), "
+            "last_error = null returning id",
+            (user_id, platform, expires_at, account_label),
+        )
+        row = await cur.fetchone()
+        assert row is not None
+        connection_id: UUID = row["id"]
+        await conn.execute(
+            "insert into connection_secrets (connection_id, ciphertext, kind) values (%s, %s, %s) "
+            "on conflict (connection_id) do update set ciphertext = excluded.ciphertext, "
+            "kind = excluded.kind",
+            (connection_id, ciphertext, kind),
+        )
+        from app.db.repositories.processing import resume_source_auth
+
+        await resume_source_auth(conn, user_id, platform)
+        return connection_id
 
 
 async def get_secret(conn: AsyncConnection[Any], user_id: UUID, platform: str) -> bytes | None:

@@ -65,3 +65,8 @@ Import→removal→identical return left item sources, posts and files removed; 
 ## Post-hackathon indexing-delivery regressions — review branch, 2026-11-25
 
 A source could commit before a later fetch failed, losing its in-memory processing request. S44 adds private encrypted transactional intents and leased recovery. Tests also reproduced metadata runs stranded by callback failure and a real Procrastinate unique-key failure when a running job retried beside a replay. Delivery now tolerates duplicates through execution/completion guards.16 new cases and644 backend checks pass; failed-processor retry/classification and source publication/disconnect races remain separate gates. Live Gemini synthetic chat/app G01 checks pass; this is not a fresh real-course retrieval evaluation.
+
+
+## Post-hackathon processing retries — review branch, 2026-11-25
+
+Failed embeddings/Storage could leave processing failed while queue work reported success. S45 persists bounded repair with safe stop categories, protects replacement-source state, and recovers orphan delivery without overriding active work. Review regressions also proved stale recovery could reopen a newly blocked error, busy locks could stall all recovery, and abandoned replacements could avoid the attempt budget.32 new cases/full676 backend tests pass after fixes. These are synthetic fixture reproductions; successful publication/disconnect races remain the next gate.

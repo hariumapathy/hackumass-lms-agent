@@ -425,7 +425,7 @@ async def test_s44_t05_failed_processing_is_not_falsely_completed(conn, user, mo
         await intents.execute(
             conn, user_id=str(user), intent_id=str(row["id"]), revision=str(row["revision"])
         )
-        == "failed"
+        == "retry_scheduled"
     )
     row = await (
         await conn.execute(

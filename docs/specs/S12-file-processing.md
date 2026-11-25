@@ -110,3 +110,8 @@ OCR, images/diagrams understanding, audio transcription (Echo360 fallback via sp
 - Download 401/403 → `AuthExpired` → connection `needs_reconnect`, material `failed` ("Your sign-in for this site expired."). 5xx/timeouts → `PlatformError` → job retried (2 attempts).
 - PyMuPDF is **AGPL-3.0** (fine for our public repo; listed in THIRD_PARTY_NOTICES). Swap for `pypdf` if that ever matters.
 - Open: acceptance check with a real lecture PDF/PPTX from our own courses (needs a live Canvas sync).
+
+
+## Post-hackathon amendment — S45 (review branch)
+
+Material failures raise safe classified exceptions after recording failed state, preserving old chunks. Retryable failures are PlatformError for legacy compatibility; new intents own durable bounded retry/backoff. Single-file401/403 is SourceAccessError (file unavailable), not automatic whole-grant expiry; verified AuthExpired retains reconnect handling. Binary-original Storage configuration is required for downloads. Worker embedding retries are owned by the intent policy. See [S45](S45-processing-retries-and-recovery.md).

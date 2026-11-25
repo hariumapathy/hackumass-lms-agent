@@ -102,7 +102,7 @@ class GeminiEmbeddings:
                 await client.aclose()
 
 
-def get_embeddings(settings: Settings | None = None) -> EmbeddingProvider:
+def get_embeddings(settings: Settings | None = None, *, max_retries: int = 4) -> EmbeddingProvider:
     settings = settings or get_settings()
     if settings.embeddings_provider == "fake":
         return FakeEmbeddings()
@@ -112,7 +112,7 @@ def get_embeddings(settings: Settings | None = None) -> EmbeddingProvider:
                 "EMBEDDINGS_PROVIDER=gemini needs GEMINI_API_KEY in .env "
                 "(or set EMBEDDINGS_PROVIDER=fake for local testing)."
             )
-        return GeminiEmbeddings(settings.gemini_api_key.get_secret_value())
+        return GeminiEmbeddings(settings.gemini_api_key.get_secret_value(), max_retries=max_retries)
     raise EmbeddingsConfigError(
         f"EMBEDDINGS_PROVIDER={settings.embeddings_provider} is not supported yet (use gemini/fake)"
     )

@@ -16,6 +16,10 @@ class AuthExpired(Exception):  # noqa: N818 (name fixed by the S10 spec)
     """Session/token no longer valid -> connection `needs_reconnect`, no retry."""
 
 
+class SourceAccessError(Exception):
+    """One file is unavailable; this alone does not prove the entire platform grant expired."""
+
+
 class PlatformError(Exception):
     """Transient platform failure (5xx, timeout, rate limit) -> retried with backoff."""
 

@@ -14,7 +14,7 @@ Deploy by draining old workers, applying additive migration, then starting the u
 
 ## Remaining gates
 
-- RS05 next: classify provider/Storage failures, bounded retry/backoff and recovery of failed/stuck processing. S44 fixes delivery, not every failed processor.
+- RS05 is implemented in S45 on the review branch: see [retry/repair policy](processing-retries.md). S44 alone fixes delivery; S45 adds bounded failed/orphan repair.
 - RS06: source/index publication generations and disconnect-vs-running-work policy. Existing disconnect retains imported data; pending processing can still use retained source references. Do not advertise disconnect as complete data deletion.
 - Legacy pending materials/unchunked posts without intents are recovered when next observed with usable payload; payloads never stored before S44 cannot be reconstructed from ciphertext that does not exist. Previously failed/processing legacy materials need the next recovery policy.
 - Signed external URLs can expire. Fresh source discovery/refresh, extraction limits and truthful imported/organized/searchable readiness remain separate work.

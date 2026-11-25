@@ -172,10 +172,30 @@ def _run_async(coro) -> int:  # noqa: ANN001
     return asyncio.run(coro)
 
 
+def _retry_processing(argv: list[str]) -> int:
+    from uuid import UUID
+
+    parser = argparse.ArgumentParser(prog="app retry-processing")
+    parser.add_argument("--user-id", required=True, type=UUID)
+    opts = parser.parse_args(argv)
+
+    async def run() -> int:
+        from app.sync.intents import resume
+        from app.sync.jobs import _connect
+
+        async with await _connect() as conn:
+            count = await resume(conn, opts.user_id)
+        print(f"Resumed {count} processing intents after operator repair.")
+        return 0
+
+    return _run_async(run())
+
+
 COMMANDS = {
     "openapi": lambda _argv: _openapi(),
     "seed": _seed,
     "worker": _worker,
+    "retry-processing": _retry_processing,
     "serve": _serve,
     "evals": _evals,
 }
@@ -184,9 +204,7 @@ COMMANDS = {
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if not args or args[0] in {"-h", "--help"}:
-        print(
-            "usage: app <command>\n\ncommands: openapi (S02), seed (S03), worker (S10), evals (S26)"
-        )
+        print("usage: app <command>\n\ncommands: " + ", ".join(COMMANDS))
         return 0
     command = COMMANDS.get(args[0])
     if command is None:

@@ -13,7 +13,7 @@ from uuid import UUID
 from psycopg import AsyncConnection
 from pydantic import BaseModel
 
-from app.connectors.base import AuthExpired, DownloadRef, NMaterial, PlatformError, TranscriptCue
+from app.connectors.base import AuthExpired, DownloadRef, NMaterial, TranscriptCue
 from app.core.embeddings import BATCH_SIZE, EmbeddingProvider, to_pgvector
 from app.db.repositories import sync as repo
 from app.sync.processing.chunker import ChunkDraft, chunk
@@ -28,6 +28,7 @@ from app.sync.processing.extract import (
     html_to_text,
     looks_like_html,
 )
+from app.sync.processing.failures import classify
 from app.sync.processing.storage import Downloader, Storage, storage_path
 
 log = logging.getLogger("app.sync.processing")
@@ -54,12 +55,17 @@ async def _one(conn: AsyncConnection[Any], sql: str, params: tuple[Any, ...]) ->
 
 
 async def _set_status(
-    conn: AsyncConnection[Any], user_id: UUID, material_id: UUID, status: str, error: str | None
+    conn: AsyncConnection[Any],
+    user_id: UUID,
+    material_id: UUID,
+    status: str,
+    error: str | None,
+    expected_hash: str,
 ) -> None:
     await conn.execute(
         "update materials set processing_status = %s, processing_error = %s "
-        "where user_id = %s and id = %s",
-        (status, error[:500] if error else None, user_id, material_id),
+        "where user_id = %s and id = %s and content_hash=%s",
+        (status, error[:500] if error else None, user_id, material_id, expected_hash),
     )
 
 
@@ -147,22 +153,22 @@ async def process_material(
     downloader: Downloader | None = None,
     storage: Storage | None = None,
 ) -> str:
-    """Returns the outcome: done | unchanged | skipped | failed | needs_reconnect | missing.
-    Raises PlatformError (transient download failure) so the queue retries."""
+    """Returns done | unchanged | skipped | needs_reconnect | missing.
+    Raises safe classified failures; legacy workers retry only retryable PlatformErrors."""
     m = await _one(
         conn,
         "select m.id, m.course_id, m.kind, m.title, m.mime_type, m.storage_path, m.version, "
-        "m.platform, m.platform_id, c.code, c.name, "
+        "m.platform, m.platform_id, m.content_hash, c.code, c.name, "
         "(select l.platform_id from course_links l where l.user_id = m.user_id "
         " and l.course_id = m.course_id and l.platform = m.platform limit 1) as course_pid "
-        "from materials m join courses c on c.id = m.course_id "
+        "from materials m join courses c on c.id = m.course_id and c.user_id=m.user_id "
         "where m.user_id = %s and m.id = %s",
         (user_id, material_id),
     )
     if m is None:
         return "missing"
     source = source or MaterialSource()
-    await _set_status(conn, user_id, material_id, "processing", None)
+    await _set_status(conn, user_id, material_id, "processing", None, m["content_hash"])
     try:
         data: bytes | None = None
         mime = m["mime_type"]
@@ -186,7 +192,7 @@ async def process_material(
             raise SkipProcessing(NO_TEXT)
         current = await _current_texts(conn, user_id, "material_id", material_id)
         if current == [d.text for d in drafts]:  # same content: no new version, no re-embedding
-            await _set_status(conn, user_id, material_id, "done", None)
+            await _set_status(conn, user_id, material_id, "done", None, m["content_hash"])
             return "unchanged"
 
         version = m["version"] + 1 if (current or m["storage_path"]) else m["version"]
@@ -221,26 +227,25 @@ async def process_material(
             )
         return "done"
     except SkipProcessing as exc:
-        await _set_status(conn, user_id, material_id, "skipped", str(exc))
+        await _set_status(conn, user_id, material_id, "skipped", str(exc), m["content_hash"])
         return "skipped"
     except AuthExpired:
         await repo.set_connection_status(
             conn, user_id, m["platform"], "needs_reconnect", error=RECONNECT_MSG
         )
-        await _set_status(conn, user_id, material_id, "failed", RECONNECT_MSG)
+        await _set_status(conn, user_id, material_id, "failed", RECONNECT_MSG, m["content_hash"])
         return "needs_reconnect"
-    except PlatformError as exc:
-        await _set_status(conn, user_id, material_id, "failed", str(exc))
-        raise
-    except ExtractError as exc:
-        await _set_status(conn, user_id, material_id, "failed", str(exc))
-        return "failed"
-    except Exception as exc:  # noqa: BLE001 (never crash the worker; previous version stays)
-        log.exception("process_material %s failed", material_id)
+    except Exception as exc:
+        failure = classify(exc)
         await _set_status(
-            conn, user_id, material_id, "failed", f"processing error ({type(exc).__name__})"
+            conn,
+            user_id,
+            material_id,
+            "failed",
+            "This file couldn't be prepared. Open the original course page for now.",
+            m["content_hash"],
         )
-        return "failed"
+        raise failure from None
 
 
 async def process_post(
@@ -251,7 +256,8 @@ async def process_post(
     p = await _one(
         conn,
         "select p.id, p.course_id, p.kind, p.title, p.body, c.code, c.name from posts p "
-        "join courses c on c.id = p.course_id where p.user_id = %s and p.id = %s",
+        "join courses c on c.id = p.course_id and c.user_id=p.user_id "
+        "where p.user_id = %s and p.id = %s",
         (user_id, post_id),
     )
     if p is None:
