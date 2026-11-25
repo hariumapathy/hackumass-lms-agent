@@ -62,6 +62,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S39 | [Browser account isolation](S39-browser-account-isolation.md) | Implemented on review branch; unmerged |
 | S40 | [Complete data deletion](S40-complete-data-deletion.md) | Implemented on review branch; unmerged; Storage fault reconciliation remains a launch gate |
 | S41 | [Current retrieval eligibility](S41-current-retrieval-eligibility.md) | Implemented on review branch; unmerged |
+| S42 | [Canvas listing completeness](S42-canvas-listing-completeness.md) | Implemented on review branch; unmerged |
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)

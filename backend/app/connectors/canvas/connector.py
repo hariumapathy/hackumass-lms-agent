@@ -234,6 +234,7 @@ class _Run:
                 if rec is None:
                     continue
                 if count >= cap:
+                    self.ctx.incomplete.add((cid, "materials"))
                     log.info("canvas: course %s has more than %d files; capped", cid, cap)
                     return
                 count += 1
@@ -245,6 +246,9 @@ class _Run:
             yield rec
 
     async def module_files(self, cid: str, cap: int) -> AsyncIterator[NormalizedRecord]:
+        # Modules expose a subset of course files, even when every listed item is readable.
+        # Never infer that earlier files disappeared from this non-authoritative fallback.
+        self.ctx.incomplete.add((cid, "materials"))
         seen: set[str] = set()
         params = {"include[]": ["items"], "per_page": 100}
         file_ids: list[str] = []

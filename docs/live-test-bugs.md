@@ -50,3 +50,8 @@ Synthetic local accounts reproduced clear-data returning success while leaving f
 ## Post-hackathon retrieval regressions — review branch, 2026-11-24
 
 Synthetic searches returned removed materials/posts and direct reads exposed removed material excerpts; six initial assertions failed. S41 filters owned non-removed parents before lexical/vector candidate limits and direct reads.11 focused cases now pass, including vector crowding and a foreign-parent mismatch. Historical citation resolution deliberately remains available with changed/removed status, and current tool results retain changed status. No live course sources/model calls; no claim that the later embedding/publication/freshness plan is complete.
+
+
+## Post-hackathon Canvas absence regressions — review branch, 2026-11-24
+
+Mocked HTTP plus local DB reproduced files disappearing after a capped second import, a module-only fallback, or403 on a later file page. Non-list JSON was treated as an empty successful listing and could remove all previous files. S42 marks truncated/module lists incomplete and rejects malformed list payloads.20 new cases and66 focused connector/pipeline checks pass; complete shorter listings still remove real absences. These are fixture reproductions, not fresh live Canvas failures. Full discovery and permission changes remain separate policies.

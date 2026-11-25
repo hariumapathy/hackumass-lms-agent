@@ -107,8 +107,13 @@ class CanvasClient:
         url: str | None = path
         while url:
             resp = await self.request("GET", url, params)
-            data = resp.json()
-            for element in data if isinstance(data, list) else []:
+            try:
+                data = resp.json()
+            except ValueError:
+                raise PlatformError("Canvas returned an invalid list response") from None
+            if not isinstance(data, list):
+                raise PlatformError("Canvas returned an invalid list response")
+            for element in data:
                 yield element
             nxt = resp.links.get("next", {}).get("url")
             url, params = nxt, None  # the next link already carries the query

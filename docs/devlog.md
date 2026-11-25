@@ -23,6 +23,12 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-24 · Neal's laptop · Codex · S42 Canvas listing completeness
+**Done:** capped Files listing marks course materials incomplete; module fallback always non-authoritative for absence. Pagination rejects malformed/non-list JSON instead of silently inferring emptiness. Existing per-course/table removal skip retained; no schema/API/SSE/seed changes or live calls.
+**Evidence:** initial13 regressions failed/4 controls passed.20 new cases now pass, including99/100/101, cross-page exact-cap/overflow, missing module details, two-pass DB cap/module/partial403, genuine complete removal and malformed/partial failure.66 focused checks passed before final2 page-boundary additions; final backend619 pass/1 optional Storage skip and all static checks green. RAG review no blocking defect. Frontend unchanged from102/6 E2E/build checkpoint.
+**Gotcha:** module discovery retains all earlier course materials (including syllabus under existing table-level grouping), not full file discovery or permission revocation. S41 pushed `73ffe9a`; implementation PR34 stays draft/unmerged.
+**Next:** commit/push S42 separately, then identical-content restoration through its own spec/test/design/code cycle. Keep Gemini; preserve imported local data; server restart before final handoff still pending.
+
 ## 2026-11-24 · Neal's laptop · Codex · S41 current-source retrieval
 **Done:** current lexical/vector/hybrid search and direct material reads exclude owned removed parents before candidate limits; historical citation lookup unchanged. Internal read/overview results retain changed/current source status. No public API/SSE/schema/seed changes; Gemini unchanged.
 **Evidence:** initial6 source/metadata regressions failed, historical resolution guard passed. Final11 new cases (including nearest-vector crowding, foreign-parent mismatch and changed posts) and full backend599 pass/1 optional Storage skip; Ruff/format/pyright green. Optional actual local Storage check passed at S40 separately. Previous frontend102/6 E2E/build remains applicable; no frontend change. Current-feature RAG review found no blocking defect.

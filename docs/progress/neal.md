@@ -8,10 +8,10 @@
 - S40 resumable data/file/job cleanup and old-work barriers committed/pushed `6b970ee`. Backend588 + separately optional local Storage round-trip; frontend102,6 browser E2E, build/static checks green.
 
 ## In progress
-- S41 current retrieval eligibility verified (11 new DB cases; current-feature review no blocking issue), finishing full/static checks and separate commit/push.
+- S41 committed/pushed `73ffe9a`; S42 Canvas listing/removal safety verified (20 new cases/66 focused), finishing full/static/review and separate commit/push.
 
 ## Next
-1. Commit/push S41, then Canvas capped listing/removal safety, restoration/import recovery in audited priority order; specify only the next fix.
+1. Commit/push S42, then identical-content presence restoration and import recovery in audited priority order; specify only the next fix.
 2. Continue remaining approved plan until time/usage limit, retaining exact evidence and feature commits.
 3. Restart/verify stable local demo and produce handoff before07:00 ET or usage cutoff.
 

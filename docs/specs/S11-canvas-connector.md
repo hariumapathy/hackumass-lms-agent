@@ -125,3 +125,8 @@ Grades/submissions, discussions (non-announcement), Canvas pages, quizzes' quest
 
 ## Live verification (2026-11-14, Neal)
 - Token accepted; eight real courses imported; Today reads actual deadlines; Gemini answers from those rows and cites a real syllabus/announcement. Correct host is `umamherst.instructure.com`, verified from [UMass IT](https://www.umass.edu/it/canvas); original spec/default used the wrong host. UI guide, settings and `.env.example` now agree.
+
+
+## Post-hackathon amendment — S42 (review branch)
+
+A supported-file cap that truncates a course marks `(course_id, materials)` incomplete. Exactly reaching the cap after exhausting the authoritative list stays complete. Module-only fallback always marks that materials listing incomplete: modules are a subset, even with no HTTP error. Unseen previous files are therefore retained until a complete Files listing is available. Missing module details and module caps remain non-authoritative. Paginated non-list/malformed JSON fails as PlatformError rather than silently implying emptiness. This is conservative absence handling, not proof of full discovery or a permission-revocation policy. See [S42](S42-canvas-listing-completeness.md).
