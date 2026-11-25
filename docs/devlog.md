@@ -23,6 +23,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-24 · Neal's laptop · Codex · S39 browser account isolation
+**Done:** AuthProvider owns a per-identity QueryClient and keyed UI subtree; sign-out/identity change cancel/fence REST+SSE, clear old query/mutation caches and reset local drafts/history. Same-user refresh retains state. Late bootstrap/401 cannot overwrite/logout a newer identity. Security review found pending logout could resurrect A via token refresh; shared logout sequencing/non-null event suppression plus two red regressions close it. No server contracts/dependencies changed.
+**Evidence:** original synthetic two-user test visibly showed user B with A's cached data/draft (6/7 red). Final9 S39 tests green; 24 focused auth/SSE, full101 frontend, lint/types/build and6 mock browser E2E green. Last backend baseline569 pass/1 skip/1 xfail remains applicable; no backend change. Security re-review no additional critical defect.
+**Next:** commit/push this fix, then complete data deletion as its own spec/test/design/implementation cycle. S37/S38 remote verified; PR34 draft/unmerged; Gemini unchanged.
+
 ## 2026-11-24 · Neal's laptop · Codex · S38 JWT issuer binding
 **Done:** server-configured exact JWT issuer required for HS256/JWKS tokens; default SupabaseURL/auth/v1 and validated trusted override for custom deployments. Synthetic fixtures carry realistic issuer, old negative/expiry/signature/cache checks retained. No API/schema/SSE changes, no live credentials. Red API tests showed wrong issuer accepted before fix; then 45 focused auth checks passed. Independent current-feature security review found no critical defects.
 **Checks:** full backend569 pass / 1 skip / 1 xfail; ruff/format/pyright green. S37 already committed `87617f2` and verified on GitHub despite SSH push acknowledgement failure; branch tracking repaired via HTTPS, no force push. Implementation draft PR #34 open/unmerged.

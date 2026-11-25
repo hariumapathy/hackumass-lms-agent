@@ -10,10 +10,10 @@
 - Corrected documentation entry points that still claimed no code/Stage 0. Historical hackathon changes remain on main.
 
 ## In progress
-- S37 committed 87617f2; S38 issuer binding verified (569 backend pass, static checks green); finishing its separate commit before next fix. User now authorizes sequential implementation; Gemini only for now; checkpoint before 07:00 ET.
+- S37 committed87617f2, S38 committed9c74f17. S39 account isolation verified:101 frontend,6 E2E, build/lint/types green; finishing its separate commit. User now authorizes sequential implementation; Gemini only for now; checkpoint before 07:00 ET.
 
 ## Next
-1. Commit/push S38, then browser account-cache isolation through its individual spec/test/design/implementation/checks.
+1. Commit/push S39, then complete data deletion through its individual spec/test/design/implementation/checks.
 2. Continue account-isolation/deletion then sync correctness in plan order, one fix at a time.
 3. Preserve exact handoff/results and leave all changes unmerged until user says done.
 

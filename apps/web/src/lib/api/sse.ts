@@ -1,6 +1,7 @@
 // SSE client for POST /chat (S02, S30 rule 4). EventSource can't POST or send headers,
 // so we read the fetch body stream and parse frames ourselves.
 import { authHeaders, getApiConfig, toApiError } from "./client";
+import { sessionRequest } from "./session-boundary";
 import type { ChatEvent, ChatEventType, ChatRequest } from "./types";
 
 export interface SseFrame {
@@ -95,50 +96,54 @@ export async function streamChat(
   handlers: { onEvent: (e: ChatEvent) => void; signal?: AbortSignal },
 ): Promise<void> {
   const cfg = getApiConfig();
-  const res = await fetch(`${cfg.baseUrl.replace(/\/$/, "")}/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "text/event-stream", ...(await authHeaders()) },
-    body: JSON.stringify(body),
-    signal: handlers.signal,
-  });
-  if (!res.ok) {
-    const err = await toApiError(res);
-    if (res.status === 401) await cfg.onUnauthorized();
-    throw err;
-  }
-  if (!res.body) return;
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  const parser = new SseParser();
-  const dispatch = (frames: SseFrame[]) => {
-    for (const f of frames) {
-      const ev = toChatEvent(f);
-      if (ev) handlers.onEvent(ev);
-    }
-  };
-  // Aborting the request doesn't always end an already-open body stream (proxies, mocks), so cancel the
-  // reader too: Stop must always end the read loop.
-  const signal = handlers.signal;
-  const onAbort = () => void reader.cancel().catch(() => {});
-  signal?.addEventListener("abort", onAbort, { once: true });
+  const scope = sessionRequest(handlers.signal);
   try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (signal?.aborted) throw abortError();
-      if (done) break;
-      dispatch(parser.push(decoder.decode(value, { stream: true })));
+    const headers = await authHeaders();
+    scope.assertCurrent();
+    const res = await fetch(`${cfg.baseUrl.replace(/\/$/, "")}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "text/event-stream", ...headers },
+      body: JSON.stringify(body),
+      signal: scope.signal,
+    });
+    scope.assertCurrent();
+    if (!res.ok) {
+      const err = await toApiError(res);
+      scope.assertCurrent();
+      if (res.status === 401) await cfg.onUnauthorized();
+      throw err;
     }
-    dispatch(parser.push(decoder.decode()));
-    dispatch(parser.flush());
-  } finally {
-    signal?.removeEventListener("abort", onAbort);
-    reader.releaseLock();
-  }
-}
+    if (!res.body) return;
 
-function abortError(): Error {
-  const e = new Error("The chat stream was stopped.");
-  e.name = "AbortError";
-  return e;
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    const parser = new SseParser();
+    const dispatch = (frames: SseFrame[]) => {
+      for (const f of frames) {
+        const ev = toChatEvent(f);
+        scope.assertCurrent();
+        if (ev) handlers.onEvent(ev);
+      }
+    };
+    // Aborting the request doesn't always end an already-open body stream (proxies, mocks), so cancel the
+    // reader too: Stop must always end the read loop.
+    const signal = scope.signal;
+    const onAbort = () => void reader.cancel().catch(() => {});
+    signal?.addEventListener("abort", onAbort, { once: true });
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        scope.assertCurrent();
+        if (done) break;
+        dispatch(parser.push(decoder.decode(value, { stream: true })));
+      }
+      dispatch(parser.push(decoder.decode()));
+      dispatch(parser.flush());
+    } finally {
+      signal?.removeEventListener("abort", onAbort);
+      reader.releaseLock();
+    }
+  } finally {
+    scope.close();
+  }
 }

@@ -1,6 +1,7 @@
 // Typed API client for the FastAPI backend (S02, S30).
 // `api()` returns a singleton; AuthProvider calls `configureApi` with the Supabase token getter.
 import { config } from "@/lib/config";
+import { sessionRequest } from "./session-boundary";
 import type {
   CalendarFeed,
   CanvasConnectRequest,
@@ -107,33 +108,42 @@ async function request<T>(
   path: string,
   opts: { query?: Query; body?: unknown; signal?: AbortSignal } = {},
 ): Promise<T> {
-  const url = new URL(`${current.baseUrl.replace(/\/$/, "")}${path}`);
-  for (const [k, v] of Object.entries(opts.query ?? {})) {
-    if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
-  }
-  const headers: Record<string, string> = { Accept: "application/json", ...(await authHeaders()) };
-  if (opts.body !== undefined) headers["Content-Type"] = "application/json";
-
-  let res: Response;
+  const cfg = current;
+  const scope = sessionRequest(opts.signal);
   try {
-    res = await fetch(url, {
-      method,
-      headers,
-      body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
-      signal: opts.signal,
-    });
-  } catch (e) {
-    if (isAbortError(e)) throw e;
-    throw new ApiError({ code: "network", message: "Can't reach the server. Check your connection.", status: 0, retryable: true });
+    const url = new URL(`${cfg.baseUrl.replace(/\/$/, "")}${path}`);
+    for (const [k, v] of Object.entries(opts.query ?? {})) {
+      if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
+    }
+    const token = await cfg.getToken();
+    scope.assertCurrent();
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (opts.body !== undefined) headers["Content-Type"] = "application/json";
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method, headers, body: opts.body === undefined ? undefined : JSON.stringify(opts.body), signal: scope.signal,
+      });
+    } catch (e) {
+      scope.assertCurrent();
+      if (isAbortError(e)) throw e;
+      throw new ApiError({ code: "network", message: "Can't reach the server. Check your connection.", status: 0, retryable: true });
+    }
+    scope.assertCurrent();
+    if (!res.ok) {
+      const err = await toApiError(res);
+      scope.assertCurrent();
+      if (res.status === 401) await cfg.onUnauthorized();
+      throw err;
+    }
+    if (res.status === 204) return undefined as T;
+    const data = await res.json();
+    scope.assertCurrent();
+    return data as T;
+  } finally {
+    scope.close();
   }
-
-  if (!res.ok) {
-    const err = await toApiError(res);
-    if (res.status === 401) await current.onUnauthorized();
-    throw err;
-  }
-  if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
 }
 
 export function createApiClient() {
