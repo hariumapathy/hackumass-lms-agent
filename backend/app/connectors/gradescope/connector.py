@@ -81,18 +81,19 @@ class GradescopeConnector:
         conn = self.connection_factory(state, self.base_url)
         return GradescopeClient(conn, min_interval_s=self.min_interval_s)
 
-    async def _get(self, client: GradescopeClient, path: str) -> str:
+    async def _get(self, ctx: ConnectorContext, client: GradescopeClient, path: str) -> str:
+        await ctx.checkpoint()
         _, html = await asyncio.to_thread(client.get_html, path)
         return html
 
-    async def _account(self, client: GradescopeClient) -> str:
-        html = await self._get(client, "/account")
+    async def _account(self, ctx: ConnectorContext, client: GradescopeClient) -> str:
+        html = await self._get(ctx, client, "/account")
         set_csrf_from_html(client.conn, html)
         return html
 
     async def validate(self, ctx: ConnectorContext) -> AccountInfo:
         client = self._client(ctx)
-        html = await self._account(client)
+        html = await self._account(ctx, client)
         try:
             parse_course_list(html)
         except PlatformError:
@@ -100,8 +101,10 @@ class GradescopeConnector:
             raise
         return AccountInfo()
 
-    async def _items(self, client: GradescopeClient, course_id: str) -> list[NItem]:
-        html = await self._get(client, f"/courses/{course_id}")
+    async def _items(
+        self, ctx: ConnectorContext, client: GradescopeClient, course_id: str
+    ) -> list[NItem]:
+        html = await self._get(ctx, client, f"/courses/{course_id}")
         try:
             assignments = parse_assignments(html)
         except PlatformError as exc:
@@ -117,7 +120,7 @@ class GradescopeConnector:
         if scope.kind == "material":
             return  # Gradescope has no materials we sync
         if scope.kind == "full":
-            html = await self._account(client)
+            html = await self._account(ctx, client)
             try:
                 courses = student_courses(parse_course_list(html))
             except PlatformError:
@@ -125,11 +128,11 @@ class GradescopeConnector:
                 raise
             for course in courses:
                 yield to_ncourse(course, self.base_url)
-                for item in await self._items(client, course.id):
+                for item in await self._items(ctx, client, course.id):
                     yield item
             return
         assert scope.course_platform_id is not None
-        for item in await self._items(client, scope.course_platform_id):
+        for item in await self._items(ctx, client, scope.course_platform_id):
             if scope.kind == "item" and item.platform_id != scope.platform_id:
                 continue
             yield item

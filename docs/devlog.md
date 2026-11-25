@@ -23,6 +23,12 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-25 · Neal's laptop · Codex · S46 immediate WIP review checkpoint
+**Done:** S45 committed/pushed `8b569bd`. S46 spec/cases/design/implementation plan and synthetic DB regressions written; partial connector checkpoints from current-feature delegation included.
+**In progress / broken:** shared ConnectorContext checkpoint interface and source execution/credential revision fences are not implemented. Initial focused regression run: 3 failed, 2 passed before maxfail; failures reproduce overlapping imports, publication after disconnect and replacement-account status poisoning. This WIP tip is for review only, not deployment.
+**Decision:** user explicitly requested pushing unfinished changes immediately for a friend's review. Keep PR34 draft and main unchanged. Do not present S46 as green or complete.
+**Next:** implement S46 grant revision/migration, serialization, queue binding and guarded source/status writes; legacy jobs fail closed; connection → secret → runs/jobs lock order. Run focused/full/static checks, update docs, push completion separately. Worker remains paused; running API/web are the earlier checked checkpoint.
+
 ## 2026-11-25 · Neal's laptop · Codex · S45 bounded processing repair
 **Done:** classified content-free processing failures, four-attempt per-revision ledger/backoff and duplicate-claim guards, worker retry ownership, configuration/permanent/auth stop states and scoped operator resume. Binary sources require Storage; single file access does not expire entire Canvas grant. Failed-source status uses hash guards; credential replacement/auth resume is transactional. Nonblocking stale recovery revalidates current state; bounded legacy post/material repair skips active processors and real metadata discovery has its own finite budget.
 **Evidence:** initial14 failures; review regressions caught downloader status mismatch, missing Storage degradation, stale recovery reopening blocked states, busy locks stalling scheduler, stale failure marking new source failed, same-reference auth reset and orphan replacement budget remaining1. Final32 new tests/full676 backend pass/1 optional Storage skip; static checks green. Existing old-chunk tests now expect typed failures and preserve their atomicity assertions. RAG/security review no further blocking issue after fixes.

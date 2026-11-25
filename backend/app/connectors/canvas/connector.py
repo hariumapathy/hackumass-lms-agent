@@ -56,7 +56,9 @@ class CanvasConnector:
     async def validate(self, ctx: ConnectorContext) -> AccountInfo:
         """GET /users/self. 401 -> AuthExpired (the connect flow reports `invalid_token`)."""
         async with self._http() as http:
-            client = CanvasClient(self.base_url, ctx.secret, http, sleep=self._sleep)
+            client = CanvasClient(
+                self.base_url, ctx.secret, http, sleep=self._sleep, checkpoint=ctx.checkpoint
+            )
             me = await client.get("/api/v1/users/self")
         uid = me.get("id")
         return AccountInfo(
@@ -68,7 +70,10 @@ class CanvasConnector:
         self, ctx: ConnectorContext, scope: SyncScope
     ) -> AsyncIterator[NormalizedRecord]:
         async with self._http() as http:
-            run = _Run(self, CanvasClient(self.base_url, ctx.secret, http, sleep=self._sleep), ctx)
+            client = CanvasClient(
+                self.base_url, ctx.secret, http, sleep=self._sleep, checkpoint=ctx.checkpoint
+            )
+            run = _Run(self, client, ctx)
             if scope.kind == "full":
                 gen = run.full()
             elif scope.kind == "course":

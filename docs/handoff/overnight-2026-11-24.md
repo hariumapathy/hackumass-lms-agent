@@ -4,6 +4,8 @@ Branch: **codex/post-hackathon-implementation**, based on planning tip `88baeda`
 
 ## Verified fixes
 
+**Immediate review checkpoint (2026-11-25):** S45 is committed/pushed as `8b569bd`. User requested pushing current unfinished work so a friend can review it. S46 is explicitly **WIP / red**: new synthetic DB tests reproduce overlapping imports, late writes after disconnect and old-auth failures poisoning replacement connections (3 failures, 2 passes before maxfail). Partial Canvas/Gradescope/Piazza checkpoint hooks require the shared ConnectorContext interface, still unimplemented. Do not deploy/restart from this WIP tip. The running API/web represent the earlier verified checkpoint; worker remains paused. Continue S46 using its spec; finish the grant revision/migration, source lock, queue epoch binding and transactional publication/status checks, then run all checks before labeling it complete. Legacy jobs must fail closed; disconnect lock order is connection → secret → runs/jobs. No merge to main.
+
 | Spec | Commit | Behavior |
 |---|---|---|
 | S37 | `87617f2` | Production config guards; disabled/unbuilt hosted login fails closed |

@@ -8,10 +8,10 @@
 - S40 resumable data/file/job cleanup and old-work barriers committed/pushed `6b970ee`. Backend588 + separately optional local Storage round-trip; frontend102,6 browser E2E, build/static checks green.
 
 ## In progress
-- S41 pushed `73ffe9a`, S42 `4385cb1`, S43 `5ff4d95`, S44 `1bacbb9`. S45 bounded retries/repair verified (32 new/full676 backend, static green), commit/push next.
+- S41 pushed `73ffe9a`, S42 `4385cb1`, S43 `5ff4d95`, S44 `1bacbb9`. S45 pushed `8b569bd` (32 new/full676 backend, static green). S46 source execution/connection fencing is WIP/red, pushed at the user's immediate-review request: spec, failing DB regressions and partial connector hooks only. Shared callback, migration and pipeline guards remain unimplemented. Do not deploy this tip.
 
 ## Next
-1. Commit/push S45; restart API/worker checkpoint; RS06 source execution/publication fencing next through its own workflow.
+1. S46 source execution/connection fences, then separate successful-index publication feature. Worker paused for fixtures; API/web current checkpoint is live.
 2. Continue remaining approved plan until time/usage limit, retaining exact evidence and feature commits.
 3. Restart/verify stable local demo and produce handoff before07:00 ET or usage cutoff.
 
