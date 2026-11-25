@@ -42,9 +42,13 @@ class TokenVerifier:
         *,
         jwks_url: str | None,
         hs256_secret: str | None,
+        issuer: str,
         clock: Clock | None = None,
         timeout_s: float = 5.0,
     ) -> None:
+        if not issuer or not issuer.strip():
+            raise ValueError("A trusted JWT issuer is required.")
+        self._issuer = issuer
         self._jwks_url = jwks_url or None
         self._secret = hs256_secret or None
         self._clock = clock or SystemClock()
@@ -71,7 +75,8 @@ class TokenVerifier:
                 key,
                 algorithms=[alg],
                 audience=AUDIENCE,
-                options={"require": ["exp", "sub", "aud"]},
+                issuer=self._issuer,
+                options={"require": ["exp", "sub", "aud", "iss"]},
             )
             user_id = UUID(str(claims["sub"]))
         except (jwt.PyJWTError, ValueError):

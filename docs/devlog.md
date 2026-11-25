@@ -23,6 +23,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-24 · Neal's laptop · Codex · S38 JWT issuer binding
+**Done:** server-configured exact JWT issuer required for HS256/JWKS tokens; default SupabaseURL/auth/v1 and validated trusted override for custom deployments. Synthetic fixtures carry realistic issuer, old negative/expiry/signature/cache checks retained. No API/schema/SSE changes, no live credentials. Red API tests showed wrong issuer accepted before fix; then 45 focused auth checks passed. Independent current-feature security review found no critical defects.
+**Checks:** full backend569 pass / 1 skip / 1 xfail; ruff/format/pyright green. S37 already committed `87617f2` and verified on GitHub despite SSH push acknowledgement failure; branch tracking repaired via HTTPS, no force push. Implementation draft PR #34 open/unmerged.
+**Next:** commit/push S38 separately, then browser account-cache isolation. User said keep going without routine questions; all main merges remain forbidden until explicitly authorized. Gemini unchanged.
+
 ## 2026-11-24 03:45 ET · Neal's laptop · Codex · branch codex/post-hackathon-implementation
 **Authorization:** user now approves sequential spec → test cases → design/implementation plan → failing tests → code → checks → commit/push, one fix at a time, overnight; Gemini retained; never merge main until user explicitly says done. Review branch includes planning commits, main unchanged. Handoff before 07:00 ET or earlier if usage ends.
 **S37 done:** explicit production API/worker config guard, secret-safe diagnostics, disabled browser mode, no hosted→local fallback. Initial 32 failing tests then green; current-feature security review found noncanonical IP bypass, libpq authority overrides and CORS canonicalization; 11 new red regressions then all 43 focused green. Full suite checkpoint 546 pass/1 skip/1 xfail before final 11 regressions; final full repeat: 557 pass / 1 skip / 1 xfail. Frontend baseline92 green; static checks green. No DB/API/SSE/seed contracts changed. See S37 + deployment/production-configuration.md.

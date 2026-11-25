@@ -15,6 +15,7 @@ The API and worker now share an explicit environment gate. This is a prerequisit
 | `DATABASE_URL` | Non-local Postgres connection, explicit `sslmode=require`, `verify-ca` or preferably `verify-full`; verify provider CA/hostname requirements |
 | `SUPABASE_URL`, `WEB_ORIGIN` | Public HTTPS origins, no userinfo/query/fragment/path |
 | `PUBLIC_API_URL` | Public HTTPS URL, optional deployment path prefix; no userinfo/query/fragment |
+| `SUPABASE_JWT_ISSUER` | Optional trusted issuer override for custom/self-hosted auth; otherwise Supabase URL + `/auth/v1`; production override must be public HTTPS `/auth/v1` |
 | `SUPABASE_JWKS_URL` | Exactly the selected Supabase URL plus `/auth/v1/.well-known/jwks.json` |
 | `BROWSER_PROVIDER` | `disabled`; local is for laptop demos and hosted login is not built |
 
@@ -28,4 +29,6 @@ A safe configuration-only check from `backend/` is `uv run python -c 'from app.c
 
 ## Remaining release work
 
-Frontend production/demo fallbacks, stricter JWT issuer validation, shared quotas, full deletion, hosted login, readiness/operational checks and deployment artifacts are still separate pending fixes. Do not call the product production-ready based on this configuration gate alone. No new model provider credentials or hosted service were provisioned by S37.
+Frontend production/demo fallbacks, shared quotas, full deletion, hosted login, readiness/operational checks and deployment artifacts are still separate pending fixes. Do not call the product production-ready based on this configuration gate alone. No new model provider credentials or hosted service were provisioned by S37.
+
+S38 requires exact signed-token issuer matching for HS256 and JWKS-backed verification. Missing/wrong issuer is a generic sign-in error. Existing real Supabase sessions include an issuer; synthetic test fixtures now do too. Configure a trusted override for a custom issuer, never copy an unverified token issuer into configuration automatically.

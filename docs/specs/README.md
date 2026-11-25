@@ -58,6 +58,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | ID | Feature | Status |
 |---|---|---|
 | S37 | [Production startup guards](S37-production-startup-guards.md) | Implemented on review branch; unmerged |
+| S38 | [JWT issuer binding](S38-jwt-issuer-binding.md) | Implemented on review branch; unmerged |
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)

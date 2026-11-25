@@ -35,6 +35,7 @@ def _test_auth_settings(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     # Env vars beat the .env file in pydantic-settings, so these override a developer's .env.
     monkeypatch.setenv("SUPABASE_JWT_SECRET", TEST_JWT_SECRET)
     monkeypatch.setenv("SUPABASE_JWKS_URL", "")
+    monkeypatch.setenv("SUPABASE_JWT_ISSUER", "")
     # Tests never call real LLMs: no model keys, so POST /chat uses the scripted stream.
     for key in ("GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
         monkeypatch.setenv(key, "")

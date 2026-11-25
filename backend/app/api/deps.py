@@ -24,6 +24,7 @@ def get_verifier() -> TokenVerifier:
     return TokenVerifier(
         jwks_url=settings.supabase_jwks_url,
         hs256_secret=secret.get_secret_value() if secret else None,
+        issuer=settings.expected_jwt_issuer,
     )
 
 

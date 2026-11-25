@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     supabase_service_role_key: SecretStr | None = None
     supabase_jwt_secret: SecretStr | None = None
     supabase_jwks_url: str | None = None
+    supabase_jwt_issuer: str | None = None
     database_url: str = Field(
         default="postgresql://postgres:postgres@127.0.0.1:54322/postgres", repr=False
     )
@@ -43,6 +44,12 @@ class Settings(BaseSettings):
     public_api_url: str = "http://localhost:8000"  # used to build calendar feed URLs (S25)
     browser_provider: Literal["local", "hosted", "disabled"] = "local"
     canvas_base_url: str = "https://umamherst.instructure.com"
+
+    @property
+    def expected_jwt_issuer(self) -> str:
+        return (
+            self.supabase_jwt_issuer or ""
+        ).strip() or f"{self.supabase_url.rstrip('/')}/auth/v1"
 
     @model_validator(mode="after")
     def production_guard(self) -> Self:
@@ -72,6 +79,11 @@ class Settings(BaseSettings):
         expected_jwks = f"{self.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
         if self.supabase_jwks_url != expected_jwks:
             errors.append("supabase_jwks_url must match the Supabase project's JWKS URL")
+        if self.supabase_jwt_issuer and (
+            not _public_https(self.supabase_jwt_issuer, origin=False)
+            or urlsplit(self.supabase_jwt_issuer).path != "/auth/v1"
+        ):
+            errors.append("supabase_jwt_issuer must be a public HTTPS auth/v1 issuer")
         if not _production_database(self.database_url):
             errors.append("database_url must be a non-local Postgres URL with explicit TLS")
         if errors:

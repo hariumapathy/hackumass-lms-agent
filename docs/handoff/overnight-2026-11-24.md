@@ -8,7 +8,7 @@ Branch: **codex/post-hackathon-implementation**, based on planning tip `88baeda`
 - Reviewed/pinned security skill installed locally; development skills/MCP research documented. No extra MCP/telemetry services or model providers configured. Runtime still uses Gemini.
 
 ## Exact next fix
-JWT issuer binding: write S38 for trusted Supabase issuer/claims, test wrong/missing issuer before code, preserve local auth fixtures via explicit test issuer, then checks/commit. After that account-transition browser caches, then full deletion and sync correctness, each individually. Do not design/code a future feature before finishing current one.
+S37 `87617f2` is on remote; [draft PR #34](https://github.com/hariumapathy/hackumass-lms-agent/pull/34) is the implementation review. S38 JWT issuer binding is now verified: 45 focused auth tests and 569 full backend passed / 1 skip / 1 xfail; lint/format/types pass. Next individual fix is browser account-cache isolation (spec/tests/design/implementation/checks), then full deletion and sync correctness. No future feature is preimplemented.
 
 ## Operational cautions
 Do not reset local data or expose real tokens/student content in fixtures/logs. `supabase status` can print local keys; capture any required configuration in memory and print only non-sensitive status. Node default18 is too old; use installed Node26 + pinned pnpm + `NODE_OPTIONS=--no-experimental-webstorage`. No local web/API was listening at session start. Restart and verify a stable local demo at final handoff; don't claim a running UI until checked. Keep Docker/worker test isolation.
