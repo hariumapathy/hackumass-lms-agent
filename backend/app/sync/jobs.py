@@ -181,17 +181,33 @@ async def _defer(task: Any, kwargs: dict[str, Any], lock: str | None = None, pri
 
 
 async def _defer_process_material(user_id: UUID, material_id: UUID, source: dict[str, Any]) -> None:
-    await _defer(
-        process_material,
-        {"user_id": str(user_id), "material_id": str(material_id), "source": source},
-        lock=f"process:{material_id}",
-    )
+    from app.sync.intents import dispatch_parent
+
+    async with await _connect() as conn:
+        await dispatch_parent(conn, user_id, material_id=material_id)
 
 
 async def _defer_process_post(user_id: UUID, post_id: UUID) -> None:
-    await _defer(
-        process_post, {"user_id": str(user_id), "post_id": str(post_id)}, lock=f"post:{post_id}"
-    )
+    from app.sync.intents import dispatch_parent
+
+    async with await _connect() as conn:
+        await dispatch_parent(conn, user_id, post_id=post_id)
+
+
+@app.task(
+    name="process_intent",
+    queue="process",
+    retry=RetryStrategy(
+        max_attempts=MAX_RETRIES,
+        exponential_wait=5,
+        retry_exceptions={PlatformError},
+    ),
+)
+async def process_intent(user_id: str, intent_id: str, revision: str) -> None:
+    from app.sync.intents import execute
+
+    async with await _connect() as conn:
+        await execute(conn, user_id=user_id, intent_id=intent_id, revision=revision)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -292,6 +308,9 @@ async def due_connections(conn: AsyncConnection[Any], now: datetime) -> list[tup
 async def schedule_syncs(timestamp: int) -> None:
     async with await _connect() as conn:
         await retry_pending_deletions(conn)
+        from app.sync.intents import dispatch_pending
+
+        await dispatch_pending(conn)
         now = SystemClock().now()
         for user_id, platform in await due_connections(conn, now):
             from app.core.errors import AppError

@@ -60,5 +60,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | **Sessions** (S36): every chat with the flashcards / quizzes / plans made in it; rename and delete chats (study sets stay) | ✅ verified in the browser 2026-11-15 on the real-data stack (laptop + 375 px); 7 tests |
 | Post-hackathon privacy hardening (S37–S40) | Review branch only: production guards, issuer checks, browser account isolation, resumable row/file/job cleanup with old-work fences; unmerged and not a public-deployment claim |
 | Removed-source retrieval (S41) | Review branch only: removed sources excluded from new search/reads; historical citations retain status; synthetic DB tests, unmerged |
+| Indexing intent recovery (S44) | Review branch only: committed sources keep private encrypted work across fetch/queue failure; replay-safe delivery tested; processing retries/publication gates remain |
 | Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

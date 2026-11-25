@@ -67,3 +67,6 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-24 (S42 review branch): truncated Canvas Files listings and all module-only fallback are non-authoritative for material absence; invalid paginated payloads fail closed. Reuse existing course/table completeness flags; no public contract change.
 
 - 2026-11-24 (S43 review branch): restore observed removed sources independently of content hashes; retain content counters/index state, write source-back events only for posts/materials and canonical-back events only from merge; no public contract changes.
+
+- 2026-11-25 (user): continue SDE workflow overnight; discretionary green merges allowed, but hold related foundations until integration gates pass; implement remaining requested features while deferring model-cost/provider changes and keeping Gemini.
+- 2026-11-25 (S44 review branch): transactional encrypted processing outbox and expiring dispatch leases; ID-only at-least-once delivery with execution/completion guards, no queueing lock after a real framework retry/replay uniqueness failure. Internal migration0004; no public contract changes.

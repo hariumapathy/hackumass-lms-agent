@@ -60,3 +60,8 @@ Mocked HTTP plus local DB reproduced files disappearing after a capped second im
 ## Post-hackathon presence-restoration regressions — review branch, 2026-11-24
 
 Import→removal→identical return left item sources, posts and files removed; changed course links could also stay removed. Canonical merge omitted the “is back” status event. Five original synthetic DB regressions reproduced this. S43 restores observed presence separately from content, preserves IDs/hash/version/chunks, avoids unchanged reprocessing, and emits one appropriate back event. Nine new cases cover concurrency, multi-source items, genuine field changes, submitted state and owner isolation. Failed/missing indexing recovery is still separate work.
+
+
+## Post-hackathon indexing-delivery regressions — review branch, 2026-11-25
+
+A source could commit before a later fetch failed, losing its in-memory processing request. S44 adds private encrypted transactional intents and leased recovery. Tests also reproduced metadata runs stranded by callback failure and a real Procrastinate unique-key failure when a running job retried beside a replay. Delivery now tolerates duplicates through execution/completion guards.16 new cases and644 backend checks pass; failed-processor retry/classification and source publication/disconnect races remain separate gates. Live Gemini synthetic chat/app G01 checks pass; this is not a fresh real-course retrieval evaluation.

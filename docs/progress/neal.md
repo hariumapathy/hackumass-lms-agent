@@ -8,10 +8,10 @@
 - S40 resumable data/file/job cleanup and old-work barriers committed/pushed `6b970ee`. Backend588 + separately optional local Storage round-trip; frontend102,6 browser E2E, build/static checks green.
 
 ## In progress
-- S41 pushed `73ffe9a`, S42 pushed `4385cb1`. S43 restoration verified (9 new DB cases; focused38 before final4 additions), finishing full/static checks and separate commit/push.
+- S41 pushed `73ffe9a`, S42 `4385cb1`, S43 `5ff4d95`. S44 durable encrypted indexing delivery verified (16 new/644 full backend, static green), commit/push next.
 
 ## Next
-1. Commit/push S43; start/HTTP-smoke the local demo; then durable indexing intent/recovery as its own next spec/cases/design/plan/code cycle.
+1. Commit/push S44, restart worker checkpoint; S45 failed/stuck processing retries next through its own workflow.
 2. Continue remaining approved plan until time/usage limit, retaining exact evidence and feature commits.
 3. Restart/verify stable local demo and produce handoff before07:00 ET or usage cutoff.
 
@@ -22,7 +22,7 @@
 - S40 additive internal account_data_state migration0003 is built/tested on review branch; review before merge. Public API/SSE/seed fields unchanged.
 
 ## Notes for other agents
-- Latest [checkpoint](../handoff/overnight-2026-11-24.md) supersedes older planning-only handoff. NEVER merge main until user explicitly says done.
+- Latest [checkpoint](../handoff/overnight-2026-11-24.md) supersedes older planning-only handoff. User now permits discretionary merges; hold related foundations until integrated gates pass. Defer model-cost/provider work; keep Gemini.
 - Existing imports preserved; only additive migration applied, no reset/seed. Session advisory locks need direct/session pooling. Scoped API/login sessions admit8 against pool10; DB tool leases serialize.
 - Use installed Node26 and NODE_OPTIONS=--no-experimental-webstorage, pinned pnpm, uv. Keep ignored secrets/private content out of logs/git.
-- Local demo wasn't listening at session start; server restart/verified link remains pending, do not claim live UI yet.
+- Web localhost:3000 and API127.0.0.1:8000 HTTP smoke pass; supplied Gemini credential configured in ignored .env and real synthetic app G01 passed. Worker paused for DB tests; restart at checkpoint.

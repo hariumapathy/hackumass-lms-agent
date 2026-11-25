@@ -28,6 +28,7 @@ from app.connectors.base import (
     SyncScope,
 )
 from app.core.clock import Clock
+from app.db.repositories import processing as processing_repo
 from app.db.repositories import sync as repo
 from app.sync.diff import changed_fields, classify, meaningful_fields, record_hash
 
@@ -456,6 +457,8 @@ async def run_sync(
             try:
                 async with conn.transaction():
                     outcome, row_id = await getattr(store, rec.record)(rec)
+                    if isinstance(rec, (NMaterial, NPost)):
+                        await processing_repo.capture(conn, user_id, row_id, rec, outcome)
             except (AuthExpired, PlatformError):
                 raise
             except Exception as exc:  # noqa: BLE001  (S10 rule 10: skip one bad record)
@@ -497,9 +500,15 @@ async def run_sync(
         await repo.set_connection_status(conn, user_id, platform, "active", synced_at=finished)
         if process_material:
             for material_id in out.materials_to_process:
-                await process_material(user_id, material_id, out.material_sources[material_id])
+                try:
+                    await process_material(user_id, material_id, out.material_sources[material_id])
+                except Exception as exc:
+                    log.warning("saved material work awaits recovery: %s", type(exc).__name__)
         if process_post:
             for post_id in out.posts_to_process:
-                await process_post(user_id, post_id)
+                try:
+                    await process_post(user_id, post_id)
+                except Exception as exc:
+                    log.warning("saved post work awaits recovery: %s", type(exc).__name__)
     await repo.mark_run(conn, user_id, run_id, out.status, finished, out.stats, out.error)
     return out
