@@ -23,6 +23,7 @@ from app.connectors.base import (
 )
 from app.core.clock import FixedClock
 from app.core.settings import get_settings
+from app.db.models import Platform
 from app.db.repositories import sync as repo
 from app.sync import jobs
 from app.sync.merge import merge_user
@@ -35,7 +36,7 @@ C = "https://example.instructure.com/courses/12345"
 
 
 class FakeConnector:
-    platform = "canvas"
+    platform: Platform = "canvas"
 
     def __init__(self, records: list[Any], error: Exception | None = None) -> None:
         self.records, self.error, self.calls = records, error, 0

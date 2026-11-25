@@ -566,6 +566,8 @@ class _Merger:
         diffs = [f for f in CHANGE_FIELDS if not _same(row[f], new[f])]
         type_ = c.type or row["type"]
         desc = c.description if c.description is not None else row["description"]
+        if row["status"] == "removed":
+            await self.change(item_id, row["course_id"], "status", "removed", "active")
         status = "active" if row["status"] == "removed" else row["status"]
         if diffs and not quiet:
             for f in diffs:

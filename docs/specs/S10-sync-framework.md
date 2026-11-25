@@ -152,3 +152,8 @@ Platform-specific fetching (S11, S14, S15), file parsing (S12), cross-platform m
 
 ## Demo hardening (2026-11-14, Neal)
 - Dashboard merges use manual-refresh priority (10), ahead of bulk file jobs. Import status includes pending/active merge jobs. Unreadable encrypted credentials terminate as `needs_reconnect` instead of remaining queued (regression in `test_s10_sync_db.py`).
+
+
+## Post-hackathon amendment — S43 (review branch)
+
+An observed removed source becomes present independently of its content hash. Identical return counts as unchanged, preserves saved material version/chunks/processing status, and does not requeue indexing solely for restoration. Posts/materials emit one status-back change; item alerts remain canonical merge's responsibility. Changed returning course links also become active. Missing/failed indexing remains the next independent recovery spec. See [S43](S43-source-presence-restoration.md).

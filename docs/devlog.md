@@ -23,6 +23,11 @@ Keep entries short and factual. Link specs (`S11`), commits (short hash) and PRs
 
 
 
+## 2026-11-24 · Neal's laptop · Codex · S43 source restoration
+**Done:** observed removed sources restore presence before content classification; changed course links return active. Identical return retains content hashes/IDs/version/current chunks/processing state and unchanged counters, without requeue. Posts/materials write guarded one-time back events; canonical merge writes back only when a removed item actually becomes live, separate from genuine field changes.
+**Evidence:** initial5 DB failures, final9 new cases green incl concurrent restores, live multi-source canonical, incomplete unseen sources, changed deadline/title and submitted state. Full backend628 pass/1 optional local Storage skip; Ruff/format/pyright green. Current-feature review no blocking defect; two suggested concurrency/real-change cases added and pass. No frontend/public contract changes; previous102 frontend/6 E2E/build checkpoint retained.
+**Next:** commit/push S43 separately; start and HTTP-smoke local demo; durable indexing intent/recovery as the next separate spec. S42 pushed `4385cb1`; main remains untouched; failed/missing processing remains explicitly unresolved until next feature.
+
 ## 2026-11-24 · Neal's laptop · Codex · S42 Canvas listing completeness
 **Done:** capped Files listing marks course materials incomplete; module fallback always non-authoritative for absence. Pagination rejects malformed/non-list JSON instead of silently inferring emptiness. Existing per-course/table removal skip retained; no schema/API/SSE/seed changes or live calls.
 **Evidence:** initial13 regressions failed/4 controls passed.20 new cases now pass, including99/100/101, cross-page exact-cap/overflow, missing module details, two-pass DB cap/module/partial403, genuine complete removal and malformed/partial failure.66 focused checks passed before final2 page-boundary additions; final backend619 pass/1 optional Storage skip and all static checks green. RAG review no blocking defect. Frontend unchanged from102/6 E2E/build checkpoint.

@@ -65,3 +65,5 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-24 (S41 review branch): current retrieval/direct reads exclude removed parents before ranking; historical citations remain owner-scoped and resolvable with status; read tools retain existing changed/current metadata. Narrow RS01 fix precedes independent listing/restoration fixes; no public contracts changed.
 
 - 2026-11-24 (S42 review branch): truncated Canvas Files listings and all module-only fallback are non-authoritative for material absence; invalid paginated payloads fail closed. Reuse existing course/table completeness flags; no public contract change.
+
+- 2026-11-24 (S43 review branch): restore observed removed sources independently of content hashes; retain content counters/index state, write source-back events only for posts/materials and canonical-back events only from merge; no public contract changes.

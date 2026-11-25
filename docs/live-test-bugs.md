@@ -55,3 +55,8 @@ Synthetic searches returned removed materials/posts and direct reads exposed rem
 ## Post-hackathon Canvas absence regressions — review branch, 2026-11-24
 
 Mocked HTTP plus local DB reproduced files disappearing after a capped second import, a module-only fallback, or403 on a later file page. Non-list JSON was treated as an empty successful listing and could remove all previous files. S42 marks truncated/module lists incomplete and rejects malformed list payloads.20 new cases and66 focused connector/pipeline checks pass; complete shorter listings still remove real absences. These are fixture reproductions, not fresh live Canvas failures. Full discovery and permission changes remain separate policies.
+
+
+## Post-hackathon presence-restoration regressions — review branch, 2026-11-24
+
+Import→removal→identical return left item sources, posts and files removed; changed course links could also stay removed. Canonical merge omitted the “is back” status event. Five original synthetic DB regressions reproduced this. S43 restores observed presence separately from content, preserves IDs/hash/version/chunks, avoids unchanged reprocessing, and emits one appropriate back event. Nine new cases cover concurrency, multi-source items, genuine field changes, submitted state and owner isolation. Failed/missing indexing recovery is still separate work.

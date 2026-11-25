@@ -1,16 +1,33 @@
 # Overnight implementation checkpoint — 2026-11-24
 
-Branch: **codex/post-hackathon-implementation**, based on planning tip `88baeda` and current main `be13793`. User explicitly authorized implementation after planning; keep Gemini, implement **one fix at a time**, and commit/push every verified piece. **Never merge main until user explicitly says done.** This supersedes planning-only restrictions in the earlier handoff. Checkpoint/handoff before 07:00 ET or earlier if usage ends.
+Branch: **codex/post-hackathon-implementation**, based on planning tip `88baeda` and main `be13793`. [Draft PR34](https://github.com/hariumapathy/hackumass-lms-agent/pull/34). User authorizes one fix at a time: spec/cases → design/implementation plan → red tests → code → checks/review → separate commit/push. **Never merge main until user explicitly says done.** Keep Gemini; other providers remain later configuration. Prepare final checkpoint before **2026-11-25 07:00 ET** or usage cutoff. This supersedes historical planning-only language.
 
-## Completed
-- S37 production API/worker startup guards; disabled/unbuilt hosted login fail closed. Spec → cases → design/implementation plan → 32 red tests → code → security review → 11 additional red edge cases → corrections → 43 focused green.
-- Full backend: 557 pass, 1 skip, 1 expected failure. Frontend baseline92 pass. Ruff format/lint and pyright pass. Docker initially stopped; started via Docker Desktop CLI, existing volumes/data preserved. Setup/pinned dependencies synced.
-- Reviewed/pinned security skill installed locally; development skills/MCP research documented. No extra MCP/telemetry services or model providers configured. Runtime still uses Gemini.
+## Verified fixes
 
-## Exact next fix
-S37 `87617f2` is on remote; [draft PR #34](https://github.com/hariumapathy/hackumass-lms-agent/pull/34) is the implementation review. S38 JWT issuer binding is now verified: 45 focused auth tests and 569 full backend passed / 1 skip / 1 xfail; lint/format/types pass. S38 committed9c74f17. S39 account isolation verified:9 new tests,101 frontend total,6 E2E, build/lint/types green; includes late-request/stream/bootstrap/logout fences. S39 committed/pushed `a12f52c`. S40 complete-data cleanup now verified: backend588 pass/1 optional skip plus that local Storage round-trip passed separately; frontend102,6 E2E, build/static green. Additive migration0003 applied locally without reset, awaiting branch contract review. S40 committed/pushed `6b970ee`. S41 removed-source retrieval now verified:11 DB cases pass (initial6 red/1 preserved history); current SQL filters before all candidate limits, direct reads exclude removed parents, historical citations retained and changed status reaches tools. S41 committed/pushed `73ffe9a` (full599 backend/static green). S42 Canvas incomplete-listing safety now verified:20 new cases/66 focused, final full/static/review then commit/push. Next is identical-content presence restoration, specified independently. See deployment/data-deletion.md for session-pooling/capacity/recovery and external Storage orphan/backup gates. No future feature is preimplemented.
+| Spec | Commit | Behavior |
+|---|---|---|
+| S37 | `87617f2` | Production config guards; disabled/unbuilt hosted login fails closed |
+| S38 | `9c74f17` | Required exact trusted JWT issuer |
+| S39 | `a12f52c` | Per-account browser caches/UI and stale REST/SSE/auth-event fences |
+| S40 | `6b970ee` | Durable row/file/job cleanup, recovery and old-work barriers |
+| S41 | `73ffe9a` | Current retrieval excludes removed parents; historical citations retained |
+| S42 | `4385cb1` | Capped/module-only Canvas lists cannot infer removal; malformed list fails |
+| S43 | Current feature commit, see branch log | Observed identical sources return active; one proper back alert, no fake content diffs/reprocessing |
 
-## Operational cautions
-Do not reset local data or expose real tokens/student content in fixtures/logs. `supabase status` can print local keys; capture any required configuration in memory and print only non-sensitive status. Node default18 is too old; use installed Node26 + pinned pnpm + `NODE_OPTIONS=--no-experimental-webstorage`. No local web/API was listening at session start. Restart and verify a stable local demo at final handoff; don't claim a running UI until checked. Keep Docker/worker test isolation.
+S37–S42 confirmed pushed. S43 verification complete; commit/push is the immediate next action. **Latest backend:628 passed,1 optional Storage skip; Ruff/format/pyright green.** The actual local Storage synthetic two-user round-trip passed separately at S40 with credentials supplied only in memory. **Frontend checkpoint:102 passed,6 mock browser E2E, lint/types/production build green**; no frontend changes since S40. Current-feature independent security/RAG review completed for each fix; additional red regressions incorporated.
 
-Credentials/institution/provider approvals remain external gates, not reasons to stop independent fixes. No deployment/purchase/Google authorization performed. Future DB/API/SSE/seed changes require reviewable specs/proposals; don't silently modify contracts.
+## Exact next steps
+
+1. Commit/push S43, update PR34 evidence. Start the local API/web/worker without resetting data and HTTP-smoke the stable demo. No server was listening at session start; restart is **still pending**, do not claim a live UI yet.
+2. Next individual feature: durable indexing intent/recovery (RS04), with its own spec/cases/design/plan/red tests. Then failed processing/retries, overlapping execution, embedding provenance and remaining plan gates. Do not predesign/implement a batch of future features.
+3. Keep current evidence/checkpoints, own progress and spec index clean; push small verified pieces. End with a running verified local demo and a precise handoff. All main merges remain forbidden.
+
+## Operations and limits
+
+- Existing imports preserved: only additive migration0003 applied to local DB and registered in migration history; **no reset/seed**. Apply it before new API/worker rollout. Review internal schema proposal before merge.
+- [Deletion operator guide](../deployment/data-deletion.md): session locks need direct/session pooling; bound API/login sessions8 versus pool10; shared DB tool leases serialize and active children drain before session release. Storage upload orphan reconciliation and backup expiration/restore remain public-launch gates. No claim of atomic Postgres+Storage cleanup under network failure.
+- Source-listing completeness/restoration fixes do not claim full module discovery, permission revocation or recovery of failed/missing chunks. Index recovery remains next.
+- Use installed Node26 (`/Users/nealpatel/.nvm/versions/node/v26.12.1/bin`), pinned pnpm10.34.9 and `NODE_OPTIONS=--no-experimental-webstorage`; default Node18 is too old. Backend uses uv. Docker/local Supabase healthy; retained volumes kept.
+- `.env`/web `.env.local` ignored and private. Never print Supabase status/env/Settings (can contain keys); capture needed config in memory. Tests use synthetic accounts, fake/scrubbed platform data, fake embeddings/scripted models. Never clear a real student's data as a test.
+- Git SSH push had transient errors; HTTPS push using `gh auth git-credential` works. Do not force push. Confirm remote SHA and repair tracking by explicit fetch if local ahead count is stale.
+- Research and installed reviewed security skill documented in [tooling research](../research/post-hackathon-dev-tooling.md). No extra MCP/telemetry services or provider accounts installed. Google/institutional/provider approvals remain external gates, not blockers for independent fixes.

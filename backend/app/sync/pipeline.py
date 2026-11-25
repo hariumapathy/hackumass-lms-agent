@@ -138,6 +138,37 @@ class _Store:
             (self.now, *params, self.user_id, row_id),
         )
 
+    async def restore_presence(
+        self,
+        table: str,
+        existing: dict[str, Any],
+        course_id: UUID,
+        entity_type: str | None = None,
+    ) -> None:
+        """Presence is independent of content hash. Canonical item alerts belong to merge."""
+        if existing["status"] != "removed":
+            return
+        restored = await self.one(
+            f"update {table} set status='active' where user_id=%s and id=%s "  # noqa: S608
+            "and status='removed' returning id",
+            (self.user_id, existing["id"]),
+        )
+        if restored and entity_type:
+            await self.one(
+                "insert into changes(user_id,entity_type,entity_id,course_id,field,"
+                "old_value,new_value,detected_at) values (%s,%s,%s,%s,'status',%s,%s,%s) "
+                "returning id",
+                (
+                    self.user_id,
+                    entity_type,
+                    existing["id"],
+                    course_id,
+                    Jsonb("removed"),
+                    Jsonb("active"),
+                    self.now,
+                ),
+            )
+
     # --- one method per record type; each returns (outcome, row id) ---------------------------
     async def course(self, rec: NCourse) -> tuple[str, UUID]:
         h = record_hash(rec)
@@ -159,6 +190,7 @@ class _Store:
                 )
             return "new", row["id"]
         self.course_ids[rec.platform_id] = ex["course_id"]
+        await self.restore_presence("course_links", ex, ex["course_id"])
         outcome = classify(ex["content_hash"], h)
         if outcome == "changed":
             await self.touch("course_links", ex["id"], ", content_hash = %s", (h,))
@@ -198,6 +230,7 @@ class _Store:
                 ),
             )
             return "new", row["id"]
+        await self.restore_presence("item_sources", ex, cid)
         outcome = classify(ex["content_hash"], h)
         if outcome == "unchanged":
             if (ex["raw"] or {}).get("submitted") != raw.get("submitted"):
@@ -252,6 +285,7 @@ class _Store:
                 ),
             )
             return "new", row["id"]
+        await self.restore_presence("posts", ex, cid, "post")
         outcome = classify(ex["content_hash"], h)
         if outcome == "unchanged":
             await self.touch("posts", ex["id"])
@@ -308,6 +342,7 @@ class _Store:
                 ),
             )
             return "new", row["id"]
+        await self.restore_presence("materials", ex, cid, "material")
         outcome = classify(ex["content_hash"], h)
         if outcome == "unchanged":
             await self.touch("materials", ex["id"])
