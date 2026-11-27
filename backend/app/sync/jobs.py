@@ -18,11 +18,14 @@ from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 
-from app.connectors.base import PlatformError, SyncScope, get_connector
+from app.connectors.base import PlatformError, SourceSuperseded, SyncScope, get_connector
 from app.core.clock import Clock, SystemClock
 from app.core.crypto import CryptoError, decrypt, get_fernet
+from app.core.errors import AppError
 from app.core.settings import get_settings
+from app.db.deletion import generation, retry_pending_deletions, user_work
 from app.db.repositories import sync as repo
+from app.sync.access import Grant, require_current, snapshot, stored_credentials
 from app.sync.pipeline import run_sync
 
 log = logging.getLogger("app.sync")
@@ -45,6 +48,8 @@ class SyncJob(BaseModel):
     scope: SyncScope
     trigger: str
     sync_run_id: UUID
+    connection_id: UUID | None = None
+    secret_revision: UUID | None = None
 
 
 class SyncRunResult(BaseModel):
@@ -78,7 +83,8 @@ async def sync_platform(context: JobContext, job: dict[str, Any]) -> None:
     sj = SyncJob.model_validate(job)
     attempts = context.job.attempts if context.job else 0
     async with await _connect() as conn:
-        await execute_sync(conn, sj, final_attempt=attempts >= MAX_RETRIES)
+        async with user_work(conn, sj.user_id):
+            await execute_sync(conn, sj, final_attempt=attempts >= MAX_RETRIES)
 
 
 async def execute_sync(
@@ -86,22 +92,54 @@ async def execute_sync(
 ) -> str:
     """Decrypt the secret, run the pipeline, queue follow-up jobs. Raises PlatformError to retry."""
     clock = clock or SystemClock()
-    ciphertext = await repo.get_secret(conn, sj.user_id, sj.platform)
-    if ciphertext is None:
+    run = await repo.get_run(conn, sj.user_id, sj.sync_run_id)
+    if run is None:
+        return "deleted"
+    if run.status not in {"queued", "running"}:
+        return "ignored"
+    if sj.connection_id is None or sj.secret_revision is None:
+        # Legacy envelope parsing is supported, adopting a current replacement grant is not.
         await repo.mark_run(
-            conn, sj.user_id, sj.sync_run_id, "failed", clock.now(), error="Not connected."
+            conn,
+            sj.user_id,
+            sj.sync_run_id,
+            "failed",
+            clock.now(),
+            error="Please update your classes again.",
         )
-        return "failed"
+        return "ignored"
+    epoch = await generation(conn, sj.user_id)
+    grant = Grant(sj.connection_id, sj.secret_revision)
     try:
-        secret = decrypt(ciphertext, get_fernet())
+        stored = await stored_credentials(conn, sj.user_id, sj.platform)
+        if stored.grant != grant:
+            raise SourceSuperseded()
+        secret = decrypt(stored.ciphertext, get_fernet())
+    except SourceSuperseded:
+        await repo.mark_run(
+            conn,
+            sj.user_id,
+            sj.sync_run_id,
+            "failed",
+            clock.now(),
+            error="Connection changed. Please update your classes again.",
+        )
+        return "ignored"
     except CryptoError:
         message = "Please reconnect this account so we can update your classes."
-        await repo.set_connection_status(
-            conn, sj.user_id, sj.platform, "needs_reconnect", error=message
-        )
-        await repo.mark_run(
-            conn, sj.user_id, sj.sync_run_id, "needs_reconnect", clock.now(), error=message
-        )
+        try:
+            async with conn.transaction():
+                await require_current(
+                    conn, sj.user_id, sj.platform, grant, locked=True, update=True
+                )
+                await repo.set_connection_status(
+                    conn, sj.user_id, sj.platform, "needs_reconnect", error=message
+                )
+                await repo.mark_run(
+                    conn, sj.user_id, sj.sync_run_id, "needs_reconnect", clock.now(), error=message
+                )
+        except SourceSuperseded:
+            return "ignored"
         return "needs_reconnect"
     outcome = await run_sync(
         conn,
@@ -112,6 +150,7 @@ async def execute_sync(
         secret=secret,
         clock=clock,
         final_attempt=final_attempt,
+        expected_grant=grant,
         process_material=_defer_process_material,
         process_post=_defer_process_post,
     )
@@ -120,7 +159,7 @@ async def execute_sync(
     if outcome.status == "succeeded":
         await _defer(
             merge_user,
-            {"user_id": str(sj.user_id)},
+            {"user_id": str(sj.user_id), "expected_generation": epoch},
             lock=f"merge:{sj.user_id}",
             priority=PRIORITY["manual"],
         )
@@ -137,29 +176,34 @@ async def execute_sync(
 async def process_material(
     user_id: str, material_id: str, source: dict[str, Any] | None = None
 ) -> None:
-    """S12: download/extract/chunk/embed (`app.sync.processing`). `source` = download/text/cues."""
-    from app.sync.processing.worker import run_process_material
-
-    async with await _connect() as conn:
-        await run_process_material(conn, UUID(user_id), UUID(material_id), source)
+    """Legacy envelopes have no trustworthy source version; request current durable work only."""
+    await _defer_process_material(UUID(user_id), UUID(material_id), {})
 
 
-@app.task(name="process_post", queue="process")
+@app.task(
+    name="process_post",
+    queue="process",
+    retry=RetryStrategy(
+        max_attempts=MAX_RETRIES,
+        exponential_wait=5,
+        retry_exceptions={PlatformError},
+    ),
+)
 async def process_post(user_id: str, post_id: str) -> None:
-    """S12: chunk + embed a new/changed post (announcement, Piazza, email)."""
-    from app.sync.processing.worker import run_process_post
-
-    async with await _connect() as conn:
-        await run_process_post(conn, UUID(user_id), UUID(post_id))
+    """Legacy delivery requests current intent dispatch; it never runs an unbound processor."""
+    await _defer_process_post(UUID(user_id), UUID(post_id))
 
 
 @app.task(name="merge_user", queue="sync")
-async def merge_user(user_id: str) -> None:
+async def merge_user(user_id: str, expected_generation: int = 0) -> None:
     """S16: merge courses/items across platforms and write canonical item changes."""
     from app.sync import merge
 
     async with await _connect() as conn:
-        stats = await merge.merge_user(conn, UUID(user_id))
+        async with user_work(conn, UUID(user_id)) as epoch:
+            if epoch != expected_generation:
+                return
+            stats = await merge.merge_user(conn, UUID(user_id))
     log.info("merge_user %s: %s", user_id, stats.model_dump())
 
 
@@ -171,17 +215,25 @@ async def _defer(task: Any, kwargs: dict[str, Any], lock: str | None = None, pri
 
 
 async def _defer_process_material(user_id: UUID, material_id: UUID, source: dict[str, Any]) -> None:
-    await _defer(
-        process_material,
-        {"user_id": str(user_id), "material_id": str(material_id), "source": source},
-        lock=f"process:{material_id}",
-    )
+    from app.sync.intents import dispatch_parent
+
+    async with await _connect() as conn:
+        await dispatch_parent(conn, user_id, material_id=material_id)
 
 
 async def _defer_process_post(user_id: UUID, post_id: UUID) -> None:
-    await _defer(
-        process_post, {"user_id": str(user_id), "post_id": str(post_id)}, lock=f"post:{post_id}"
-    )
+    from app.sync.intents import dispatch_parent
+
+    async with await _connect() as conn:
+        await dispatch_parent(conn, user_id, post_id=post_id)
+
+
+@app.task(name="process_intent", queue="process")
+async def process_intent(user_id: str, intent_id: str, revision: str) -> None:
+    from app.sync.intents import execute
+
+    async with await _connect() as conn:
+        await execute(conn, user_id=user_id, intent_id=intent_id, revision=revision)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -213,12 +265,27 @@ async def enqueue_sync(
             "select pg_advisory_xact_lock(hashtextextended(%s, 0))",
             (f"sync:{user_id}:{platform}:{scope.key()}",),
         )
+        try:
+            grant = await snapshot(conn, user_id, platform)
+            await require_current(conn, user_id, platform, grant, locked=True)
+        except SourceSuperseded:
+            raise AppError(
+                "conflict",
+                "This connection changed. Open Settings to check your connected accounts.",
+                status=409,
+            ) from None
         existing = await repo.find_open_run(conn, user_id, platform, scope_json)
         if existing:
             return existing.id
         run_id = await repo.create_run(conn, user_id, platform, scope_json, trigger, clock.now())
     job = SyncJob(
-        user_id=user_id, platform=platform, scope=scope, trigger=trigger, sync_run_id=run_id
+        user_id=user_id,
+        platform=platform,
+        scope=scope,
+        trigger=trigger,
+        sync_run_id=run_id,
+        connection_id=grant.connection_id,
+        secret_revision=grant.revision,
     )
     try:
         await (defer or _defer_sync)(job, PRIORITY.get(trigger, 0))
@@ -281,9 +348,36 @@ async def due_connections(conn: AsyncConnection[Any], now: datetime) -> list[tup
 @app.task(name="schedule_syncs", queue="sync", queueing_lock="schedule_syncs")
 async def schedule_syncs(timestamp: int) -> None:
     async with await _connect() as conn:
+        await retry_pending_deletions(conn)
+        from app.sync.intents import dispatch_pending
+        from app.sync.recovery import (
+            recover_legacy_materials,
+            recover_legacy_posts,
+            recover_stalled,
+        )
+
+        await recover_stalled(conn)
+        await recover_legacy_posts(conn)
+        await recover_legacy_materials(conn)
+        await dispatch_pending(conn)
         now = SystemClock().now()
         for user_id, platform in await due_connections(conn, now):
-            await enqueue_sync(conn, user_id, platform, SyncScope(kind="full"), "schedule")
+            from app.core.errors import AppError
+
+            try:
+                async with user_work(conn, user_id):
+                    # The due snapshot can predate deletion/disconnect; re-read inside the gate.
+                    connection = await repo.get_connection(conn, user_id, platform)
+                    if (
+                        connection
+                        and connection.status == "active"
+                        and await repo.get_secret(conn, user_id, platform)
+                    ):
+                        await enqueue_sync(
+                            conn, user_id, platform, SyncScope(kind="full"), "schedule"
+                        )
+            except AppError:
+                continue
 
 
 def check_worker_config() -> None:

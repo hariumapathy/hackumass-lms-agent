@@ -330,3 +330,33 @@ def test_s13_login_window_prefers_installed_browsers_on_windows(monkeypatch) -> 
     assert local._channels(headless=True)[0] is None
     monkeypatch.setattr(local.sys, "platform", "darwin")
     assert local._channels(headless=False)[0] is None
+
+
+async def test_s40_t06_delayed_snapshot_preserves_single_pending_login():
+    release = asyncio.Event()
+    both = asyncio.Event()
+    snapshots = 0
+
+    async def snapshot(user_id):
+        nonlocal snapshots
+        snapshots += 1
+        if snapshots == 2:
+            both.set()
+        await release.wait()
+        return 0
+
+    provider = FakeProvider()
+    manager = LoginManager(provider, Saved(), snapshot=snapshot)
+    first = asyncio.create_task(manager.start(TEST_USER_ID, "gradescope"))
+    second = asyncio.create_task(manager.start(TEST_USER_ID, "gradescope"))
+    await both.wait()
+    release.set()
+    results = await asyncio.gather(first, second, return_exceptions=True)
+    try:
+        assert len(provider.started) == 1
+        errors = [r for r in results if isinstance(r, AppError)]
+        assert len(errors) == 1 and errors[0].status == 409
+    finally:
+        for result in results:
+            if not isinstance(result, BaseException):
+                await manager.cancel(TEST_USER_ID, result.login_id)

@@ -24,7 +24,7 @@ from app.core.clock import FixedClock
 from app.core.errors import AppError
 from app.core.ratelimit import TokenBucket
 from app.main import create_app
-from tests.helpers import TEST_JWT_SECRET, TEST_USER_ID, auth_header, make_token
+from tests.helpers import TEST_ISSUER, TEST_JWT_SECRET, TEST_USER_ID, auth_header, make_token
 
 PUBLIC_ROUTES = {("GET", "/health"), ("GET", "/calendar/{token}.ics")}
 JWKS_URL = "https://example.supabase.co/auth/v1/.well-known/jwks.json"
@@ -37,7 +37,9 @@ def client() -> TestClient:
 
 
 def hs_verifier(clock: FixedClock | None = None) -> TokenVerifier:
-    return TokenVerifier(jwks_url=None, hs256_secret=TEST_JWT_SECRET, clock=clock)
+    return TokenVerifier(
+        issuer=TEST_ISSUER, jwks_url=None, hs256_secret=TEST_JWT_SECRET, clock=clock
+    )
 
 
 # --- S20-T01: valid HS256 token -> UserCtx; wrong secret -> 401 ---------------------------
@@ -79,7 +81,13 @@ def _es256_key_and_jwks(kid: str = "kid-1") -> tuple[ec.EllipticCurvePrivateKey,
 
 def _es256_token(key: ec.EllipticCurvePrivateKey, kid: str = "kid-1", **claims: object) -> str:
     now = int(datetime.now(UTC).timestamp())
-    body = {"sub": str(TEST_USER_ID), "aud": "authenticated", "exp": now + 3600, **claims}
+    body = {
+        "iss": TEST_ISSUER,
+        "sub": str(TEST_USER_ID),
+        "aud": "authenticated",
+        "exp": now + 3600,
+        **claims,
+    }
     return jwt.encode(body, key, algorithm="ES256", headers={"kid": kid})
 
 
@@ -88,7 +96,7 @@ async def test_s20_t01_jwks_es256_token_verifies_and_jwks_is_cached_10_min() -> 
     key, jwks = _es256_key_and_jwks()
     route = respx.get(JWKS_URL).mock(return_value=httpx.Response(200, json=jwks))
     clock = FixedClock(T0)
-    verifier = TokenVerifier(jwks_url=JWKS_URL, hs256_secret=None, clock=clock)
+    verifier = TokenVerifier(issuer=TEST_ISSUER, jwks_url=JWKS_URL, hs256_secret=None, clock=clock)
 
     token = _es256_token(key)
     assert (await verifier.verify(token)).user_id == TEST_USER_ID
@@ -104,7 +112,9 @@ async def test_s20_t01_jwks_es256_token_verifies_and_jwks_is_cached_10_min() -> 
 async def test_s20_t01_jwks_unknown_kid_or_wrong_key_is_401() -> None:
     _, jwks = _es256_key_and_jwks("kid-1")
     respx.get(JWKS_URL).mock(return_value=httpx.Response(200, json=jwks))
-    verifier = TokenVerifier(jwks_url=JWKS_URL, hs256_secret=None, clock=FixedClock(T0))
+    verifier = TokenVerifier(
+        issuer=TEST_ISSUER, jwks_url=JWKS_URL, hs256_secret=None, clock=FixedClock(T0)
+    )
     other_key = ec.generate_private_key(ec.SECP256R1())
     for token in (_es256_token(other_key, kid="kid-unknown"), _es256_token(other_key)):
         with pytest.raises(AppError) as err:
@@ -116,12 +126,16 @@ async def test_s20_t01_jwks_unknown_kid_or_wrong_key_is_401() -> None:
 async def test_s20_t01_jwks_with_hs256_fallback_accepts_legacy_tokens() -> None:
     _, jwks = _es256_key_and_jwks()
     respx.get(JWKS_URL).mock(return_value=httpx.Response(200, json=jwks))
-    verifier = TokenVerifier(jwks_url=JWKS_URL, hs256_secret=TEST_JWT_SECRET, clock=FixedClock(T0))
+    verifier = TokenVerifier(
+        issuer=TEST_ISSUER, jwks_url=JWKS_URL, hs256_secret=TEST_JWT_SECRET, clock=FixedClock(T0)
+    )
     assert (await verifier.verify(make_token())).user_id == TEST_USER_ID
 
 
 async def test_s20_t01_hs256_token_rejected_when_only_jwks_configured() -> None:
-    verifier = TokenVerifier(jwks_url=JWKS_URL, hs256_secret=None, clock=FixedClock(T0))
+    verifier = TokenVerifier(
+        issuer=TEST_ISSUER, jwks_url=JWKS_URL, hs256_secret=None, clock=FixedClock(T0)
+    )
     with pytest.raises(AppError) as err:
         await verifier.verify(make_token())
     assert err.value.status == 401
@@ -131,7 +145,9 @@ async def test_s20_t01_hs256_token_rejected_when_only_jwks_configured() -> None:
 async def test_s20_t01_jwks_endpoint_down_is_retryable_503() -> None:
     _, _ = _es256_key_and_jwks()
     respx.get(JWKS_URL).mock(side_effect=httpx.ConnectError("down"))
-    verifier = TokenVerifier(jwks_url=JWKS_URL, hs256_secret=None, clock=FixedClock(T0))
+    verifier = TokenVerifier(
+        issuer=TEST_ISSUER, jwks_url=JWKS_URL, hs256_secret=None, clock=FixedClock(T0)
+    )
     key, _ = _es256_key_and_jwks()
     with pytest.raises(AppError) as err:
         await verifier.verify(_es256_token(key))

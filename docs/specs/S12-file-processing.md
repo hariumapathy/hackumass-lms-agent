@@ -16,7 +16,7 @@ Turn materials (PDFs, slides, documents, syllabi, transcripts) and posts into **
 - Material row + `DownloadRef` / inline `text` / transcript `cues`.
 
 ## Outputs
-- Original file in Supabase Storage at `users/{user_id}/{platform}/{course_platform_id}/{platform_id}/v{version}.{ext}`.
+- Original file in Supabase Storage at `users/{user_id}/{platform}/{course_platform_id}/{platform_id}/v{version}-{attempt_uuid}.{ext}` for new S48 worker uploads. Legacy `v{version}.{ext}` paths remain readable; see [S48 publication/rollout](../deployment/processing-publication.md).
 - `chunks` rows (`is_current=true`) for the new version; previous version's chunks set `is_current=false`.
 - `materials.processing_status` = `done` / `skipped` / `failed` (+ `processing_error`), `page_count` / `duration_s`.
 
@@ -110,3 +110,8 @@ OCR, images/diagrams understanding, audio transcription (Echo360 fallback via sp
 - Download 401/403 → `AuthExpired` → connection `needs_reconnect`, material `failed` ("Your sign-in for this site expired."). 5xx/timeouts → `PlatformError` → job retried (2 attempts).
 - PyMuPDF is **AGPL-3.0** (fine for our public repo; listed in THIRD_PARTY_NOTICES). Swap for `pypdf` if that ever matters.
 - Open: acceptance check with a real lecture PDF/PPTX from our own courses (needs a live Canvas sync).
+
+
+## Post-hackathon amendment — S45 (review branch)
+
+Material failures raise safe classified exceptions after recording failed state, preserving old chunks. Retryable failures are PlatformError for legacy compatibility; new intents own durable bounded retry/backoff. Single-file401/403 is SourceAccessError (file unavailable), not automatic whole-grant expiry; verified AuthExpired retains reconnect handling. Binary-original Storage configuration is required for downloads. Worker embedding retries are owned by the intent policy. See [S45](S45-processing-retries-and-recovery.md).

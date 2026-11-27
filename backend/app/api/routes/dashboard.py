@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, data_user
 from app.api.routes.connections import source_statuses
 from app.core.errors import AppError, not_found
 from app.core.settings import get_settings
@@ -18,7 +18,7 @@ from app.db.repositories import dashboard as repo
 from app.db.repositories import profiles
 
 router = APIRouter(tags=["dashboard"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
 
 
 @router.get("/today", response_model=s.Today)

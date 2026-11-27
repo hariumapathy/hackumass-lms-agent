@@ -82,7 +82,12 @@ case "$cmd" in
     cd backend && exec uv run app worker
     ;;
   web)
-    cat > apps/web/.env.local <<EOF
+    # Replace the destination itself: .env.local may be a symlink/hardlink to the root .env.
+    # Direct redirection follows links and can destroy backend credentials.
+    web_env_tmp="$(mktemp apps/web/.env.local.tmp.XXXXXX)"
+    trap 'rm -f "$web_env_tmp"' EXIT
+    chmod 600 "$web_env_tmp"
+    cat > "$web_env_tmp" <<EOF
 # Written by scripts/demo-local.sh for the LOCAL Supabase stack. Delete to go back to mocks.
 NEXT_PUBLIC_SUPABASE_URL=$API_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=$(val PUBLISHABLE_KEY)
@@ -90,6 +95,12 @@ NEXT_PUBLIC_API_URL=$PUBLIC_API_URL
 NEXT_PUBLIC_API_MOCKS=0
 NEXT_PUBLIC_GOOGLE_SIGN_IN_ENABLED=0
 EOF
+    if [ -d apps/web/.env.local ]; then
+      echo "Cannot write web settings: apps/web/.env.local is a directory." >&2
+      exit 1
+    fi
+    mv -f "$web_env_tmp" apps/web/.env.local
+    trap - EXIT
     echo "Wrote apps/web/.env.local. Sign-in emails arrive at $(val MAILPIT_URL)"
     cd apps/web
     $PNPM build

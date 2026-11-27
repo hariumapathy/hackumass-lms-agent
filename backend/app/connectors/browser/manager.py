@@ -9,6 +9,7 @@ import asyncio
 import importlib
 import logging
 from collections.abc import Awaitable, Callable
+from contextlib import AbstractAsyncContextManager, nullcontext
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
@@ -56,6 +57,7 @@ class LoginSession:
     user_id: UUID
     platform: str
     started_at: datetime
+    generation: int = 0
     state: LoginState = "pending"
     error: str | None = None
     live_view_url: str | None = None
@@ -73,6 +75,8 @@ class LoginManager:
         poll_interval_s: float = 1.0,
         sleep: Sleep = asyncio.sleep,
         specs: Callable[[str], LoginSpec] = login_spec_for,
+        snapshot: Callable[[UUID], Awaitable[int]] | None = None,
+        completion_guard: Callable[[UUID, int], AbstractAsyncContextManager] | None = None,
     ) -> None:
         self.provider = provider
         self.on_success = on_success
@@ -80,6 +84,7 @@ class LoginManager:
         self.poll_interval_s = poll_interval_s
         self.sleep = sleep
         self.specs = specs
+        self.snapshot, self.completion_guard = snapshot, completion_guard
         self._sessions: dict[UUID, LoginSession] = {}
 
     @property
@@ -95,10 +100,15 @@ class LoginManager:
     async def start(self, user_id: UUID, platform: str) -> LoginSession:
         """Open the login browser. 409 `conflict` if one is already pending (S13 rule 1)."""
         spec = self.specs(platform)
+        version = await self.snapshot(user_id) if self.snapshot else 0
         if self._pending(user_id, platform) is not None:
             raise AppError("conflict", "A login for this site is already in progress.", 409)
         session = LoginSession(
-            login_id=uuid4(), user_id=user_id, platform=platform, started_at=self.clock.now()
+            login_id=uuid4(),
+            user_id=user_id,
+            platform=platform,
+            started_at=self.clock.now(),
+            generation=version,
         )
         self._sessions[session.login_id] = session  # reserve before awaiting (no double start)
         try:
@@ -110,7 +120,9 @@ class LoginManager:
                 "internal", "We couldn't open the login window. Try again.", 503, retryable=True
             ) from exc
         session.live_view_url = session.handle.live_view_url
-        session.task = asyncio.create_task(self._watch(session, spec))
+        from app.db.pool import background_context
+
+        session.task = asyncio.create_task(self._watch(session, spec), context=background_context())
         return session
 
     def get(self, user_id: UUID, login_id: UUID) -> LoginSession:
@@ -148,7 +160,13 @@ class LoginManager:
                 if polled == "succeeded":
                     state = await self.provider.storage_state(handle)
                     try:
-                        await self.on_success(session.user_id, session.platform, state)
+                        guard = (
+                            self.completion_guard(session.user_id, session.generation)
+                            if self.completion_guard
+                            else nullcontext()
+                        )
+                        async with guard:
+                            await self.on_success(session.user_id, session.platform, state)
                     finally:
                         del state  # S13 rule 4: drop the plaintext copy right after saving
                     session.state = "succeeded"
@@ -181,12 +199,23 @@ def get_login_manager() -> LoginManager:
     global _manager
     if _manager is None:
         from app.connectors.browser.local import LocalPlaywrightProvider
-        from app.connectors.browser.store import save_login
+        from app.connectors.browser.store import (
+            login_completion_guard,
+            login_generation,
+            save_login,
+        )
         from app.core.settings import get_settings
 
-        if get_settings().browser_provider == "hosted":
-            log.warning("BROWSER_PROVIDER=hosted is not built yet (S13 stretch); using local")
-        _manager = LoginManager(LocalPlaywrightProvider(), save_login)
+        if get_settings().browser_provider != "local":
+            raise AppError(
+                "validation_error", "Live account login is unavailable on this server.", 503
+            )
+        _manager = LoginManager(
+            LocalPlaywrightProvider(),
+            save_login,
+            snapshot=login_generation,
+            completion_guard=login_completion_guard,
+        )
     return _manager
 
 

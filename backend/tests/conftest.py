@@ -29,12 +29,16 @@ def pytest_asyncio_loop_factories(config, item):  # noqa: ANN001, ANN201, ARG001
 
 @pytest.fixture(autouse=True)
 def _test_auth_settings(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    # Env vars beat the .env file in pydantic-settings, so these override a developer's .env.
+    from base64 import urlsafe_b64encode
+
     from app.api import deps
     from app.core.settings import get_settings
 
-    # Env vars beat the .env file in pydantic-settings, so these override a developer's .env.
+    monkeypatch.setenv("ENCRYPTION_KEY", urlsafe_b64encode(bytes(range(32))).decode())
     monkeypatch.setenv("SUPABASE_JWT_SECRET", TEST_JWT_SECRET)
     monkeypatch.setenv("SUPABASE_JWKS_URL", "")
+    monkeypatch.setenv("SUPABASE_JWT_ISSUER", "")
     # Tests never call real LLMs: no model keys, so POST /chat uses the scripted stream.
     for key in ("GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
         monkeypatch.setenv(key, "")

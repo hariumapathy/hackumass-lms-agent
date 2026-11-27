@@ -8,11 +8,11 @@ from fastapi import APIRouter, Depends, Request
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, data_user
 from app.core.errors import not_found
 
 router = APIRouter(tags=["study"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
 
 
 def _store(request: Request):  # noqa: ANN202

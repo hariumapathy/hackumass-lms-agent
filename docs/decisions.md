@@ -53,3 +53,28 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-15 (Soumith, Session B): in-app file viewer = `GET /files/{material_id}` streams the student's own stored original (row-scoped, storage path from the DB row, never from the request); citations get `file_id` only for stored PDFs. The web app fetches it with the Bearer token into a blob URL and shows the browser's PDF viewer in a dialog at `#page=N` (no new library).
 - 2026-11-15 (Hari, Session A): "Study" tab → **Sessions** (`/sessions`; `/study` redirects, `/study/[id]` kept). Additive API: `ConversationSummary.study_sets`, `StudySetSummary.conversation_id`, `PATCH`/`DELETE /conversations/{id}`; deleting a chat keeps its study sets (S36).
 - 2026-11-15 (Soumith): the agent web-search tool (split doc Session B task 3) is **dropped**: answers stay grounded in the student's own course sources only.
+
+- 2026-11-23 (user): begin post-hackathon **planning only**, with delegated code audits on `post-hackathon-plan/changes`; produce design and implementation/test plans before any application code. Provider/hosting/feature sequencing remains proposed pending review.
+
+- 2026-11-23 (user planning amendment): include General and course-specific chats, optional coursework projects, aligned context/memory/tools and student-first responsive modern maroon UX; add research-backed design skill candidates and usability tests. Documentation only; no feature code authorized.
+
+- 2026-11-24 (user): implement one fix at a time through spec/tests/design/implementation/verification and feature commits on `codex/post-hackathon-implementation`; keep Gemini now, prepare handoff before 07:00 ET, and **never merge main until user explicitly says done**. S37 adds an explicit production Settings gate and disabled browser mode, with no existing contract changes.
+
+- 2026-11-24 (S40 review branch): durable clear-data generation/checkpoint, shared/exclusive user barriers with request-bound DB leases, idempotent file/job cleanup and worker recovery; Auth retained. Additive migration0003 requires team review before merge; object-upload orphan reconciliation remains a public-launch gate.
+
+- 2026-11-24 (S41 review branch): current retrieval/direct reads exclude removed parents before ranking; historical citations remain owner-scoped and resolvable with status; read tools retain existing changed/current metadata. Narrow RS01 fix precedes independent listing/restoration fixes; no public contracts changed.
+
+- 2026-11-24 (S42 review branch): truncated Canvas Files listings and all module-only fallback are non-authoritative for material absence; invalid paginated payloads fail closed. Reuse existing course/table completeness flags; no public contract change.
+
+- 2026-11-24 (S43 review branch): restore observed removed sources independently of content hashes; retain content counters/index state, write source-back events only for posts/materials and canonical-back events only from merge; no public contract changes.
+
+- 2026-11-25 (user): continue SDE workflow overnight; discretionary green merges allowed, but hold related foundations until integration gates pass; implement remaining requested features while deferring model-cost/provider changes and keeping Gemini.
+- 2026-11-25 (S44 review branch): transactional encrypted processing outbox and expiring dispatch leases; ID-only at-least-once delivery with execution/completion guards, no queueing lock after a real framework retry/replay uniqueness failure. Internal migration0004; no public contract changes.
+
+- 2026-11-25 (S45 review branch): bounded per-revision processing attempts/backoff, content-free failure categories, file-level access errors, owner-scoped repair and legacy refresh budgets; no nested worker-provider retry loop. Internal0005 only. Successful publication/active-worker takeover/disconnect remain RS06 gates.
+
+- 2026-11-27 (S46 review branch): serialize source imports across scopes; bind private credential revisions and recheck under short publication/status transactions. Legacy queued jobs fail closed; drain old workers before0006 rollout. Processing publication remains separate; retain branch for friend review, main unchanged.
+
+- 2026-11-27 (S47 review branch): local web config replaces destination links atomically using a0600 same-directory temp file; reject directory targets and preserve root backend settings. Never replace an encryption key protecting existing ciphertext; local repair was permitted only after verifying none existed.
+
+- 2026-11-27 (S48 review branch): private source/persisted intent revisions fence processing publication and failure; parent→intent transactions complete chunks/pointer/ledger together, uploads use immutable attempt UUIDs, legacy payload execution is retired. Known course-only rebinds preserve stop/budget policy; unproven material payloads require fresh observation. Additive0007; external-download authorization remains S49.

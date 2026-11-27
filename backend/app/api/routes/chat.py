@@ -16,12 +16,12 @@ from fastapi.responses import StreamingResponse
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, chat_rate_limit, current_user
+from app.api.deps import UserCtx, chat_rate_limit, data_user
 from app.api.sse import sse_event
 from app.core.errors import not_found
 
 router = APIRouter(tags=["chat"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
 
 DEMO_CONVERSATION_ID = mock.mid("conversation/demo")
 _TEXT = [

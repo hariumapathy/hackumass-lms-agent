@@ -33,7 +33,13 @@ const errorText = (e: unknown) => (e instanceof ApiError ? e.message : "Somethin
 export function SettingsScreen() {
   const me = useQuery({ queryKey: ["me"], queryFn: () => api().me() });
   if (me.isPending) return <Loading label="Loading settings…" rows={4} />;
-  if (me.isError) return <ErrorState error={me.error} onRetry={() => void me.refetch()} />;
+  if (me.isError) return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+      <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
+      <ErrorState error={me.error} onRetry={() => void me.refetch()} />
+      <PrivacySection />
+    </div>
+  );
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>

@@ -94,3 +94,8 @@ LLM-based deadline extraction from syllabi/emails/announcements (stretch: would 
 - **No change rows when an item was created or gained sources in this run** (a newly connected platform renaming the item is a merge, not news). A source being **removed** does produce changes if the canonical values move to the remaining source (e.g. Canvas assignment deleted, Gradescope copy remains).
 - Runs in one transaction behind `pg_advisory_xact_lock('merge:<user>')`; a second run writes nothing (`MergeStats` all zero, S16-T09).
 - Known gap (pipeline, not merge): after two courses merge, a later *changed* Gradescope course record updates the canonical course's `name` (pipeline `course()` writes `courses.name` for any platform), overwriting the Canvas name. Fix in the pipeline: only rename the course from Canvas, or when it has no Canvas link.
+
+
+## Post-hackathon amendment — S43 (review branch)
+
+Canonical reconcile writes one removed→active status event when a removed item has a live source again, separately from genuine title/deadline/points diffs. Repeat merges are idempotent; a returning source does not announce “is back” if another source kept the canonical item alive. See [S43](S43-source-presence-restoration.md).

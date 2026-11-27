@@ -4,6 +4,8 @@ full sync (trigger `connect`). The plaintext state is never logged or stored une
 """
 
 import json
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Any
 from uuid import UUID
 
@@ -46,3 +48,21 @@ async def save_login(user_id: UUID, platform: str, state: dict[str, Any]) -> Non
     await queue_app.open_async()  # idempotent; the API process may not have opened it yet
     async with connection() as conn:
         await save_storage_state(conn, user_id, platform, state)
+
+
+async def login_generation(user_id: UUID) -> int:
+    from app.db.deletion import generation
+    from app.db.pool import connection
+
+    async with connection() as conn:
+        return await generation(conn, user_id)
+
+
+@asynccontextmanager
+async def login_completion_guard(user_id: UUID, expected: int) -> AsyncIterator[None]:
+    from app.db.deletion import pending_error, user_session
+
+    async with user_session(user_id) as current:
+        if current != expected:
+            raise pending_error()
+        yield

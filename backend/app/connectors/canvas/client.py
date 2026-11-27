@@ -39,12 +39,14 @@ class CanvasClient:
         http: httpx.AsyncClient,
         *,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+        checkpoint: Callable[[], Awaitable[None]] | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self._host = urlsplit(self.base_url).netloc
         self._token = token
         self._http = http
         self._sleep = sleep
+        self._checkpoint = checkpoint
         self._throttle = False
         self._sem = asyncio.Semaphore(MAX_CONCURRENCY)
 
@@ -62,6 +64,8 @@ class CanvasClient:
         async with self._sem:
             if self._throttle:
                 await self._sleep(THROTTLE_SLEEP_S)
+            if self._checkpoint is not None:
+                await self._checkpoint()
             try:
                 resp = await self._http.request(
                     "GET",
@@ -107,8 +111,13 @@ class CanvasClient:
         url: str | None = path
         while url:
             resp = await self.request("GET", url, params)
-            data = resp.json()
-            for element in data if isinstance(data, list) else []:
+            try:
+                data = resp.json()
+            except ValueError:
+                raise PlatformError("Canvas returned an invalid list response") from None
+            if not isinstance(data, list):
+                raise PlatformError("Canvas returned an invalid list response")
+            for element in data:
                 yield element
             nxt = resp.links.get("next", {}).get("url")
             url, params = nxt, None  # the next link already carries the query

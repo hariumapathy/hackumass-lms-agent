@@ -1,5 +1,7 @@
 # Feature specs
 
+> **Post-hackathon planning (2026-11-23):** proposed deployment/auth, onboarding, Google integrations and RAG/sync hardening work is indexed in [the new implementation plan](../post-hackathon/implementation-plan.md). It includes the [General/course/project chat and student UX amendment](../post-hackathon/course-chats-and-ux.md) (P15/P16). It is Draft, not Ready. The original stage tables below are historical and not a launch-readiness certification.
+
 Every feature is specified here **before** it is built. Workflow: [08-development-workflow.md](../08-development-workflow.md). New spec: copy [_TEMPLATE.md](_TEMPLATE.md).
 
 **Status:** `Draft` (being written) → `Ready` (reviewed by a teammate; agents may implement) → `In progress` → `Done` (merged to `main`).
@@ -50,6 +52,23 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 
 ## Stage 4: Stretch (only after H24, in order)
 [S17 Piazza connector](S17-piazza-connector.md) (A, built: fixture + DB tests green, Connect Piazza in the UI; **live login check pending**) · MCP server (B) · in-Canvas side panel / extension (C) · Campuswire · email · grades. Write a spec before starting any of them.
+
+## Post-hackathon implementation (2026-11-24)
+
+| ID | Feature | Status |
+|---|---|---|
+| S37 | [Production startup guards](S37-production-startup-guards.md) | Implemented on review branch; unmerged |
+| S38 | [JWT issuer binding](S38-jwt-issuer-binding.md) | Implemented on review branch; unmerged |
+| S39 | [Browser account isolation](S39-browser-account-isolation.md) | Implemented on review branch; unmerged |
+| S40 | [Complete data deletion](S40-complete-data-deletion.md) | Implemented on review branch; unmerged; Storage fault reconciliation remains a launch gate |
+| S41 | [Current retrieval eligibility](S41-current-retrieval-eligibility.md) | Implemented on review branch; unmerged |
+| S42 | [Canvas listing completeness](S42-canvas-listing-completeness.md) | Implemented on review branch; unmerged |
+| S43 | [Source presence restoration](S43-source-presence-restoration.md) | Implemented on review branch; unmerged |
+| S44 | [Durable processing intents](S44-durable-processing-intents.md) | Implemented on review branch; unmerged |
+| S45 | [Processing retries and repair](S45-processing-retries-and-recovery.md) | Implemented on review branch; unmerged; success-publication fencing is next |
+| S46 | [Source execution and connection fences](S46-source-execution-and-connection-fences.md) | Implemented on review branch; unmerged; successful processing publication remains separate |
+| S47 | [Local web configuration safety](S47-local-web-env-safety.md) | Implemented on review branch; unmerged;7 failing-first shell regressions and real relaunch check |
+| S48 | [Processing publication fences](S48-processing-publication-fences.md) | Implemented on review branch; unmerged; external-download grant fencing remains S49 |
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)

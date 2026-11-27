@@ -19,6 +19,7 @@ from app.sync.processing import (
     process_material,
     process_post,
 )
+from app.sync.processing.failures import ProcessingFailure
 from tests.integration.db import conn_fixture, create_auth_user, delete_auth_user
 
 pytestmark = pytest.mark.integration
@@ -156,7 +157,8 @@ async def test_s12_t09_new_version_flips_old_chunks_atomically(conn, user) -> No
     assert v1[0]["text"] == "[COMPSCI 311 · Lecture 7 slides · p.1]\nMemoization basics"
     m = await material_row(conn, mid)
     assert (m["version"], m["page_count"], m["processing_status"]) == (1, 2, "done")
-    assert m["storage_path"] == f"users/{user}/canvas/12345/f7/v1.pdf"
+    assert m["storage_path"].startswith(f"users/{user}/canvas/12345/f7/v1-")
+    assert m["storage_path"].endswith(".pdf")
     assert set(storage.files) == {m["storage_path"]}
 
     # Same content again: nothing new (no version bump, no new chunks).
@@ -174,11 +176,14 @@ async def test_s12_t09_new_version_flips_old_chunks_atomically(conn, user) -> No
     assert all(not r["is_current"] for r in rows if r["material_version"] == 1)
     m = await material_row(conn, mid)
     assert (m["version"], m["page_count"]) == (2, 3)
-    assert m["storage_path"].endswith("/v2.pdf") and len(storage.files) == 2
+    assert "/v2-" in m["storage_path"] and m["storage_path"].endswith(".pdf")
+    assert len(storage.files) == 2
 
     # Embedding failure mid-update: v2 stays current, status failed, no partial v3.
     bad = make_pdf(["Totally new"])
-    assert await run(conn, user, mid, bad, storage, emb=FailingEmbeddings()) == "failed"
+    with pytest.raises(ProcessingFailure) as error:
+        await run(conn, user, mid, bad, storage, emb=FailingEmbeddings())
+    assert error.value.kind == "retry"
     rows = await chunks(conn, mid)
     assert [r["material_version"] for r in rows if r["is_current"]] == [2, 2, 2]
     assert not any(r["material_version"] == 3 for r in rows)
@@ -195,7 +200,9 @@ async def test_s12_scanned_pdf_skipped_and_corrupt_failed(conn, user) -> None:  
     assert m["processing_status"] == "skipped"
     assert m["processing_error"] == "no text; OCR out of scope"
     mid2 = await add_material(conn, user, cid, pid="f8")
-    assert await run(conn, user, mid2, b"not a pdf") == "failed"
+    with pytest.raises(ProcessingFailure) as error:
+        await run(conn, user, mid2, b"not a pdf")
+    assert error.value.kind == "permanent"
     assert (await material_row(conn, mid2))["processing_status"] == "failed"
     assert await chunks(conn, mid) == [] and await chunks(conn, mid2) == []
 

@@ -88,6 +88,7 @@ def _chunk(row: ChunkRow, ctx: RunCtx) -> dict:
         "course": row.course_code,
         "title": row.title,
         "kind": row.kind,
+        "status": row.status,
         "text": f"[{header}]\n{body}",
     }
     if row.page is not None:
@@ -210,7 +211,8 @@ async def get_course_overview(ctx: RunCtx, args: GetCourseOverviewArgs) -> ToolR
         "name": course.name,
         "platforms": platforms,
         "syllabus_chunks": [
-            {"chunk_id": r.chunk_id, "text": _chunk(r, ctx)["text"]} for r in syllabus
+            {"chunk_id": r.chunk_id, "text": _chunk(r, ctx)["text"], "status": r.status}
+            for r in syllabus
         ],
         "upcoming": [_item(r, ctx) for r in items[:5]],
         "counts": {"upcoming_items": len(items)},

@@ -24,6 +24,7 @@ def get_verifier() -> TokenVerifier:
     return TokenVerifier(
         jwks_url=settings.supabase_jwks_url,
         hs256_secret=secret.get_secret_value() if secret else None,
+        issuer=settings.expected_jwt_issuer,
     )
 
 
@@ -56,3 +57,15 @@ async def chat_rate_limit(
             status=429,
             retryable=True,
         )
+
+
+async def data_user(
+    user: Annotated[UserCtx, Depends(current_user)],
+) -> AsyncIterator[UserCtx]:
+    if get_settings().data_source != "db":
+        yield user
+        return
+    from app.db.deletion import user_session
+
+    async with user_session(user.user_id):
+        yield user

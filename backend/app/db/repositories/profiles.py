@@ -31,6 +31,8 @@ USER_TABLES = (
     "profiles",
 )
 
+INTERNAL_USER_TABLES = ("processing_intents",)
+
 _PROFILE_COLS = "user_id, display_name, timezone, model_choice, created_at"
 
 
@@ -71,7 +73,7 @@ async def delete_user_data(conn: AsyncConnection, user_id: UUID) -> None:
     """Delete every row the student owns (S20 rule 9). Storage objects and queued jobs are
     removed by the caller (S12 storage helper / S10 job queue)."""
     async with conn.transaction():
-        for table in USER_TABLES:
+        for table in (*INTERNAL_USER_TABLES, *USER_TABLES):
             await conn.execute(
                 SQL("delete from {} where user_id = %s").format(Identifier(table)), (user_id,)
             )

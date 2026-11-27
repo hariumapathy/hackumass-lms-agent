@@ -10,7 +10,9 @@ Team-wide status. Each person's detailed status lives in their own file (only th
 
 Roles are defaults; anyone may claim a `Ready` spec in the current stage ([AGENTS.md](../../AGENTS.md#team-branches-ownership)).
 
-## Current stage: **0 → 1.** S00 + S02 done; **S01 schema + S03 seed (Neal) are the critical path.** Stage 1 in progress: S20 (auth) merged, S21 plumbing done; S30/S32/S33 frontend on `dev/soumith` (mock mode).
+## Current phase: post-hackathon planning (2026-11-23)
+
+The local prototype is on `main` at `be13793`; the user reports judging is finished. Deployment/Google integrations and correctness hardening are being designed on `post-hackathon-plan/changes`, with **no application code changes**. See the [current planning packet](../post-hackathon/README.md). The hackathon checkpoint/merge tables below are historical, incomplete summaries; do not use them to infer current implementation or production readiness.
 
 ## Contracts
 | Contract | Location | Status |

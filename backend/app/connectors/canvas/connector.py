@@ -56,7 +56,9 @@ class CanvasConnector:
     async def validate(self, ctx: ConnectorContext) -> AccountInfo:
         """GET /users/self. 401 -> AuthExpired (the connect flow reports `invalid_token`)."""
         async with self._http() as http:
-            client = CanvasClient(self.base_url, ctx.secret, http, sleep=self._sleep)
+            client = CanvasClient(
+                self.base_url, ctx.secret, http, sleep=self._sleep, checkpoint=ctx.checkpoint
+            )
             me = await client.get("/api/v1/users/self")
         uid = me.get("id")
         return AccountInfo(
@@ -68,7 +70,10 @@ class CanvasConnector:
         self, ctx: ConnectorContext, scope: SyncScope
     ) -> AsyncIterator[NormalizedRecord]:
         async with self._http() as http:
-            run = _Run(self, CanvasClient(self.base_url, ctx.secret, http, sleep=self._sleep), ctx)
+            client = CanvasClient(
+                self.base_url, ctx.secret, http, sleep=self._sleep, checkpoint=ctx.checkpoint
+            )
+            run = _Run(self, client, ctx)
             if scope.kind == "full":
                 gen = run.full()
             elif scope.kind == "course":
@@ -234,6 +239,7 @@ class _Run:
                 if rec is None:
                     continue
                 if count >= cap:
+                    self.ctx.incomplete.add((cid, "materials"))
                     log.info("canvas: course %s has more than %d files; capped", cid, cap)
                     return
                 count += 1
@@ -245,6 +251,9 @@ class _Run:
             yield rec
 
     async def module_files(self, cid: str, cap: int) -> AsyncIterator[NormalizedRecord]:
+        # Modules expose a subset of course files, even when every listed item is readable.
+        # Never infer that earlier files disappeared from this non-authoritative fallback.
+        self.ctx.incomplete.add((cid, "materials"))
         seen: set[str] = set()
         params = {"include[]": ["items"], "per_page": 100}
         file_ids: list[str] = []

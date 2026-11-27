@@ -6,7 +6,7 @@ Read-only; never logs in with a password, never posts, edits or marks anything.
 
 import json
 import logging
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
@@ -66,23 +66,29 @@ class PiazzaConnector:
         return self.client_factory(state, self.min_interval_s)
 
     @staticmethod
-    async def _call(coro: Any) -> Any:
+    async def _call(ctx: ConnectorContext, operation: Callable[[], Awaitable[Any]]) -> Any:
+        await ctx.checkpoint()
         try:
-            return await coro
+            return await operation()
         except PiazzaAuthenticationError as exc:
             raise AuthExpired("Piazza session expired") from exc
         except PiazzaClientError as exc:
             raise PlatformError(f"Piazza: {type(exc).__name__}") from exc
 
     async def validate(self, ctx: ConnectorContext) -> AccountInfo:
-        await self._call(self._client(ctx).list_courses())
+        await self._call(ctx, self._client(ctx).list_courses)
         return AccountInfo()  # no name/email stored
 
     async def _post(
-        self, client: PiazzaClientProtocol, nid: str, number: int, now: datetime
+        self,
+        ctx: ConnectorContext,
+        client: PiazzaClientProtocol,
+        nid: str,
+        number: int,
+        now: datetime,
     ) -> NPost | None:
         try:
-            raw = await self._call(client.get_post(nid, number))
+            raw = await self._call(ctx, lambda: client.get_post(nid, number))
         except PlatformError as exc:
             if isinstance(exc.__cause__, PiazzaResponseError):
                 return None  # one unusable post: skip it, keep the class
@@ -96,7 +102,7 @@ class PiazzaConnector:
     async def _posts(
         self, ctx: ConnectorContext, client: PiazzaClientProtocol, nid: str
     ) -> AsyncIterator[NPost]:
-        feed = await self._call(client.list_posts(nid, self.max_posts, 0))
+        feed = await self._call(ctx, lambda: client.list_posts(nid, self.max_posts, 0))
         # Windowed listing: capped feed, unchanged posts not re-fetched (so not yielded) →
         # full-scope removal must skip this class's posts (S10 rule 5).
         complete = len(feed) < self.max_posts
@@ -112,7 +118,7 @@ class PiazzaConnector:
             if since is not None and updated is not None and updated <= since:
                 complete = False  # unchanged since the last good sync: no get_post (S17-T04)
                 continue
-            post = await self._post(client, nid, number, now)
+            post = await self._post(ctx, client, nid, number, now)
             if post is None:
                 complete = False
                 continue
@@ -131,7 +137,7 @@ class PiazzaConnector:
             nid, _, nr = scope.platform_id.rpartition(":")
             if nr.isdigit():
                 post = await self._post(
-                    client, nid or scope.course_platform_id, int(nr), ctx.clock.now()
+                    ctx, client, nid or scope.course_platform_id, int(nr), ctx.clock.now()
                 )
                 if post is not None:
                     yield post
@@ -141,7 +147,7 @@ class PiazzaConnector:
             async for post in self._posts(ctx, client, scope.course_platform_id):
                 yield post
             return
-        classes = await self._call(client.list_courses())
+        classes = await self._call(ctx, client.list_courses)
         now = ctx.clock.now()
         for raw in classes:
             if not raw.get("nid") or not is_current_term(raw.get("term"), now):

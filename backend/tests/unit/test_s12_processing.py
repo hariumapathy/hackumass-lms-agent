@@ -16,7 +16,7 @@ import pytest
 import respx
 from pptx import Presentation
 
-from app.connectors.base import AuthExpired, DownloadRef, PlatformError, TranscriptCue
+from app.connectors.base import DownloadRef, PlatformError, SourceAccessError, TranscriptCue
 from app.core.embeddings import FakeEmbeddings, GeminiEmbeddings
 from app.sync.processing import (
     MAX_BYTES,
@@ -312,7 +312,7 @@ async def test_s12_downloader_sends_bearer_and_maps_auth_errors() -> None:
     dl = http_downloader("tok123")
     assert await dl(DownloadRef(url="https://canvas.example/files/1/download")) == b"PDFDATA"
     assert route.calls[0].request.headers["Authorization"] == "Bearer tok123"
-    with pytest.raises(AuthExpired):
+    with pytest.raises(SourceAccessError):
         await dl(DownloadRef(url="https://canvas.example/files/2/download"))
     with pytest.raises(PlatformError):
         await dl(DownloadRef(url="https://canvas.example/files/3/download"))

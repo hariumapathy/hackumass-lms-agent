@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { SettingsScreen } from "@/components/settings/settings-screen";
@@ -117,4 +117,16 @@ describe("S34 Settings", () => {
     await waitFor(() => expect(auth.signOut).toHaveBeenCalled());
     expect(routerMock.replace).toHaveBeenCalledWith("/");
   });
+});
+
+
+it("S40-T02 clearing data stays available when account loading is blocked", async () => {
+  setup();
+  server.use(http.get(`${MOCK_API_URL}/me`, () => HttpResponse.json({error: {code: "internal", message: "Your saved data is being cleared. Open Settings and try clearing it again.", retryable: true}}, {status: 503})));
+  renderWithProviders(<SettingsScreen />);
+  await userEvent.click(await screen.findByRole("button", {name: /delete my data/i}));
+  const dialog = await screen.findByRole("dialog");
+  await userEvent.type(within(dialog).getByRole("textbox"), "DELETE");
+  await userEvent.click(within(dialog).getByRole("button", {name: /delete everything/i}));
+  await waitFor(() => expect(routerMock.replace).toHaveBeenCalledWith("/"));
 });

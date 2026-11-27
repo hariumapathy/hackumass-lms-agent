@@ -57,8 +57,7 @@ export interface paths {
         post?: never;
         /**
          * Delete My Data
-         * @description Deletes every row the student owns (S20 rule 9). Storage objects (S12) and queued jobs
-         *     (S10) are not removed yet. The sign-in account itself stays.
+         * @description Clear owned rows/files/jobs; Auth account remains. Retry safely after a partial failure.
          */
         delete: operations["delete_my_data_me_data_delete"];
         options?: never;

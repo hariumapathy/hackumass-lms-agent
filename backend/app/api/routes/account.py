@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Response
 
 from app.api import mock_data as mock
 from app.api import schemas as s
-from app.api.deps import UserCtx, current_user
+from app.api.deps import UserCtx, current_user, data_user
 from app.core.errors import AppError
 from app.core.settings import get_settings
 from app.db.pool import connection
@@ -16,7 +16,8 @@ from app.db.repositories import profiles
 from app.db.repositories import sync as sync_repo
 
 router = APIRouter(tags=["account"])
-User = Annotated[UserCtx, Depends(current_user)]
+User = Annotated[UserCtx, Depends(data_user)]
+DeletionUser = Annotated[UserCtx, Depends(current_user)]
 
 
 def _db_mode() -> bool:
@@ -81,12 +82,13 @@ async def patch_me(body: s.MePatch, user: User) -> s.Me:
 
 
 @router.delete("/me/data", status_code=204)
-async def delete_my_data(user: User) -> Response:
-    """Deletes every row the student owns (S20 rule 9). Storage objects (S12) and queued jobs
-    (S10) are not removed yet. The sign-in account itself stays."""
+async def delete_my_data(user: DeletionUser) -> Response:
+    """Clear owned rows/files/jobs; Auth account remains. Retry safely after a partial failure."""
     if _db_mode():
+        from app.db.deletion import clear_user_data
+
         async with connection() as conn:
-            await profiles.delete_user_data(conn, user.user_id)
+            await clear_user_data(conn, user.user_id)
     return Response(status_code=204)
 
 

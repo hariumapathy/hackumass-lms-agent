@@ -10,7 +10,7 @@ from decimal import Decimal
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 DEFAULT_TIMEZONE = "America/New_York"
 EMBEDDING_DIM = 1536
@@ -56,6 +56,7 @@ class ConnectionSecret(BaseModel):
     """Never returned by the API or passed to agent code (S10 rule 8)."""
 
     connection_id: UUID
+    revision: UUID
     ciphertext: bytes
     kind: SecretKind
     created_at: datetime | None = None
@@ -117,6 +118,7 @@ class ItemSource(SourceColumns):
 
 
 class Material(SourceColumns):
+    source_revision: UUID | None = Field(default=None, exclude=True, repr=False)
     id: UUID
     user_id: UUID
     course_id: UUID
@@ -134,6 +136,7 @@ class Material(SourceColumns):
 
 
 class Post(SourceColumns):
+    source_revision: UUID | None = Field(default=None, exclude=True, repr=False)
     id: UUID
     user_id: UUID
     course_id: UUID

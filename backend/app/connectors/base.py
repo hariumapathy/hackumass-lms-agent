@@ -2,7 +2,7 @@
 these normalized records; the sync pipeline diffs and stores them. Connectors never touch the DB.
 """
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import datetime
 from typing import Any, Literal, Protocol
 from uuid import UUID
@@ -14,6 +14,14 @@ from app.db.models import ItemType, MaterialKind, Platform, PostKind
 
 class AuthExpired(Exception):  # noqa: N818 (name fixed by the S10 spec)
     """Session/token no longer valid -> connection `needs_reconnect`, no retry."""
+
+
+class SourceAccessError(Exception):
+    """One file is unavailable; this alone does not prove the entire platform grant expired."""
+
+
+class SourceSuperseded(Exception):
+    """Connection changed; stop old work without changing replacement account state."""
 
 
 class PlatformError(Exception):
@@ -50,6 +58,13 @@ class ConnectorContext(BaseModel):
     # completely (windowed listings, hidden tabs). Full-scope removal skips them (S10 rule 5).
     # table is one of "item_sources", "materials", "posts".
     incomplete: set[tuple[str, str]] = Field(default_factory=set)
+    check_current: Callable[[], Awaitable[None]] | None = Field(
+        default=None, exclude=True, repr=False
+    )
+
+    async def checkpoint(self) -> None:
+        if self.check_current is not None:
+            await self.check_current()
 
 
 class AccountInfo(BaseModel):

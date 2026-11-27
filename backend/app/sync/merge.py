@@ -355,11 +355,27 @@ class _Merger:
             (keep.id, self.user_id, other.id),
         )
         for table in _COURSE_CHILDREN:
-            await self.exec(
+            previous = []
+            if table in {"materials", "posts"}:
+                previous = await self.rows(
+                    f"select id,source_revision from {table} "
+                    "where user_id=%s and course_id=%s for update",
+                    (self.user_id, other.id),
+                )
+            await self.rows(
                 f"update {table} set course_id = %s "  # noqa: S608
-                "where user_id = %s and course_id = %s",
+                "where user_id = %s and course_id = %s returning id",
                 (keep.id, self.user_id, other.id),
             )
+            if table in {"materials", "posts"}:
+                from app.db.repositories.processing import rebind_course_parents
+
+                await rebind_course_parents(
+                    self.conn,
+                    self.user_id,
+                    table,
+                    [(r["id"], r["source_revision"]) for r in previous],
+                )
         await self.exec(
             "update courses k set code = coalesce(k.code, o.code), "
             "term = coalesce(k.term, o.term), color = coalesce(k.color, o.color) "
@@ -566,6 +582,8 @@ class _Merger:
         diffs = [f for f in CHANGE_FIELDS if not _same(row[f], new[f])]
         type_ = c.type or row["type"]
         desc = c.description if c.description is not None else row["description"]
+        if row["status"] == "removed":
+            await self.change(item_id, row["course_id"], "status", "removed", "active")
         status = "active" if row["status"] == "removed" else row["status"]
         if diffs and not quiet:
             for f in diffs:
