@@ -142,3 +142,12 @@ Stop everything: Ctrl+C in each terminal, then `make db-stop`.
 Calendar (S25) works locally: ask the chat to schedule a study session, click **Add**, then Settings → Calendar → **Download calendar** (import into Google Calendar via Settings → Import & export). Google "subscribe" links only appear when `PUBLIC_API_URL` is public HTTPS; see [calendar-runbook.md](calendar-runbook.md). The seeded/MSW backup remains available.
 
 Live rehearsal issues, fixed and outstanding: [live-test-bugs.md](live-test-bugs.md).
+
+
+## Local configuration safety (S47)
+
+The web launcher replaces `apps/web/.env.local` atomically and keeps it separate from the root
+backend `.env`. Do not symlink these files together. A directory at the web config path is an
+error. Never regenerate an encryption key if saved credentials or pending encrypted processing
+payloads rely on the original key. Pause local workers before fixture tests sharing this database;
+restart them only after checks complete. No database reset is needed for these launcher changes.

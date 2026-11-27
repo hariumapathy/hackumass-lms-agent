@@ -4,7 +4,7 @@ Branch: **codex/post-hackathon-implementation**, based on planning tip `88baeda`
 
 ## Verified fixes
 
-**Latest checkpoint (2026-11-27):** S46 completed after WIP `9247333`.30 new regressions; full706 backend/1 optional Storage skip, frontend102/6 browser, Ruff/format/pyright/web lint/types and production build green. Current-feature independent review found no blocking defect. Per-student/platform source imports now serialize; queued work binds private grant revision; disconnect/replacement fences source writes/removals/status. Legacy jobs fail closed. See [source rollout/limits](../deployment/source-import-fences.md). API/web restarted and HTTP-smoked; worker paused after the launcher overwrote backend settings through a web-env symlink; separate launcher fix next. Additive0006 applied locally, no imports reset. Keep main unchanged for the requested friend review. Successful processing publication remains separate.
+**Latest checkpoint (2026-11-27):** S46 pushed3019d40,30 new source-fence regressions. S47 fixes the local web launcher following a pre-existing symlink into root `.env`;7 additional shell regressions, root-config preservation checked on actual relaunch. Latest full713 backend/1 optional Storage skip; frontend102/6 browser; static checks, shell syntax and production build green. Independent review completed for both features. Local config repaired only after verifying zero saved encrypted credentials/payloads; imports retained. API/web HTTP-smoked; restart/verify worker after the final isolated fixture run. Keep main unchanged for friend review. Successful processing publication remains separate (next S48). See [S46 rollout](../deployment/source-import-fences.md) and [S47](../specs/S47-local-web-env-safety.md).
 
 | Spec | Commit | Behavior |
 |---|---|---|
@@ -20,8 +20,8 @@ S37–S43 confirmed pushed. S44 durable encrypted processing intent delivery ver
 
 ## Exact next steps
 
-1. Push the S46 completion and update draft PR34. Preserve branch for friend review; main remains untouched.
-2. Next individual feature: successful processing/chunk/Storage publication fencing (remaining RS06), with its own spec/cases/design/plan/red tests. Then embedding provenance and remaining setup/integration/UI gates. Keep Gemini; defer model-cost/provider work.
+1. Push the S47 completion and update draft PR34. Preserve branch for friend review; main remains untouched.
+2. Next individual feature (S48): successful processing/chunk/Storage publication fencing (remaining RS06), with its own spec/cases/design/plan/red tests. Then embedding provenance and remaining setup/integration/UI gates. Keep Gemini; defer model-cost/provider work.
 3. Maintain precise evidence/checkpoints, feature commits and running local demo. The historical Nov25 morning deadline is past; this is the Nov27 continuation, not a claim of unattended work during the gap.
 
 ## Operations and limits
@@ -34,3 +34,5 @@ S37–S43 confirmed pushed. S44 durable encrypted processing intent delivery ver
 - `.env`/web `.env.local` ignored and private. Never print Supabase status/env/Settings (can contain keys); capture needed config in memory. Tests use synthetic accounts, fake/scrubbed platform data, fake embeddings/scripted models. Never clear a real student's data as a test.
 - Git SSH push had transient errors; HTTPS push using `gh auth git-credential` works. Do not force push. Confirm remote SHA and repair tracking by explicit fetch if local ahead count is stale.
 - Research and installed reviewed security skill documented in [tooling research](../research/post-hackathon-dev-tooling.md). No extra MCP/telemetry services or provider accounts installed. Google/institutional/provider approvals remain external gates, not blockers for independent fixes.
+
+- S47 gotcha: pause the real worker before tests sharing this local DB; an overlapping run invalidated2 queue-state assertions. Final713-pass acceptance run used a paused worker. Web `.env.local` is now a separate0600 file; never symlink it to backend `.env`.

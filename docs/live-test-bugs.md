@@ -80,3 +80,12 @@ publication.30 new tests include real queue cancellation, duplicate delivery, en
 draining, same-secret reconnect, direct secret replacement and canceled lock cleanup. Full706
 backend tests pass/1 optional Storage skip. These are fixture reproductions, not newly observed live
 platform failures. Successful processing/Storage publication remains a separate gate.
+
+## Local launcher configuration overwrite — review branch, 2026-11-27
+
+Starting the production web demo followed a pre-existing web `.env.local` symlink into the root
+`.env`, replacing backend settings with public web variables. Worker startup then refused missing
+configuration. S47 replaces the destination link atomically and rejects directory destinations.
+Seven failing-first synthetic shell cases now pass; a real web relaunch preserves root settings.
+Local repair verified no encrypted credentials/payloads needed the old key; imports were retained.
+This is a local configuration/launcher defect, not a new Canvas authentication failure.
