@@ -263,6 +263,8 @@ async def test_s44_t02_fast_worker_reset_is_not_overwritten_by_late_ack(conn, us
     ).fetchone()
     assert row["dispatched_at"] is None and row["dispatch_token"] is None
     await conn.execute("update materials set status='active' where user_id=%s", (user,))
+    # S48: a raw status write cannot bless old payload origin; a trusted observation can.
+    await sync(conn, user, [course(), material(text=TEXT)])
     queued = []
 
     async def later(args):

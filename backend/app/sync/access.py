@@ -94,7 +94,13 @@ async def require_current(
 async def source_lock(
     conn: AsyncConnection[Any], user_id: UUID, platform: str
 ) -> AsyncIterator[None]:
-    key = f"source-execution:{user_id}:{platform}"
+    async with session_lock(conn, f"source-execution:{user_id}:{platform}"):
+        yield
+
+
+@asynccontextmanager
+async def session_lock(conn: AsyncConnection[Any], key: str) -> AsyncIterator[None]:
+    """Hold one worker session lock; close on ambiguous acquisition/canceled release."""
     try:
         await conn.execute("select pg_advisory_lock(hashtextextended(%s,0))", (key,))
     except BaseException:

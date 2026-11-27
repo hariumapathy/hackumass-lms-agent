@@ -110,7 +110,8 @@ async def recover_legacy_materials(
             "select m.user_id,m.id from materials m left join "
             "processing_intents i on i.material_id=m.id "
             "and i.user_id=m.user_id where m.platform='canvas' and m.kind in ('file','syllabus') "
-            "and m.status<>'removed' and m.processing_status in ('pending','failed','processing') "
+            "and m.status<>'removed' and (m.processing_status in ('pending','failed','processing') "
+            "or i.blocked_reason='source_refresh') "
             "and (%s::uuid is null or m.user_id=%s) and (i.id is null or "
             "(i.blocked_reason='source_refresh' "
             "and i.attempts<4 and i.next_attempt_at<=now())) order by m.created_at limit 20",

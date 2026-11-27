@@ -47,7 +47,7 @@ Requirements this adds:
 ## Storage (all in Supabase)
 ```
 Postgres     courses, items, materials, posts, changes, chunks (+ embeddings via pgvector)
-Storage      users/{user_id}/canvas/{course_id}/files/{file_id}/v{n}.pdf
+Storage      users/{user_id}/canvas/{course_platform_id}/{file_id}/v{n}-{attempt_uuid}.pdf
              users/{user_id}/echo360/{course_id}/{recording_id}/transcript.vtt
 Secrets      Canvas tokens, session cookies (encrypted, separate, worker-only, never sent to the AI)
 ```

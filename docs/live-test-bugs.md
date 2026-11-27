@@ -89,3 +89,14 @@ configuration. S47 replaces the destination link atomically and rejects director
 Seven failing-first synthetic shell cases now pass; a real web relaunch preserves root settings.
 Local repair verified no encrypted credentials/payloads needed the old key; imports were retained.
 This is a local configuration/launcher defect, not a new Canvas authentication failure.
+
+## Processing publication races — review branch, 2026-11-27
+
+Synthetic tests reproduced stale material/post publication after source changes/removal/ABA,
+late timed-out uploads overwriting a newer logical file version, old queued payloads adopting
+today's parent revision, and stale status/factory failures affecting replacement work. S48 adds
+private source/persisted intent revisions, parent serialization and atomic guarded DB publication.
+Review regressions also caught retry-stop reopening and unrecoverable fourth-attempt migration
+states; budget/stops are now preserved with explicit recovery.35 new cases/full748 backend pass,
+1 optional Storage skip. These are fake-provider/Storage reproductions, not fresh live-platform
+failures. External-download grant fencing and object orphan reconciliation remain open gates.

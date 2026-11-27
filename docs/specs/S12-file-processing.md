@@ -16,7 +16,7 @@ Turn materials (PDFs, slides, documents, syllabi, transcripts) and posts into **
 - Material row + `DownloadRef` / inline `text` / transcript `cues`.
 
 ## Outputs
-- Original file in Supabase Storage at `users/{user_id}/{platform}/{course_platform_id}/{platform_id}/v{version}.{ext}`.
+- Original file in Supabase Storage at `users/{user_id}/{platform}/{course_platform_id}/{platform_id}/v{version}-{attempt_uuid}.{ext}` for new S48 worker uploads. Legacy `v{version}.{ext}` paths remain readable; see [S48 publication/rollout](../deployment/processing-publication.md).
 - `chunks` rows (`is_current=true`) for the new version; previous version's chunks set `is_current=false`.
 - `materials.processing_status` = `done` / `skipped` / `failed` (+ `processing_error`), `page_count` / `duration_s`.
 

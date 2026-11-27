@@ -76,3 +76,5 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-27 (S46 review branch): serialize source imports across scopes; bind private credential revisions and recheck under short publication/status transactions. Legacy queued jobs fail closed; drain old workers before0006 rollout. Processing publication remains separate; retain branch for friend review, main unchanged.
 
 - 2026-11-27 (S47 review branch): local web config replaces destination links atomically using a0600 same-directory temp file; reject directory targets and preserve root backend settings. Never replace an encryption key protecting existing ciphertext; local repair was permitted only after verifying none existed.
+
+- 2026-11-27 (S48 review branch): private source/persisted intent revisions fence processing publication and failure; parent→intent transactions complete chunks/pointer/ledger together, uploads use immutable attempt UUIDs, legacy payload execution is retired. Known course-only rebinds preserve stop/budget policy; unproven material payloads require fresh observation. Additive0007; external-download authorization remains S49.

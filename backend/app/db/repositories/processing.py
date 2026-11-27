@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from psycopg import AsyncConnection
+from psycopg.sql import SQL, Identifier
 
 from app.connectors.base import NMaterial, NPost, PlatformError
 from app.core.crypto import decrypt, encrypt
@@ -21,7 +22,8 @@ left join posts p on p.id=i.post_id and p.user_id=i.user_id
 """
 _ELIGIBLE = (
     "coalesce(m.status,p.status) <> 'removed' "
-    "and coalesce(m.content_hash,p.content_hash)=i.source_hash"
+    "and (coalesce(m.content_hash,p.content_hash)=i.source_hash "
+    "or coalesce(m.source_revision,p.source_revision)<>i.parent_source_revision)"
 )
 
 
@@ -39,8 +41,15 @@ async def capture(
         row = await (
             await conn.execute(
                 f"select "
-                f"id,source_hash,blocked_reason,payload_ciphertext,completed_at "
+                f"id,source_hash,blocked_reason,payload_ciphertext,completed_at,"
+                f"parent_source_revision,last_error_code "
                 f"from processing_intents where user_id=%s and {column}=%s",
+                (user_id, parent_id),
+            )
+        ).fetchone()
+        parent = await (
+            await conn.execute(
+                f"select source_revision from {table} where user_id=%s and id=%s",
                 (user_id, parent_id),
             )
         ).fetchone()
@@ -60,7 +69,22 @@ async def capture(
                 fresh_access = decrypt(bytes(row["payload_ciphertext"])) != record.model_dump_json(
                     include={"download", "text", "cues"}
                 )
-            if not fresh_access and not needs_source:
+            # Refilling a retired payload is not permission to reopen a stopped processor.
+            if row["blocked_reason"] in {"configuration", "permanent"} or (
+                row["blocked_reason"] == "exhausted"
+                and row["last_error_code"] != "source_refresh_exhausted"
+            ):
+                return row["id"]
+            if row["blocked_reason"] == "source_auth" and not fresh_access:
+                return row["id"]
+            if (
+                not fresh_access
+                and not needs_source
+                and (
+                    row["completed_at"]
+                    or (parent and row["parent_source_revision"] == parent["source_revision"])
+                )
+            ):
                 return row["id"]
         if row is None and outcome == "unchanged":
             if isinstance(record, NMaterial):
@@ -90,11 +114,13 @@ async def capture(
         )
         result = await (
             await conn.execute(
-                f"insert into processing_intents(user_id,{column},source_hash,payload_ciphertext) "
-                f"select user_id,id,%s,%s from {table} where user_id=%s and id=%s "
+                f"insert into processing_intents(user_id,{column},source_hash,"
+                f"payload_ciphertext,parent_source_revision) "
+                f"select user_id,id,%s,%s,source_revision from {table} where user_id=%s and id=%s "
                 f"and content_hash=%s "
                 f"on conflict({column}) do update set source_hash=excluded.source_hash, "
                 "payload_ciphertext=excluded.payload_ciphertext,revision=gen_random_uuid(), "
+                "parent_source_revision=excluded.parent_source_revision, "
                 "dispatch_token=null,dispatch_started_at=null, "
                 "dispatched_at=null,completed_at=null, "
                 "attempts=0,next_attempt_at=now(),last_started_at=null,"
@@ -114,11 +140,90 @@ async def get(conn: AsyncConnection[Any], user_id: UUID, intent_id: UUID) -> dic
     return await (
         await conn.execute(
             f"select i.*,coalesce(m.status,p.status)::text as parent_status, "
-            f"coalesce(m.content_hash,p.content_hash) as parent_hash {_JOIN} "
+            f"coalesce(m.content_hash,p.content_hash) as parent_hash, "
+            f"coalesce(m.source_revision,p.source_revision) as current_source_revision {_JOIN} "
             "where i.user_id=%s and i.id=%s",
             (user_id, intent_id),
         )
     ).fetchone()
+
+
+async def repair_source_revision(
+    conn: AsyncConnection[Any], user_id: UUID, intent_id: UUID, revision: UUID
+) -> bool:
+    """Retire unbound material payloads; posts can rebuild from owned current DB text."""
+    async with conn.transaction():
+        initial = await get(conn, user_id, intent_id)
+        if not initial:
+            return False
+        table, parent = (
+            ("materials", initial["material_id"])
+            if initial["material_id"]
+            else ("posts", initial["post_id"])
+        )
+        await conn.execute(
+            f"select id from {table} where user_id=%s and id=%s for update", (user_id, parent)
+        )
+        await conn.execute(
+            "select id from processing_intents where user_id=%s and id=%s for update",
+            (user_id, intent_id),
+        )
+        row = await get(conn, user_id, intent_id)
+        if (
+            not row
+            or row["revision"] != revision
+            or row["completed_at"]
+            or row["blocked_reason"]
+            or row["attempts"] >= 4
+            or row["parent_status"] not in {"active", "changed"}
+            or row["parent_source_revision"] == row["current_source_revision"]
+        ):
+            return False
+        material = row["material_id"] is not None
+        await conn.execute(
+            "update processing_intents set revision=gen_random_uuid(),dispatched_at=null,"
+            "dispatch_token=null,dispatch_started_at=null,last_started_at=null, "
+            "parent_source_revision=%s,source_hash=%s,payload_ciphertext=null, "
+            "blocked_reason=%s,last_error_code=%s where user_id=%s and id=%s and revision=%s",
+            (
+                row["parent_source_revision"] if material else row["current_source_revision"],
+                row["source_hash"] if material else row["parent_hash"],
+                "source_refresh" if material else None,
+                "missing_source" if material else None,
+                user_id,
+                intent_id,
+                revision,
+            ),
+        )
+        if material:
+            await conn.execute(
+                "update materials set processing_status='failed',processing_error="
+                "'This file changed. Try updating your classes.' where user_id=%s and id=%s",
+                (user_id, parent),
+            )
+        return True
+
+
+async def rebind_course_parents(
+    conn: AsyncConnection[Any], user_id: UUID, table: str, parents: list[tuple[UUID, UUID]]
+) -> None:
+    """Only the trusted course-only merge calls this, after locking/reparenting source rows."""
+    if table not in {"materials", "posts"}:
+        raise ValueError("unsupported processing parent")
+    column = "material_id" if table == "materials" else "post_id"
+    await conn.execute(
+        SQL(
+            "update processing_intents i set parent_source_revision=p.source_revision, "
+            "revision=gen_random_uuid(),dispatched_at=null,dispatch_token=null,dispatch_started_at=null,"
+            "last_started_at=null from {} p, "
+            "unnest(%s::uuid[],%s::uuid[]) previous(id,revision) "
+            "where i.user_id=%s and p.user_id=i.user_id "
+            "and i.{}=p.id and p.id=previous.id and i.parent_source_revision=previous.revision "
+            "and i.completed_at is null "
+            "and i.source_hash=p.content_hash"
+        ).format(Identifier(table), Identifier(column)),
+        ([p[0] for p in parents], [p[1] for p in parents], user_id),
+    )
 
 
 async def pending(conn: AsyncConnection[Any], user_id: UUID | None = None) -> list[dict[str, Any]]:
@@ -192,7 +297,8 @@ async def complete(
 ) -> None:
     await conn.execute(
         "update processing_intents set completed_at=now(),payload_ciphertext=null, "
-        "dispatch_token=null,dispatch_started_at=null where user_id=%s and id=%s and revision=%s",
+        "dispatch_token=null,dispatch_started_at=null where user_id=%s and id=%s and revision=%s "
+        "and completed_at is null",
         (user_id, intent_id, revision),
     )
 
@@ -220,11 +326,24 @@ async def fail(
         current = await get(conn, user_id, intent_id)
         if not current or current["revision"] != revision or current["completed_at"]:
             return False
-        if current["material_id"]:
-            await conn.execute(
-                "select id from materials where user_id=%s and id=%s for update",
-                (user_id, current["material_id"]),
-            )
+        table, parent = (
+            ("materials", current["material_id"])
+            if current["material_id"]
+            else ("posts", current["post_id"])
+        )
+        await conn.execute(
+            f"select id from {table} where user_id=%s and id=%s for update", (user_id, parent)
+        )
+        current = await get(conn, user_id, intent_id)
+        if (
+            not current
+            or current["revision"] != revision
+            or current["completed_at"]
+            or current["parent_status"] not in {"active", "changed"}
+            or current["parent_hash"] != current["source_hash"]
+            or current["parent_source_revision"] != current["current_source_revision"]
+        ):
+            return False
         attempts = current["attempts"]
         reason = ("exhausted" if attempts >= 4 else None) if kind == "retry" else kind
         delay = (30, 120, 600)[min(max(attempts - 1, 0), 2)]
@@ -284,7 +403,9 @@ async def resume(conn: AsyncConnection[Any], user_id: UUID) -> int:
 async def resume_source_auth(conn: AsyncConnection[Any], user_id: UUID, platform: str) -> None:
     # A newly validated credential is a separate, explicit authorization signal.
     await conn.execute(
-        "update processing_intents i set blocked_reason=null,last_error_code=null,attempts=0, "
+        "update processing_intents i set blocked_reason=case when material_id is not null "
+        "and payload_ciphertext is null then 'source_refresh' else null end, "
+        "last_error_code=null,attempts=0, "
         "next_attempt_at=now(),last_started_at=null,revision=gen_random_uuid(),dispatched_at=null, "
         "dispatch_token=null,dispatch_started_at=null where i.user_id=%s "
         "and i.blocked_reason='source_auth' "

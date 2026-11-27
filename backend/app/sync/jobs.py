@@ -176,12 +176,8 @@ async def execute_sync(
 async def process_material(
     user_id: str, material_id: str, source: dict[str, Any] | None = None
 ) -> None:
-    """S12: download/extract/chunk/embed (`app.sync.processing`). `source` = download/text/cues."""
-    from app.sync.processing.worker import run_process_material
-
-    async with await _connect() as conn:
-        async with user_work(conn, UUID(user_id)):
-            await run_process_material(conn, UUID(user_id), UUID(material_id), source)
+    """Legacy envelopes have no trustworthy source version; request current durable work only."""
+    await _defer_process_material(UUID(user_id), UUID(material_id), {})
 
 
 @app.task(
@@ -194,12 +190,8 @@ async def process_material(
     ),
 )
 async def process_post(user_id: str, post_id: str) -> None:
-    """S12: chunk + embed a new/changed post (announcement, Piazza, email)."""
-    from app.sync.processing.worker import run_process_post
-
-    async with await _connect() as conn:
-        async with user_work(conn, UUID(user_id)):
-            await run_process_post(conn, UUID(user_id), UUID(post_id))
+    """Legacy delivery requests current intent dispatch; it never runs an unbound processor."""
+    await _defer_process_post(UUID(user_id), UUID(post_id))
 
 
 @app.task(name="merge_user", queue="sync")

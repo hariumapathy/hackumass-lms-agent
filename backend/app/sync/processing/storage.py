@@ -26,9 +26,12 @@ def storage_path(
     platform_id: str,
     version: int,
     ext: str,
+    *,
+    attempt_id: object | None = None,
 ) -> str:
     safe = [quote(str(p), safe="-_.") for p in (course_platform_id, platform_id)]
-    return f"users/{user_id}/{platform}/{safe[0]}/{safe[1]}/v{version}.{ext}"
+    suffix = f"-{attempt_id}" if attempt_id is not None else ""
+    return f"users/{user_id}/{platform}/{safe[0]}/{safe[1]}/v{version}{suffix}.{ext}"
 
 
 class Storage(Protocol):
@@ -82,7 +85,7 @@ class SupabaseStorage:
                 "POST",
                 f"/object/{self.bucket}/{path}",
                 content=data,
-                headers={"Content-Type": content_type, "x-upsert": "true"},
+                headers={"Content-Type": content_type, "x-upsert": "false"},
             )
             if attempt == 0 and self._bucket_missing(resp):
                 await self.ensure_bucket()

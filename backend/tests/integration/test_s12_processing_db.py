@@ -157,7 +157,8 @@ async def test_s12_t09_new_version_flips_old_chunks_atomically(conn, user) -> No
     assert v1[0]["text"] == "[COMPSCI 311 · Lecture 7 slides · p.1]\nMemoization basics"
     m = await material_row(conn, mid)
     assert (m["version"], m["page_count"], m["processing_status"]) == (1, 2, "done")
-    assert m["storage_path"] == f"users/{user}/canvas/12345/f7/v1.pdf"
+    assert m["storage_path"].startswith(f"users/{user}/canvas/12345/f7/v1-")
+    assert m["storage_path"].endswith(".pdf")
     assert set(storage.files) == {m["storage_path"]}
 
     # Same content again: nothing new (no version bump, no new chunks).
@@ -175,7 +176,8 @@ async def test_s12_t09_new_version_flips_old_chunks_atomically(conn, user) -> No
     assert all(not r["is_current"] for r in rows if r["material_version"] == 1)
     m = await material_row(conn, mid)
     assert (m["version"], m["page_count"]) == (2, 3)
-    assert m["storage_path"].endswith("/v2.pdf") and len(storage.files) == 2
+    assert "/v2-" in m["storage_path"] and m["storage_path"].endswith(".pdf")
+    assert len(storage.files) == 2
 
     # Embedding failure mid-update: v2 stays current, status failed, no partial v3.
     bad = make_pdf(["Totally new"])

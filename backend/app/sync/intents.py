@@ -36,9 +36,17 @@ async def dispatch_one(
     async with user_work(conn, user_id):
         row = await repo.get(conn, user_id, intent_id)
         if (
+            row
+            and not row["completed_at"]
+            and row["parent_source_revision"] != row["current_source_revision"]
+        ):
+            await repo.repair_source_revision(conn, user_id, intent_id, row["revision"])
+            row = await repo.get(conn, user_id, intent_id)
+        if (
             not row
             or row["parent_status"] not in {"active", "changed"}
             or row["parent_hash"] != row["source_hash"]
+            or row["parent_source_revision"] != row["current_source_revision"]
         ):
             return False
         token = uuid4()
@@ -129,6 +137,7 @@ async def execute(
 ) -> str:
     from app.sync.processing import worker
     from app.sync.processing.failures import ProcessingFailure, RetryableProcessingError, classify
+    from app.sync.processing.publication import bind_intent
 
     uid, iid, expected = UUID(user_id), UUID(intent_id), UUID(revision)
     async with user_work(conn, uid), intent_lock(conn, iid):
@@ -139,31 +148,43 @@ async def execute(
             return "superseded"
         if row["completed_at"]:
             return "already_complete"
+        if row["parent_status"] not in {"active", "changed"}:
+            await repo.reset(conn, uid, iid, expected)
+            return "unavailable"
+        if row["blocked_reason"] or row["attempts"] >= 4:
+            return "blocked"
+        if row["parent_source_revision"] != row["current_source_revision"]:
+            await repo.repair_source_revision(conn, uid, iid, expected)
+            return "unavailable"
         if (
             row["parent_status"] not in {"active", "changed"}
             or row["parent_hash"] != row["source_hash"]
         ):
             await repo.reset(conn, uid, iid, expected)
             return "unavailable"
-        if row["blocked_reason"] or row["attempts"] >= 4:
-            return "blocked"
         if await repo.claim(conn, uid, iid, expected) is None:
             latest = await repo.get(conn, uid, iid)
             return "superseded" if latest and latest["revision"] != expected else "deferred"
         try:
-            if row["material_id"]:
-                payload = row["payload_ciphertext"]
-                if payload is None:
-                    raise ProcessingFailure("configuration", "missing_source")
-                source = json.loads(decrypt(bytes(payload)))
-                result = await worker.run_process_material(conn, uid, row["material_id"], source)
-            else:
-                result = await worker.run_process_post(conn, uid, row["post_id"])
+            with bind_intent(row):
+                if row["material_id"]:
+                    payload = row["payload_ciphertext"]
+                    if payload is None:
+                        raise ProcessingFailure("configuration", "missing_source")
+                    source = json.loads(decrypt(bytes(payload)))
+                    result = await worker.run_process_material(
+                        conn, uid, row["material_id"], source
+                    )
+                else:
+                    result = await worker.run_process_post(conn, uid, row["post_id"])
             if result in {"done", "unchanged", "skipped", "empty"}:
                 await repo.complete(conn, uid, iid, expected)
                 return result
             if result == "needs_reconnect":
                 raise ProcessingFailure("source_auth", "source_access")
+            if result == "superseded":
+                await repo.reset(conn, uid, iid, expected)
+                return "superseded"
             if result == "missing":
                 await repo.reset(conn, uid, iid, expected)
                 return "unavailable"
@@ -172,6 +193,7 @@ async def execute(
             failure = classify(error)
             applied = await repo.fail(conn, uid, iid, expected, failure.kind, failure.code)
             if not applied:
+                await repo.reset(conn, uid, iid, expected)
                 return "superseded"
             return "retry_scheduled" if failure.kind == "retry" else "blocked"
 

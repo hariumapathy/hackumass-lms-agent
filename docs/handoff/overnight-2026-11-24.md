@@ -4,7 +4,7 @@ Branch: **codex/post-hackathon-implementation**, based on planning tip `88baeda`
 
 ## Verified fixes
 
-**Latest checkpoint (2026-11-27):** S46 pushed3019d40,30 new source-fence regressions. S47 fixes the local web launcher following a pre-existing symlink into root `.env`;7 additional shell regressions, root-config preservation checked on actual relaunch. Latest full713 backend/1 optional Storage skip; frontend102/6 browser; static checks, shell syntax and production build green. Independent review completed for both features. Local config repaired only after verifying zero saved encrypted credentials/payloads; imports retained. API/web HTTP-smoked; restart/verify worker after the final isolated fixture run. Keep main unchanged for friend review. Successful processing publication remains separate (next S48). See [S46 rollout](../deployment/source-import-fences.md) and [S47](../specs/S47-local-web-env-safety.md).
+**Latest checkpoint (2026-11-27, S48):** S46 pushed3019d40 and S47 pushed50b1998. S48 successful processing publication verified:35 new regressions, full748 backend/1 optional Storage skip,102 frontend, backend/web static checks green; private revisions absent from public OpenAPI. Prior unchanged frontend6 browser/production-build checkpoint stands. Private0007 source/outbox origins fence queued/inflight work; publication completes chunks/pointer/ledger atomically; immutable upload paths prevent late overwrite. Current-feature review regressions all incorporated. Local API/worker reloaded after fixtures; imports retained. Keep main unchanged for friend review. Next S49 is external-download credential/connection fencing, distinct from cached organizing. See [S48 rollout/recovery/limits](../deployment/processing-publication.md).
 
 | Spec | Commit | Behavior |
 |---|---|---|
@@ -20,16 +20,16 @@ S37–S43 confirmed pushed. S44 durable encrypted processing intent delivery ver
 
 ## Exact next steps
 
-1. Push the S47 completion and update draft PR34. Preserve branch for friend review; main remains untouched.
-2. Next individual feature (S48): successful processing/chunk/Storage publication fencing (remaining RS06), with its own spec/cases/design/plan/red tests. Then embedding provenance and remaining setup/integration/UI gates. Keep Gemini; defer model-cost/provider work.
+1. Push S48 completion and update draft PR34. Preserve branch for friend review; main remains untouched.
+2. Next individual feature (S49): external-download credential/connection fencing (remaining RS06), with its own spec/cases/design/plan/red tests. Then embedding provenance and remaining setup/integration/UI gates. Keep Gemini; defer model-cost/provider work.
 3. Maintain precise evidence/checkpoints, feature commits and running local demo. The historical Nov25 morning deadline is past; this is the Nov27 continuation, not a claim of unattended work during the gap.
 
 ## Operations and limits
 
 - See processing-recovery.md for S44 delivery/lease/replay and remaining processing/disconnect limits.
-- Existing imports preserved: additive migrations0003/0004/0005/0006 applied to local DB and registered in migration history; **no reset/seed**. Apply it before new API/worker rollout. Review internal schema proposal before merge.
+- Existing imports preserved: additive migrations0003/0004/0005/0006/0007 applied to local DB and registered in migration history; **no reset/seed**. Apply it before new API/worker rollout. Review internal schema proposal before merge.
 - [Deletion operator guide](../deployment/data-deletion.md): session locks need direct/session pooling; bound API/login sessions8 versus pool10; shared DB tool leases serialize and active children drain before session release. Storage upload orphan reconciliation and backup expiration/restore remain public-launch gates. No claim of atomic Postgres+Storage cleanup under network failure.
-- Source-listing fixes do not claim full module discovery or permission revocation. S44/S45 implement delivery and bounded failed/orphan repair; S46 fences source imports/disconnect. Successful processing publication and active stale-worker takeover remain next.
+- Source-listing fixes do not claim full module discovery or permission revocation. S44/S45 implement delivery and bounded failed/orphan repair; S46 fences source imports/disconnect. S48 now fences processing publication; external-download grants, object orphans and active stale-worker takeover remain next.
 - Use installed Node26 (`/Users/nealpatel/.nvm/versions/node/v26.12.1/bin`), pinned pnpm10.34.9 and `NODE_OPTIONS=--no-experimental-webstorage`; default Node18 is too old. Backend uses uv. Docker/local Supabase healthy; retained volumes kept.
 - `.env`/web `.env.local` ignored and private. Never print Supabase status/env/Settings (can contain keys); capture needed config in memory. Tests use synthetic accounts, fake/scrubbed platform data, fake embeddings/scripted models. Never clear a real student's data as a test.
 - Git SSH push had transient errors; HTTPS push using `gh auth git-credential` works. Do not force push. Confirm remote SHA and repair tracking by explicit fetch if local ahead count is stale.
