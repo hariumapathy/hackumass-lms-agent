@@ -7,7 +7,7 @@ from uuid import uuid4
 import httpx
 import pytest
 import respx
-from pydantic import Field, SecretStr
+from pydantic import SecretStr
 
 from app.connectors.base import ConnectorContext, SyncScope
 from app.connectors.canvas.client import CanvasClient, ForbiddenMethod
@@ -36,20 +36,10 @@ class ReadGuard:
             raise Superseded("Source access changed.")
 
 
-class CheckedContext(ConnectorContext):
-    """Exercise checkpoints before the shared base interface is added by the S46 owner."""
-
-    check_current: Any = Field(default=None, exclude=True)
-
-    async def checkpoint(self) -> None:
-        if self.check_current:
-            await self.check_current()
-
-
-def context(platform: str, state: Any, guard: ReadGuard) -> CheckedContext:
+def context(platform: str, state: Any, guard: ReadGuard) -> ConnectorContext:
     import json
 
-    return CheckedContext(
+    return ConnectorContext(
         user_id=uuid4(),
         platform=platform,  # type: ignore[arg-type]
         secret=SecretStr(state if isinstance(state, str) else json.dumps(state)),

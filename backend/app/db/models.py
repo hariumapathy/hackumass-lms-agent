@@ -56,6 +56,7 @@ class ConnectionSecret(BaseModel):
     """Never returned by the API or passed to agent code (S10 rule 8)."""
 
     connection_id: UUID
+    revision: UUID
     ciphertext: bytes
     kind: SecretKind
     created_at: datetime | None = None

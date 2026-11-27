@@ -18,12 +18,14 @@ from psycopg import AsyncConnection
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 
-from app.connectors.base import PlatformError, SyncScope, get_connector
+from app.connectors.base import PlatformError, SourceSuperseded, SyncScope, get_connector
 from app.core.clock import Clock, SystemClock
 from app.core.crypto import CryptoError, decrypt, get_fernet
+from app.core.errors import AppError
 from app.core.settings import get_settings
 from app.db.deletion import generation, retry_pending_deletions, user_work
 from app.db.repositories import sync as repo
+from app.sync.access import Grant, require_current, snapshot, stored_credentials
 from app.sync.pipeline import run_sync
 
 log = logging.getLogger("app.sync")
@@ -46,6 +48,8 @@ class SyncJob(BaseModel):
     scope: SyncScope
     trigger: str
     sync_run_id: UUID
+    connection_id: UUID | None = None
+    secret_revision: UUID | None = None
 
 
 class SyncRunResult(BaseModel):
@@ -88,25 +92,54 @@ async def execute_sync(
 ) -> str:
     """Decrypt the secret, run the pipeline, queue follow-up jobs. Raises PlatformError to retry."""
     clock = clock or SystemClock()
-    if await repo.get_run(conn, sj.user_id, sj.sync_run_id) is None:
+    run = await repo.get_run(conn, sj.user_id, sj.sync_run_id)
+    if run is None:
         return "deleted"
-    epoch = await generation(conn, sj.user_id)
-    ciphertext = await repo.get_secret(conn, sj.user_id, sj.platform)
-    if ciphertext is None:
+    if run.status not in {"queued", "running"}:
+        return "ignored"
+    if sj.connection_id is None or sj.secret_revision is None:
+        # Legacy envelope parsing is supported, adopting a current replacement grant is not.
         await repo.mark_run(
-            conn, sj.user_id, sj.sync_run_id, "failed", clock.now(), error="Not connected."
+            conn,
+            sj.user_id,
+            sj.sync_run_id,
+            "failed",
+            clock.now(),
+            error="Please update your classes again.",
         )
-        return "failed"
+        return "ignored"
+    epoch = await generation(conn, sj.user_id)
+    grant = Grant(sj.connection_id, sj.secret_revision)
     try:
-        secret = decrypt(ciphertext, get_fernet())
+        stored = await stored_credentials(conn, sj.user_id, sj.platform)
+        if stored.grant != grant:
+            raise SourceSuperseded()
+        secret = decrypt(stored.ciphertext, get_fernet())
+    except SourceSuperseded:
+        await repo.mark_run(
+            conn,
+            sj.user_id,
+            sj.sync_run_id,
+            "failed",
+            clock.now(),
+            error="Connection changed. Please update your classes again.",
+        )
+        return "ignored"
     except CryptoError:
         message = "Please reconnect this account so we can update your classes."
-        await repo.set_connection_status(
-            conn, sj.user_id, sj.platform, "needs_reconnect", error=message
-        )
-        await repo.mark_run(
-            conn, sj.user_id, sj.sync_run_id, "needs_reconnect", clock.now(), error=message
-        )
+        try:
+            async with conn.transaction():
+                await require_current(
+                    conn, sj.user_id, sj.platform, grant, locked=True, update=True
+                )
+                await repo.set_connection_status(
+                    conn, sj.user_id, sj.platform, "needs_reconnect", error=message
+                )
+                await repo.mark_run(
+                    conn, sj.user_id, sj.sync_run_id, "needs_reconnect", clock.now(), error=message
+                )
+        except SourceSuperseded:
+            return "ignored"
         return "needs_reconnect"
     outcome = await run_sync(
         conn,
@@ -117,6 +150,7 @@ async def execute_sync(
         secret=secret,
         clock=clock,
         final_attempt=final_attempt,
+        expected_grant=grant,
         process_material=_defer_process_material,
         process_post=_defer_process_post,
     )
@@ -239,12 +273,27 @@ async def enqueue_sync(
             "select pg_advisory_xact_lock(hashtextextended(%s, 0))",
             (f"sync:{user_id}:{platform}:{scope.key()}",),
         )
+        try:
+            grant = await snapshot(conn, user_id, platform)
+            await require_current(conn, user_id, platform, grant, locked=True)
+        except SourceSuperseded:
+            raise AppError(
+                "conflict",
+                "This connection changed. Open Settings to check your connected accounts.",
+                status=409,
+            ) from None
         existing = await repo.find_open_run(conn, user_id, platform, scope_json)
         if existing:
             return existing.id
         run_id = await repo.create_run(conn, user_id, platform, scope_json, trigger, clock.now())
     job = SyncJob(
-        user_id=user_id, platform=platform, scope=scope, trigger=trigger, sync_run_id=run_id
+        user_id=user_id,
+        platform=platform,
+        scope=scope,
+        trigger=trigger,
+        sync_run_id=run_id,
+        connection_id=grant.connection_id,
+        secret_revision=grant.revision,
     )
     try:
         await (defer or _defer_sync)(job, PRIORITY.get(trigger, 0))

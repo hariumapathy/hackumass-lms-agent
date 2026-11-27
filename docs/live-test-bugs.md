@@ -70,3 +70,13 @@ A source could commit before a later fetch failed, losing its in-memory processi
 ## Post-hackathon processing retries — review branch, 2026-11-25
 
 Failed embeddings/Storage could leave processing failed while queue work reported success. S45 persists bounded repair with safe stop categories, protects replacement-source state, and recovers orphan delivery without overriding active work. Review regressions also proved stale recovery could reopen a newly blocked error, busy locks could stall all recovery, and abandoned replacements could avoid the attempt budget.32 new cases/full676 backend tests pass after fixes. These are synthetic fixture reproductions; successful publication/disconnect races remain the next gate.
+
+## Post-hackathon import/disconnect races — review branch, 2026-11-27
+
+Synthetic two-session tests reproduced overlapping imports, writes after disconnect and old
+authentication errors marking replacement connections expired. S46 serializes actual source
+imports across scopes, binds jobs to private credential revisions, and guards record/removal/status
+publication.30 new tests include real queue cancellation, duplicate delivery, entered-transaction
+draining, same-secret reconnect, direct secret replacement and canceled lock cleanup. Full706
+backend tests pass/1 optional Storage skip. These are fixture reproductions, not newly observed live
+platform failures. Successful processing/Storage publication remains a separate gate.

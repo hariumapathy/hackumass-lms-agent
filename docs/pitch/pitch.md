@@ -62,5 +62,6 @@ See [hackathon.md → Judging criteria](../hackathon.md#judging-criteria--how-we
 | Removed-source retrieval (S41) | Review branch only: removed sources excluded from new search/reads; historical citations retain status; synthetic DB tests, unmerged |
 | Indexing intent recovery (S44) | Review branch only: committed sources keep private encrypted work across fetch/queue failure; replay-safe delivery tested; processing retries/publication gates remain |
 | Failed processing repair (S45) | Review branch only: bounded retries, safe stop categories, scoped operator/legacy recovery; successful publication and disconnect gates remain |
+| Source import/disconnect races (S46) | Review branch only: serialized platform imports, credential-bound jobs and transactional source/status fences;30 synthetic regressions, no new live-platform verification; successful indexing publication remains next |
 | Echo360 lecture recordings (S15) | ⬜ stretch; hidden in the app (no connector) |
 | _everything else_ | ⬜ in progress, see [specs](../specs/README.md) |

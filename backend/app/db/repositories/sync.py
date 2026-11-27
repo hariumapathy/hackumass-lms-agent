@@ -75,7 +75,8 @@ async def mark_run(
     params += [Jsonb(stats) if stats is not None else None, error, user_id, run_id]
     await conn.execute(
         f"update sync_runs set status = %s, {started} {finished} "  # noqa: S608
-        "stats = coalesce(%s, stats), error = %s where user_id = %s and id = %s",
+        "stats = coalesce(%s, stats), error = %s where user_id = %s and id = %s "
+        "and status in ('queued','running')",
         tuple(params),
     )
 
@@ -191,6 +192,18 @@ async def disconnect(
 ) -> None:
     """S13-T06: forget credentials, stop queued syncs, retain already imported classes."""
     async with conn.transaction():
+        # Match source publication and legacy-secret-trigger ordering before touching jobs/runs.
+        row = await (
+            await conn.execute(
+                "select id from connections where user_id=%s and platform=%s for update",
+                (user_id, platform),
+            )
+        ).fetchone()
+        if row:
+            await conn.execute(
+                "select connection_id from connection_secrets where connection_id=%s for update",
+                (row["id"],),
+            )
         await conn.execute(
             "select procrastinate_cancel_job_v1(id, false, false) from procrastinate_jobs "
             "where task_name = 'sync_platform' and status = 'todo' "
@@ -200,7 +213,7 @@ async def disconnect(
         await conn.execute(
             "update sync_runs set status = 'failed', finished_at = %s, "
             "error = 'Account disconnected.' where user_id = %s and platform = %s "
-            "and status = 'queued'",
+            "and status in ('queued','running')",
             (now, user_id, platform),
         )
         # The secret cascades from this row. Scheduler only considers active connections.

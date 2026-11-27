@@ -72,3 +72,5 @@ _Still in planning — stack, roles and final MVP scope not yet locked. See [06-
 - 2026-11-25 (S44 review branch): transactional encrypted processing outbox and expiring dispatch leases; ID-only at-least-once delivery with execution/completion guards, no queueing lock after a real framework retry/replay uniqueness failure. Internal migration0004; no public contract changes.
 
 - 2026-11-25 (S45 review branch): bounded per-revision processing attempts/backoff, content-free failure categories, file-level access errors, owner-scoped repair and legacy refresh budgets; no nested worker-provider retry loop. Internal0005 only. Successful publication/active-worker takeover/disconnect remain RS06 gates.
+
+- 2026-11-27 (S46 review branch): serialize source imports across scopes; bind private credential revisions and recheck under short publication/status transactions. Legacy queued jobs fail closed; drain old workers before0006 rollout. Processing publication remains separate; retain branch for friend review, main unchanged.

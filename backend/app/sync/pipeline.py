@@ -25,11 +25,14 @@ from app.connectors.base import (
     NMaterial,
     NPost,
     PlatformError,
+    SourceSuperseded,
     SyncScope,
 )
 from app.core.clock import Clock
+from app.db.deletion import user_work
 from app.db.repositories import processing as processing_repo
 from app.db.repositories import sync as repo
+from app.sync.access import Grant, require_current, snapshot, source_lock
 from app.sync.diff import changed_fields, classify, meaningful_fields, record_hash
 
 log = logging.getLogger("app.sync")
@@ -436,36 +439,83 @@ async def run_sync(
     final_attempt: bool = True,
     process_material: ProcessMaterial | None = None,
     process_post: ProcessPost | None = None,
+    expected_grant: Grant | None = None,
 ) -> SyncOutcome:
-    """Run one sync. Never raises for platform problems: returns the outcome (`retry` means the
-    caller should re-raise so the queue retries; only returned when `final_attempt` is False)."""
+    """Serialize across scopes and bind all source work to one immutable grant snapshot."""
+    async with user_work(conn, user_id):
+        try:
+            grant = expected_grant or await snapshot(conn, user_id, connector.platform)
+            async with source_lock(conn, user_id, connector.platform):
+                async with conn.transaction():
+                    await require_current(conn, user_id, connector.platform, grant, locked=True)
+                    run = await repo.get_run(conn, user_id, run_id)
+                    if not run or run.status not in {"queued", "running"}:
+                        return SyncOutcome(status="ignored")
+                    await repo.mark_run(conn, user_id, run_id, "running", clock.now())
+                return await _run_sync(
+                    conn,
+                    user_id=user_id,
+                    run_id=run_id,
+                    scope=scope,
+                    connector=connector,
+                    secret=secret,
+                    clock=clock,
+                    final_attempt=final_attempt,
+                    process_material=process_material,
+                    process_post=process_post,
+                    grant=grant,
+                )
+        except SourceSuperseded:
+            message = "Connection changed. Please update your classes again."
+            await repo.mark_run(conn, user_id, run_id, "failed", clock.now(), error=message)
+            return SyncOutcome(status="failed", error=message)
+
+
+async def _run_sync(
+    conn: AsyncConnection[Any],
+    *,
+    user_id: UUID,
+    run_id: UUID,
+    scope: SyncScope,
+    connector: Connector,
+    secret: str,
+    clock: Clock,
+    final_attempt: bool,
+    process_material: ProcessMaterial | None,
+    process_post: ProcessPost | None,
+    grant: Grant,
+) -> SyncOutcome:
     platform = connector.platform
     now = clock.now()
-    await repo.mark_run(conn, user_id, run_id, "running", now)
     out = SyncOutcome(status="succeeded")
     store = _Store(conn, user_id, platform, now)
     seen: dict[str, set[UUID]] = {t: set() for t in SOURCE_TABLES}
+
+    async def checkpoint() -> None:
+        await require_current(conn, user_id, platform, grant)
+
     ctx = ConnectorContext(
         user_id=user_id,
         platform=platform,
         secret=SecretStr(secret),
         last_success_at=await repo.last_success_at(conn, user_id, platform),
         clock=clock,
+        check_current=checkpoint,
     )
     try:
+        await checkpoint()
         async for rec in connector.fetch(ctx, scope):
             try:
                 async with conn.transaction():
+                    await require_current(conn, user_id, platform, grant, locked=True)
                     outcome, row_id = await getattr(store, rec.record)(rec)
                     if isinstance(rec, (NMaterial, NPost)):
                         await processing_repo.capture(conn, user_id, row_id, rec, outcome)
-            except (AuthExpired, PlatformError):
+            except (AuthExpired, PlatformError, SourceSuperseded):
                 raise
-            except Exception as exc:  # noqa: BLE001  (S10 rule 10: skip one bad record)
+            except Exception as exc:  # S10: skip one malformed record, never a grant rejection
                 out.skipped += 1
-                log.warning(
-                    "sync: skipped %s %s: %s", rec.record, rec.platform_id, type(exc).__name__
-                )
+                log.warning("sync: skipped %s: %s", rec.record, type(exc).__name__)
                 continue
             seen[_TABLE[type(rec)]].add(row_id)
             out.stats[outcome] += 1
@@ -478,26 +528,41 @@ async def run_sync(
                 out.posts_to_process.append(row_id)
         if scope.kind == "full":
             async with conn.transaction():
+                await require_current(conn, user_id, platform, grant, locked=True)
                 out.stats["removed"] = await store.mark_removed(seen, ctx.incomplete)
+    except SourceSuperseded:
+        out.status, out.error = "failed", "Connection changed. Please update your classes again."
     except AuthExpired:
         out.status, out.error = "needs_reconnect", "Your sign-in for this site expired."
-        await repo.set_connection_status(
-            conn, user_id, platform, "needs_reconnect", error=out.error
-        )
-    except PlatformError as exc:
-        if not final_attempt:
-            out.status, out.error = "retry", str(exc)[:500]
-            await repo.mark_run(conn, user_id, run_id, "running", clock.now(), out.stats)
-            return out
-        out.status, out.error = "failed", str(exc)[:500]
-        await repo.set_connection_status(conn, user_id, platform, "error", error=out.error)
-    except Exception as exc:  # noqa: BLE001
-        out.status, out.error = "failed", f"{type(exc).__name__}"
-        log.exception("sync: run %s failed", run_id)
-        await repo.set_connection_status(conn, user_id, platform, "error", error=out.error)
+    except PlatformError:
+        out.status = "failed" if final_attempt else "retry"
+        out.error = "This site is temporarily unavailable. Please try updating your classes again."
+    except Exception as exc:
+        out.status, out.error = "failed", "We couldn't update your classes. Please try again."
+        log.warning("sync: run failed: %s", type(exc).__name__)
     finished = clock.now()
+    # Connection + secret are held only while publishing status. Replacement/disconnect can
+    # finish during fetch; old failures then cannot poison the new account's status.
+    async with conn.transaction():
+        await require_current(conn, user_id, platform, grant, locked=True, update=True)
+        if out.status == "succeeded":
+            await repo.set_connection_status(conn, user_id, platform, "active", synced_at=finished)
+        elif out.status == "needs_reconnect":
+            await repo.set_connection_status(
+                conn, user_id, platform, "needs_reconnect", error=out.error
+            )
+        elif out.status != "retry":
+            await repo.set_connection_status(conn, user_id, platform, "error", error=out.error)
+        await repo.mark_run(
+            conn,
+            user_id,
+            run_id,
+            "running" if out.status == "retry" else out.status,
+            finished,
+            out.stats,
+            out.error,
+        )
     if out.status == "succeeded":
-        await repo.set_connection_status(conn, user_id, platform, "active", synced_at=finished)
         if process_material:
             for material_id in out.materials_to_process:
                 try:
@@ -510,5 +575,4 @@ async def run_sync(
                     await process_post(user_id, post_id)
                 except Exception as exc:
                     log.warning("saved post work awaits recovery: %s", type(exc).__name__)
-    await repo.mark_run(conn, user_id, run_id, out.status, finished, out.stats, out.error)
     return out

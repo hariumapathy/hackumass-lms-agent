@@ -333,8 +333,17 @@ async def test_S10_unreadable_credential_finishes_run_with_reconnect(conn, user,
         conn, user, "canvas", b"old-unreadable-secret", "canvas_token"
     )
     run_id = await repo.create_run(conn, user, "canvas", {}, "manual", NOW)
+    from app.sync.access import snapshot
+
+    grant = await snapshot(conn, user, "canvas")
     job = jobs.SyncJob(
-        user_id=user, platform="canvas", scope=SyncScope(), trigger="manual", sync_run_id=run_id
+        user_id=user,
+        platform="canvas",
+        scope=SyncScope(),
+        trigger="manual",
+        sync_run_id=run_id,
+        connection_id=grant.connection_id,
+        secret_revision=grant.revision,
     )
     assert (
         await jobs.execute_sync(conn, job, final_attempt=True, clock=FixedClock(NOW))

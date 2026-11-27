@@ -1,6 +1,6 @@
 # S46 — Serialize imports and fence replaced/disconnected connections
 
-**Status:** In progress, WIP checkpoint pushed at user request for immediate review. Spec and failing integration regressions exist; connector checkpoints are partial and depend on the not-yet-added shared callback interface. Not a green/run-ready feature. First narrow RS06 feature; successful index publication is the next separate feature. Private credential revision/schema + internal job args only; public API/SSE/seed shapes unchanged.
+**Status:** Implemented and verified on review branch, unmerged. Completes the source-import portion of RS06. Private credential revision/schema + internal job args only; public API/SSE/seed shapes unchanged.
 
 ## Spec
 
@@ -31,6 +31,8 @@ A source access helper snapshots the grant, serializes execution with a per-user
 
 ConnectorContext gains an excluded internal async callback plus `checkpoint()`; optional/default no-op for stand-alone connector fixture/credential-validation contexts. Canvas client checks before each GET; Gradescope checks before thread-backed page reads; Piazza checks before constructing/awaiting each read operation. Only the worker supplies DB grant validation; the model never sees this callback or secret.
 
+Legacy envelope fields are optional for parsing only: jobs without an explicit connection/revision stop without adopting current credentials. Migration retires pre-epoch open runs/queued source work; retained imports and historical runs stay intact. A reconnect creates a new connection ID; every explicit secret insert/update generates a fresh revision, including identical ciphertext and legacy direct writes. If access changes while queuing, return the existing plain-language conflict envelope rather than an unhandled server error. Disconnect locks connection, then secret, before touching jobs/runs to match legacy trigger ordering.
+
 ## Implementation plan
 
 1. Write failing two-connection concurrency/disconnect/rotation/epoch tests and connector operation-boundary tests.
@@ -40,4 +42,6 @@ ConnectorContext gains an excluded internal async callback plus `checkpoint()`; 
 
 ## Limits / acceptance
 
-Pending implementation. This feature fences source imports. Atomic successful processing/chunk/Storage publication, processing-side disconnect behavior and stale-active-worker takeover remain the next RS06 subfeature; do not claim these are already resolved. No claim that an already sent external request can be recalled.
+All S46-T01–T08 cases implemented: **30 new tests** (18 synthetic DB/session/queue cases and12 mocked connector checks). Original regressions failed before implementation. Final full backend **706 passed,1 optional Storage skip**, Ruff/format/pyright green; frontend102 tests,6 browser tests, lint/types and production build pass. Independent current-feature RAG/concurrency review found no blocking defect. Additive0006 applied locally without reset/seed. API/web HTTP200 and unauthenticated account401 smoke pass. No fresh real Canvas/Google account verification claimed.
+
+This feature fences source imports. Atomic successful processing/chunk/Storage publication, processing-side disconnect behavior and stale-active-worker takeover remain the next RS06 subfeature; do not claim these are already resolved. No claim that an already sent external request can be recalled.

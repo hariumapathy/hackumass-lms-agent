@@ -66,7 +66,7 @@ All specs below start as `Draft`. Review and mark `Ready` during hours 0–2 (St
 | S43 | [Source presence restoration](S43-source-presence-restoration.md) | Implemented on review branch; unmerged |
 | S44 | [Durable processing intents](S44-durable-processing-intents.md) | Implemented on review branch; unmerged |
 | S45 | [Processing retries and repair](S45-processing-retries-and-recovery.md) | Implemented on review branch; unmerged; success-publication fencing is next |
-| S46 | [Source execution and connection fences](S46-source-execution-and-connection-fences.md) | WIP: spec, failing integration regressions and partial connector checkpoints; not runnable as a completed feature |
+| S46 | [Source execution and connection fences](S46-source-execution-and-connection-fences.md) | Implemented on review branch; unmerged; successful processing publication remains separate |
 
 ## Cross-cutting rules (apply to every spec)
 - [AGENTS.md non-negotiable rules](../../AGENTS.md#non-negotiable-rules)
